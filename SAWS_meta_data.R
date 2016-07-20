@@ -1,5 +1,4 @@
 # Load packages etc. ------------------------------------------------------
-setwd("AHW/")
 library(ggplot2)
 library(plyr)
 library(dplyr)
