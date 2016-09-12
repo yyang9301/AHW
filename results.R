@@ -1,11 +1,11 @@
 #############################################################################
 ## This script does:
-# 1. loads AHW results;
+# 1. Load all AHW results;
 # 2. Prep AHW results for comparison
-# 3. loads MHW results;
+# 3. Load all MHW results;
 # 4. Prep MHW results for comparison;
-# 5. Calculates co-occurrence of events for all sites vs stations;
-
+# 5. Calculate co-occurrence of events for all sites vs stations;
+# 6. Visualise results
 #############################################################################
 
 #############################################################################
@@ -79,6 +79,7 @@ bad_station <- ("EASTLONDONAWS")
 allAHW <- droplevels(allAHW[!(allAHW$station_name %in% bad_station),])
 allACW <- droplevels(allACW[!(allACW$station_name %in% bad_station),])
 
+
 # 2. Prep AHW results for comparison --------------------------------------
 
 ## Correct columns to better match MHW output
@@ -112,6 +113,7 @@ allACW <- allACW %>%
   mutate(lon = station_meta_data$longitude[station_meta_data$station_file == station_name][1]) %>% 
   mutate(lat = station_meta_data$latitude[station_meta_data$station_file == station_name][1])
 allACW <- data.frame(allACW)
+
 
 # 3. Load all MHW results ---------------------------------------------------------
 
@@ -158,7 +160,7 @@ mhwAnnual <- annualLoad(dir1)
 mcsAnnual <- annualLoad(dir2)
 
 
-# 4. Prep AHW results for comparison --------------------------------------
+# 4. Prep MHW results for comparison --------------------------------------
 
 ## Load metadata
 load("~/MHW/data/metaData2.Rdata")
@@ -178,7 +180,7 @@ mcsAnnual <- mcsAnnual %>%
 mcsAnnual <- data.frame(mcsAnnual)
 
 
-# 5. Calculates co-occurrence of events for all sites vs stations ---------
+# 5. Calculate co-occurrence of events for all sites vs stations ---------
 
 MHW <- mhwAnnual
 AHW <- allAHW
@@ -282,3 +284,16 @@ allCOcloseLong[!(allCOcloseLong$variable == "overall_years"),] %>%
   geom_point(aes(colour = variable, size = overlap, shape = type), alpha = 0.6) +
   geom_smooth(method = "glm", aes(colour = variable))
 ggsave("graph/change_in_variables_over_distance_nearest_2.pdf")
+
+
+# 7. Correlations ---------------------------------------------------------
+
+## Annual correlations
+
+## Realte land stations with each other, too
+
+## Show time lag relationship between all stations
+
+## Do 3 or 5 day AHW relate better to MHW? Or even longer?
+
+## How long does an AHW have to be to force an MHW

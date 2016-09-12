@@ -8,10 +8,10 @@
 #############################################################################
 ## DEPENDS ON:
 require(FNN); require(ggplot2)
-source("~/Documents/Project/SpeciesGuide/graph/scaleBarFunc.R")
+source("func/scaleBarFunc.R")
 
 require(plyr); require(zoo); require(lubridate); require(reshape2); require(maptools); require(sp); require(geosphere); require(PBSmapping); require(mapproj); require(ggplot2); require(gridExtra); require(grid); require(viridis); require(scales)
-source("func/seqSites.R"); source("func/metaTemp.R"); source("setupParams/theme.R")
+source("func/earthdist.R"); source("func/metaTemp.R"); source("setupParams/theme.R"); source("func/seq.sites.R")
 # "data/insituDaily_v3.4.RData"
 #############################################################################
 
@@ -27,22 +27,28 @@ source("func/seqSites.R"); source("func/metaTemp.R"); source("setupParams/theme.
 #############################################################################
 
 #############################################################################
-# 1. Reads SAWS site list and MHW site list
-SAWS <- read.csv("~/AHW/SAWSsiteList.csv")
-MHW <- read.csv("~/MHW/data/metaData2.csv")
+# 1. Reads SAWS cropped site list and MHW site list
+SAWS <- read.csv("data/SAWS_meta_data_cropped.csv")
+load("~/MHW/data/metaData2.Rdata"); MHW <- metaData2
 MHW <- MHW[1:21,]
 
 #############################################################################
 # 2. Extracts and saves SAWS station closest to MHW stations
 
 # Extract sites
-sites_idx1 <- as.data.frame(knnx.index(as.matrix(SAWS[,3:4]), as.matrix(MHW[,4:5]), k = 1))
+sites_idx1 <- as.data.frame(knnx.index(as.matrix(SAWS[,2:3]), as.matrix(MHW[,5:4]), k = 1))
 sites_idx2 <- SAWS[sites_idx1$V1,]
-sites_idx3 <- sites_idx2[!duplicated(sites_idx2$ID),] # Remove duplicates
+# sites_idx3 <- sites_idx2[!duplicated(sites_idx2$ID),] # Remove duplicates
+sites_idx3 <- data.frame(site = MHW$site, sites_idx2)
+
+## TO DO ##
+# Calculate distances between sites here
 
 # Save as .csv
 row.names(sites_idx3) <- NULL
-write.csv(sites_idx3, file = "~/AHW/SAWSsiteList2.csv", row.names = F)
+write.csv(sites_idx3, file = "data/SACTN_nearest_SAWS_sites", row.names = F)
+
+
 #############################################################################
 # 3. Creates map to show station locations
 
