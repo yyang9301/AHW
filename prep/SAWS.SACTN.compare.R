@@ -5,7 +5,7 @@
 # 2. Calculate distance for each site between the datasets
 # 3. Calculate days of overlap for each site between the datasets and save
 # 4. Estimate best SAWS time series to use with each SACTN time series
-# 5. Save as...
+# 5. Save
 ## DEPENDS ON:
 library(doMC); registerDoMC(cores = 4)
 library(plyr)
@@ -26,7 +26,7 @@ source("func/earthdist.R")
 #############################################################################
 
 
-# 1. Load SAWS and SACTN data and site list---------------------------------
+# 1. Load SAWS and SACTN site lists ---------------------------------
 
 # SAWS
 load("setupParams/SAWS_site_list.Rdata")
@@ -40,7 +40,7 @@ SACTN_site_list$dataset <- "SACTN"
 # 2. Calculate distance from each site between the datasets  and save ------
 
 # Combine site lists
-site_list <- rbind(SAWS_site_list[,c(1:3,23)], SACTN_site_list[,c(1,3,4,18)])
+site_list <- rbind(SAWS_site_list[,c(1:3,23)], SACTN_site_list[,c(2,5,6,19)])
 
 # Convert decimal degrees to radians
 site_list$lon <- deg2rad(site_list$lon); site_list$lat <- deg2rad(site_list$lat)
@@ -54,14 +54,14 @@ distances <- CalcDists(distances)
 distances <- melt(as.matrix(distances), varnames = c("row", "col"))
 
 # Remove SACTN comparisons, leaving only SAWS comparisons
-distances <- distances[1:352,]
+distances <- distances[1:407,]
 
 # Cast to wide format
 distances <- dcast(distances, row~col)
 colnames(distances)[1] <- "SACTN"
 
 # Separate the data frames
-distances_SACTN <- distances[12:32,]
+distances_SACTN <- distances[12:37,]
 save(distances_SACTN, file = "setupParams/distances_SACTN.Rdata")
 distances_SAWS <- distances[1:11,]
 save(distances_SAWS, file = "setupParams/distances_SAWS.Rdata")
@@ -73,13 +73,16 @@ save(distances_SAWS, file = "setupParams/distances_SAWS.Rdata")
 # 4. Estimate best SAWS time series to use with each SACTN time seies -----
 
 SACTN_SAWS_nearest <- data.frame()
-for(i in 1:length(distances_SACTN$Jonkershoek)){
+for(i in 1:nrow(distances_SACTN)){
   x <- droplevels(distances_SACTN[i,])
   y <- melt(x, id.vars = c("SACTN"))
   best <- droplevels(y[y$value == min(y$value, na.rm = T),])
   colnames(best) <- c("SACTN", "SAWS", "distance")
   SACTN_SAWS_nearest <- rbind(SACTN_SAWS_nearest, best)
 }
+
+
+# 5. Save -----------------------------------------------------------------
 
 save(SACTN_SAWS_nearest, file = "setupParams/SACTN_SAWS_nearest.Rdata")
 

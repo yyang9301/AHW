@@ -44,11 +44,11 @@ load.SAWS <- function(directory){
   # Select appropriate columns
   dat <- dat[,c(7,8,5,6)]
   # Trim leading and trailing NA values, remove duplicate and fill gaps with NAs
-  ## This should already have been performed by SAWS
+  ## NB: Thiscauses immediate crashes of R
   # dat <- dat %>%
   #   group_by(site) %>%
-  #   mutate(temp = na.trim(temp)) %>% 
-  #   nest() %>% 
+  #   mutate(temp = na.trim(temp)) %>%
+  #   nest() %>%
   #   mutate(mod = data %>% map(expand.gaps))
   # dat <- unnest(dat, mod)
   # Correct NA values
@@ -63,10 +63,13 @@ load.SAWS <- function(directory){
 # 2. Load the SAWS data -------------------------------------------------
 
 SAWS_homogenised <- load.SAWS("data/SAWS/homogenised/csv")
+SAWS_homogenised <- ddply(SAWS_homogenised, .(site), expand.gaps) 
+# No apparent gaps... but there appear to be later on in the workflow...
 SAWS_homogenised <- ddply(SAWS_homogenised, .(site), na.trim) 
 # Apparently there were still leading or trailing NA's
 ## 341506 -> 329279
+SAWS_homogenised <- SAWS_homogenised[,c(2,1,3:5)]
 
-# 3. Save for use in "prep/SAWS_metadata.R" -------------------------------
+# 3. Save for use in "prep/SAWS.sitelist.R" -------------------------------
 
 save(SAWS_homogenised, file = "data/SAWS/homogenised/SAWS_homogenised.Rdata")

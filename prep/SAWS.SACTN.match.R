@@ -11,9 +11,7 @@ library(dplyr)
 library(reshape2)
 library(lubridate)
 library(zoo)
-library(tidyr)
-library(purrr)
-library(broom)
+source("func/expand.gaps.R")
 ## USED BY:
 # "graph/SACTN.SAWS.line.R"
 ## CREATES:
@@ -29,7 +27,6 @@ load("setupParams/SAWS_site_list.Rdata")
 
 # SACTN
 load("data/SACTN/SACTN_cropped.Rdata")
-SACTN_cropped$date <- as.Date(as.character(SACTN_cropped$date))
 load("setupParams/SACTN_site_list.Rdata")
 
 # matching
@@ -38,27 +35,28 @@ load("setupParams/SACTN_SAWS_nearest.Rdata")
 
 # 2. Subset SAWS data to be same length as matching SACTN time series -----
 
-SACTN_SAWS_match <- data.frame()
+SAWS_SACTN_match <- data.frame()
 for(i in 1:length(levels(SACTN_SAWS_nearest$SACTN))){
   # Subset nearest time series
   SACTN <- droplevels(SACTN_cropped[as.character(SACTN_cropped$site) == as.character(SACTN_SAWS_nearest$SACTN)[i],])
   SAWS <- droplevels(SAWS_homogenised[as.character(SAWS_homogenised$site) == as.character(SACTN_SAWS_nearest$SAWS)[i],])
   # Correct columns to match
   # SACTN$depth <- -SACTN$depth
-  SACTN <- SACTN[,c(1,3,4)]
+  SACTN <- SACTN[,c(1,4,5)]
   SACTN$dataset <- "SACTN"
   # colnames(SACTN)[4] <- "elev"
   SAWS <- SAWS[,c(1,2,5)]
   SAWS$dataset <- "SAWS"
   SAWS <- SAWS[SAWS$date %in% SACTN$date,]
+  SACTN <- SACTN[SACTN$date %in% SAWS$date,]
   match <- rbind(SACTN, SAWS)
   match$facet <- paste(SACTN$site[1], SAWS$site[1], sep = " - ")
   match$R2 <-  round(coef(lm(SACTN$temp~SAWS$temp))[2],2)
   match$R22 <- paste0("R^2 ==", format(match$R2, digits=2))
-  SACTN_SAWS_match <- rbind(SACTN_SAWS_match, match)
+  SAWS_SACTN_match  <- rbind(SAWS_SACTN_match , match)
 }
 
 
 # 3. Save as "data/SACTN_SAWS_match.Rdata" --------------------------------
 
-save(SACTN_SAWS_match, file = "data/SACTN_SAWS_match.Rdata")
+save(SAWS_SACTN_match, file = "data/SAWS_SACTN_match.Rdata")
