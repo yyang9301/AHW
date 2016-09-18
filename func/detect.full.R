@@ -26,6 +26,7 @@ library(RmarineHeatWaves)
 # gap <- 2
 # cold_spell <- TRUE
 
+#  ------------------------------------------------------------------------
 ## This function must be given site = site, t = time and temp = temperature columns, same as make_whole
 ## It then does all of the necessary calculations dynamically for the time series given
 ## This is done so it can be run in a for loop
@@ -46,4 +47,56 @@ detect.full <- function(dat, start, end, dur, gap, cold_spell){
   results$clim$site <- site
   results$event$site <- site
   return(results)
+}
+
+
+#  ------------------------------------------------------------------------
+## This function is designed to be used with step 2 in "proc/SACTN.RMarienHeatwaves.R"
+
+# dat <- SACTN_cropped[SACTN_cropped$site == levels(SACTN_cropped$site)[5],]
+
+detect.SACTN <- function(dat){
+  site <- as.character(dat$site[1])
+  start <- dat$start[1]
+  end <- dat$end[1]
+  dat <- dat[,2:3]
+  whole <- make_whole(dat)
+  mhw <- detect(whole, climatology_start = start, climatology_end = end,
+                    min_duration = 5, max_gap = 2, cold_spells = FALSE)
+  mhw <- mhw$event
+  mhw$type <- "MHW"
+  mcs <- detect(whole, climatology_start = start, climatology_end = end,
+                min_duration = 5, max_gap = 2, cold_spells = TRUE)
+  mcs <- mcs$event
+  mcs$type <- "MCS"
+  events <- rbind(mhw, mcs)
+  events$site <- site
+  return(events)
+}
+
+
+#  ------------------------------------------------------------------------
+## This function is designed to be used with step 3 in "proc/SAWS.RMarienHeatwaves.R"
+
+dat <- SAWS_tmean[SAWS_tmean$index == levels(as.factor(SAWS_tmean$index))[89],]
+
+detect.SAWS <- function(dat){
+  site <- as.character(dat$site[1])
+  SACTN <- as.character(dat$SACTN[1])
+  index <- dat$index[1]
+  start <- dat$start[1]
+  end <- dat$end[1]
+  dat <- dat[,2:3]
+  whole <- make_whole(dat)
+  ahw <- detect(whole, climatology_start = start, climatology_end = end,
+                min_duration = 3, max_gap = 0, cold_spells = FALSE)
+  ahw <- ahw$event
+  ahw$type <- "AHW"
+  acs <- detect(whole, climatology_start = start, climatology_end = end,
+                min_duration = 3, max_gap = 0, cold_spells = TRUE)
+  acs <- acs$event
+  acs$type <- "ACS"
+  events <- rbind(ahw, acs)
+  events$site <- site
+  return(events)
 }

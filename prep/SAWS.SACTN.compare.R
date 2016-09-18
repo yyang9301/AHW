@@ -5,7 +5,8 @@
 # 2. Calculate distance for each site between the datasets
 # 3. Calculate days of overlap for each site between the datasets and save
 # 4. Estimate best SAWS time series to use with each SACTN time series
-# 5. Save
+# 5. Calculate analysis period for each SACTN time series
+# 6. "grow" the SAWS time series for use in "proc/SAWS.RMarineHeatwaves.R"
 ## DEPENDS ON:
 library(doMC); registerDoMC(cores = 4)
 library(plyr)
@@ -23,6 +24,7 @@ source("func/earthdist.R")
 # "setupParams/distances_SACTN.Rdata"
 # "setupParams/distances_SAWS.Rdata"
 # "setupParams/SACTN_SAWS_nearest.Rdata"
+# "setupParams/SACTN_analysis_period.Rdata"
 #############################################################################
 
 
@@ -31,11 +33,12 @@ source("func/earthdist.R")
 # SAWS
 load("setupParams/SAWS_site_list.Rdata")
 SAWS_site_list$dataset <- "SAWS"
+load("data/SAWS/homogenised/SAWS_homogenised.Rdata")
 
 # SACTN
 load("setupParams/SACTN_site_list.Rdata")
 SACTN_site_list$dataset <- "SACTN"
-
+load("data/SACTN/SACTN_cropped.Rdata")
 
 # 2. Calculate distance from each site between the datasets  and save ------
 
@@ -72,17 +75,55 @@ save(distances_SAWS, file = "setupParams/distances_SAWS.Rdata")
 
 # 4. Estimate best SAWS time series to use with each SACTN time seies -----
 
-SACTN_SAWS_nearest <- data.frame()
-for(i in 1:nrow(distances_SACTN)){
-  x <- droplevels(distances_SACTN[i,])
-  y <- melt(x, id.vars = c("SACTN"))
+nearest.site <- function(x){
+  y <- melt(x, id.vars = "SACTN")
   best <- droplevels(y[y$value == min(y$value, na.rm = T),])
   colnames(best) <- c("SACTN", "SAWS", "distance")
-  SACTN_SAWS_nearest <- rbind(SACTN_SAWS_nearest, best)
+  return(best)
 }
 
-
-# 5. Save -----------------------------------------------------------------
+SACTN_SAWS_nearest <- ddply(distances_SACTN, .(SACTN), nearest.site)
 
 save(SACTN_SAWS_nearest, file = "setupParams/SACTN_SAWS_nearest.Rdata")
+
+# 5. Calculate analysis period for each SACTN time series ----------------
+
+analysis.period <- function(x){
+  start <- year(x$date[1])+1
+  end <- year(x$date[nrow(x)])-1
+  dat <- data.frame(site = x$site[1], start = start, end = end)
+  return(dat)
+}
+
+SACTN_analysis_period <- ddply(SACTN_cropped, .(site), analysis.period)
+
+save(SACTN_analysis_period, file = "setupParams/SACTN_analysis_period.Rdata")
+
+
+# 6. "grow" the SAWS time series ------------------------------------------
+## This "grown" data frame is used in "proc/SACTN.RMarineHeatwaves.R"
+## This is done so that each analysis period for each SACTN time series may be used against the SAWS data
+## Must think of a way to do this without loops
+
+SAWS_grown <- data.frame()
+system.time(
+for(i in 1:length(levels(SAWS_homogenised$site))){
+  data1 <- droplevels(subset(SAWS_homogenised, site == levels(SAWS_homogenised$site)[i]))
+  for(j in 1:length(levels(SACTN_analysis_period$site))){
+    data2 <- subset(SACTN_analysis_period, site == levels(SACTN_analysis_period$site)[j])
+    dist <- distances_SACTN[distances_SACTN$SACTN == levels(data2$site)[j],]
+    dist <- round_any(as.numeric(dist[colnames(dist) == levels(data1$site)]), 0.01)
+    data3 <- data1
+    data3$SACTN <- data2$site[1]
+    data3$start <- data2$start[1]
+    data3$end <- data2$end[1]
+    data3$dist <- dist
+    SAWS_grown <- rbind(SAWS_grown, data3)
+  }
+}
+) ## 818 seconds
+
+SAWS_grown$index <- paste(SAWS_grown$site, SAWS_grown$SACTN, sep = " - ")
+
+save(SAWS_grown, file = "data/SAWS_grown.Rdata")
 

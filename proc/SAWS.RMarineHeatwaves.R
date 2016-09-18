@@ -2,8 +2,9 @@
 ###"proc/SAWS.RMarineHeatwaves.R"
 ## This script does:
 # 1. Load the SAWS data and site lists
-# 2. Calculate heatwaves/ cold-spells for the SAWS data
-# 3. Save the results
+# 2. Prep different SAWS temperature columns for use
+# 3. Calculate extreme SAWS events against alll SACTN analysis periods
+# 4. Save results for analysis in "proc/coocurrence.R"
 ## DEPENDS ON:
 library(doMC); doMC::registerDoMC(cores = 4)
 library(stringr)
@@ -12,10 +13,13 @@ library(lubridate)
 library(ggplot2)
 library(plyr)
 library(dplyr)
+library(plyr)
+library(dplyr)
 library(tidyr)
-library(broom)
-library(tibble)
 library(purrr)
+library(broom)
+library(xtable)
+library(tibble)
 library(RmarineHeatWaves) # Load this last to prevent purrr from replacing detect()
 source("func/detect.full.R")
 ## USED BY:
@@ -28,71 +32,29 @@ source("func/detect.full.R")
 # 1. Load the SAWS data and site lists ---------------
 
 # SAWS
-load("data/SAWS/homogenised/SAWS_homogenised.Rdata")
+load("data/SAWS_grown.Rdata")
+colnames(SAWS_grown)[2] <- "t"
 load("setupParams/SAWS_site_list.Rdata")
 
+# 2. Prep different SAWS temperature columns for use ----------------------
 
-# 2. Calculate heatwaves/ cold-spells for the SAWS data --------
+SAWS_tmean <- SAWS_grown[,c(1,2,5,6:10)]
+SAWS_tmax <- SAWS_grown[,c(1,2,3,6:10)]
+colnames(SAWS_tmax)[3] <-"temp" 
+SAWS_tmin <- SAWS_grown[,c(1,2,4,6:10)]
+colnames(SAWS_tmin)[3] <-"temp"
 
-levels(SAWS_homogenised$site)
 
-# A tester to ensure the function functions as intended
-test <- droplevels(SAWS_homogenised[as.character(SAWS_homogenised$site) == "Cape Agulhas",])
-test <- test[,c(1,2,5)]
-colnames(test) <- c("site", "t", "temp")
-test2 <- detect.full(dat = test, start = 1981, end = 2010, dur = 3, gap = 0, cold_spell = TRUE)
-lolli_plot(test2)
-ggsave("~/Desktop/Kirstenbosch_lolli.jpg")
+# 3. Calculate extreme SAWS events ----------------------------------------
 
-SAWS_prepped <- SAWS_homogenised[,c(1,2,5)]
-colnames(SAWS_prepped) <- c("site", "t", "temp")
-
-## Heat waves
-ahw_events_5day_2gap <- data.frame()
-for(i in 1:length(levels(SAWS_prepped$site))){
-  data1 <- droplevels(subset(SAWS_prepped, site == levels(SAWS_prepped$site)[i]))
-  data2 <- detect.full(dat = data1, start = 1981, end = 2010, dur = 5, gap = 2, cold_spell = FALSE)
-  data3 <- data.frame(data2$event)
-  ahw_events_5day_2gap <- rbind(ahw_events_5day_2gap, data3)
-}
-
-ahw_events_3day_0gap <- data.frame()
-for(i in 1:length(levels(SAWS_prepped$site))){
-  data1 <- droplevels(subset(SAWS_prepped, site == levels(SAWS_prepped$site)[i]))
-  data2 <- detect.full(dat = data1, start = 1981, end = 2010, dur = 3, gap = 0, cold_spell = FALSE)
-  data3 <- data.frame(data2$event)
-  ahw_events_3day_0gap <- rbind(ahw_events_3day_0gap, data3)
-}
-
-## Cold spells
-acs_events_5day_2gap <- data.frame()
-for(i in 1:length(levels(SAWS_prepped$site))){
-  data1 <- droplevels(subset(SAWS_prepped, site == levels(SAWS_prepped$site)[i]))
-  data2 <- detect.full(dat = data1, start = 1981, end = 2010, dur = 5, gap = 2, cold_spell = TRUE)
-  data3 <- data.frame(data2$event)
-  acs_events_5day_2gap <- rbind(acs_events_5day_2gap, data3)
-}
-
-acs_events_3day_0gap <- data.frame()
-for(i in 1:length(levels(SAWS_prepped$site))){
-  data1 <- droplevels(subset(SAWS_prepped, site == levels(SAWS_prepped$site)[i]))
-  data2 <- detect.full(dat = data1, start = 1981, end = 2010, dur = 3, gap = 0, cold_spell = TRUE)
-  data3 <- data.frame(data2$event)
-  acs_events_3day_0gap <- rbind(acs_events_3day_0gap, data3)
-}
-
-# SAWS_prepped <- SAWS_prepped %>%  ## Not working
-#   group_by(site) %>%
-#   nest() %>% 
-#   mutate(events = data %>% map(detect.full))
-# SAWS_prepped <- unnest(SAWS_prepped, events)
+system.time(SAWS_events_tmean <- ddply(SAWS_tmean, .(index), detect.SAWS, .parallel = TRUE)) ## 735 seconds
+system.time(SAWS_events_tmax <- ddply(SAWS_tmax, .(index), detect.SAWS, .parallel = TRUE)) ## 607 seconds
+system.time(SAWS_events_tmin <- ddply(SAWS_tmin, .(index), detect.SAWS, .parallel = TRUE)) ## 672 seconds
 
 
 # 3. Save the results -----------------------------------------------------
 
-# Heat waves
-save(ahw_events_5day_2gap, file = "data/SAWS/events/ahw_events_5day_2gap.Rdata")
-save(ahw_events_3day_0gap, file = "data/SAWS/events/ahw_events_3day_0gap.Rdata")
-# Cold-spells
-save(acs_events_5day_2gap, file = "data/SAWS/events/acs_events_5day_2gap.Rdata")
-save(acs_events_3day_0gap, file = "data/SAWS/events/acs_events_3day_0gap.Rdata")
+save(SAWS_events_tmean, file = "data/SAWS_events_tmean.Rdata")
+save(SAWS_events_tmax, file = "data/SAWS_events_tmax.Rdata")
+save(SAWS_events_tmin, file = "data/SAWS_events_tmin.Rdata")
+
