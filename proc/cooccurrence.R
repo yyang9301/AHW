@@ -1,7 +1,7 @@
 #############################################################################
 ###"proc/coocurrence.R"
 ## This script does:
-# 1. Load matched data and events
+# 1. Load events
 # 2. Compare rates of co-occurrence for matched sites
 # 3. Compute other metrics of comparison such as change over distance
 # 4. Create figures showing results
@@ -22,116 +22,190 @@ source("setupParams/theme.R")
 ## USED BY:
 # 
 ## CREATES:
-# "data/mhw_CO_5_2.csv"
-# "data/mhw_CO_5_2.csv"
+# 
 #############################################################################
 
 
-# 1. Load matched data and events -----------------------------------------
-
-# Matched data
-load("data/SAWS_SACTN_match.Rdata")
+# 1. Load events and iinices -----------------------------------------
 
 # SAWS events
-load("data/SAWS/events/ahw_events_5day_2gap.Rdata")
-load("data/SAWS/events/ahw_events_3day_1gap.Rdata")
-load("data/SAWS/events/acs_events_5day_2gap.Rdata")
-load("data/SAWS/events/acs_events_3day_1gap.Rdata")
+load("data/SAWS_events_tmean.Rdata")
+SAWS_events_tmean$SACTN <- sapply(strsplit(SAWS_events_tmean$index, " - "), "[[", 2)
+load("data/SAWS_events_tmax.Rdata")
+SAWS_events_tmax$SACTN <- sapply(strsplit(SAWS_events_tmax$index, " - "), "[[", 2)
+load("data/SAWS_events_tmin.Rdata")
+SAWS_events_tmin$SACTN <- sapply(strsplit(SAWS_events_tmin$index, " - "), "[[", 2)
 
 # SACTN events
-load("data/SACTN/events/mhw_events_5day_2gap.Rdata")
-load("data/SACTN/events/mcs_events_5day_2gap.Rdata")
+load("data/SACTN_events.Rdata")
 
+# Other indices
+load("setupParams/distances_SACTN.Rdata")
+
+# 2. Create index of co-occurrence variables ------------------------------
+
+## A data frame that contains all possible comparison criteria
+# Direction
+# Lag
+# Size
 
 # 2. Compare rates of co-occurrence for matched sites ---------------------
 
-## NB: Adapted from "~/MHW/proc/results2.R"
-# dat1 must be the marine data frame
-# dat2 is the atmospheric data frame
-cooccurrence <- function(dat1, dat2, lag = seq(2,14,4)){
-  dat1$site <- as.character(dat1$site)
-  dat2$site <- as.character(dat2$site)
-  dat3 <- data.frame()
-  direction <- c("b","x","a")
-  for(i in 1:length(levels(as.factor(dat1$site)))) {
-    x1 <- droplevels(subset(dat1, site == levels(as.factor(dat1$site))[i]))
-    meta1 <- SACTN_SAWS_match$facet[SACTN_SAWS_match$site == x1$site[1]][1]
-    meta1 <- sapply(strsplit(meta1, " - "), "[[", 2)
-    x2 <- droplevels(subset(dat2, site == meta1))
-    x2$yearStrt <- year(x2$date_start)
-    x1 <- x1[x1$yearStrt >= min(x2$yearStrt), ] # Subset x so that dates match up
-    x1 <- x1[x1$yearStrt <= max(x2$yearStrt), ]
-    if(length(x1$site) == 0){
-      x1 <- droplevels(subset(dat1, site == levels(as.factor(dat1$site))[i]))
-      meta1 <- SACTN_SAWS_match$facet[SACTN_SAWS_match$site == x1$site[1]][1]
-      meta1 <- sapply(strsplit(meta1, " - "), "[[", 2)
-      x2 <- droplevels(subset(dat2, site == meta1))
-      z <- data.frame(facet = paste(x1$site[1], x2$site[1], sep = " - "),
-                      lag = 14, quantile = 0, direction = "x",
-                      SACTN = nrow(x1), SAWS = nrow(x2),
-                      cooccurrence = 0, proportion = 0)
-      dat3 <- rbind(dat3, z)
-    } else {
-      x2 <- x2[x2$yearStrt >= min(x1$yearStrt), ]
-      x2 <- x2[x2$yearStrt <= max(x1$yearStrt), ]
-      if(length(x2$site) == 0){
-        x1 <- droplevels(subset(dat1, site == levels(as.factor(dat1$site))[i]))
-        meta1 <- SACTN_SAWS_match$facet[SACTN_SAWS_match$site == x1$site[1]][1]
-        meta1 <- sapply(strsplit(meta1, " - "), "[[", 2)
-        x2 <- droplevels(subset(dat2, site == meta1))
-        z <- data.frame(facet = paste(x1$site[1], x2$site[1], sep = " - "),
-                        lag = 14, quantile = 0, direction = "x",
-                        SACTN = nrow(x1), SAWS = nrow(x2),
-                        cooccurrence = 0, proportion = 0)
-        dat3 <- rbind(dat3, z)
-      } else {
-        for(j in 1:length(lag)){
-          for(k in 1:length(seq(0.0,1,0.25))){
-            for(l in 1:length(direction)){
-              x1.1 <- x1[x1$intCum >= quantile(x1$intCum, probs = seq(0.0,1,0.25)[k]),]
-              x2.1 <- x2[x2$int_cum >= quantile(x2$int_cum, probs = seq(0.0,1,0.25)[k]),]
-              y <- 0
-              #x3 <- data.frame() # For test purposes to see which events match up
-              for(m in 1:nrow(x1.1)) {
-                x1.2 <- x1.1$date[m]
-                if(direction[l] == "b"){
-                  x1.3 <- seq((x1.2 - days(lag[j])), x1.2, 1)
-                } else if(direction[l] == "x"){
-                  x1.3 <- seq((x1.2 - days(lag[j])), (x1.2 + days(lag[j])), 1)
-                } else if (direction[l] == "a") {
-                  x1.3 <- seq(x1.2, (x1.2 + days(lag[j])), 1)
-                }
-                # if(length(x2.1$site) == 0){
-                #   y <- y + 0
-                # } else {
-                x2.2 <- droplevels(subset(x2.1, date_start %in% x1.3))
-                y <- y + nrow(x2.2)
-                # }
-              }
-              z <- data.frame(facet = paste(x1$site[1], x2$site[1], sep = " - "),
-                              lag = lag[j], quantile = seq(0.0,1,0.25)[k], direction = direction[l],
-                              SACTN = nrow(x1.1), SAWS = nrow(x2.1),
-                              cooccurrence = y, proportion = y/nrow(x1.1))
-              dat3 <- rbind(dat3, z)
-            }
-          }
-        }
-      }
-    }
-  }
-  return(dat3)
+## NB: It has been decided that all of these functions must be fed either heat wave or cold spell data frames
+## Not data frames containing both types of events
+
+# x <- SACTN_events[SACTN_events$site == levels(as.factor(SACTN_events$site))[5],]
+# x <- x[x$type == "MHW",]
+# y <- SAWS_events_tmean[SAWS_events_tmean$SACTN == x$site[1],]
+# y <- y[y$type == "AHW",]
+
+# Function that takes a dataframe (x) and removes any non-overlapping years found in another dataframe (y)
+year.crop <- function(x,y){
+  x$yearStrt <- year(x$date_start)
+  y_yearStrt <- unique(year(y$date_start))
+  x <- x[x$yearStrt >= min(y_yearStrt), ]
+  x <- x[x$yearStrt <= max(y_yearStrt), ]
+  x$yearStrt <- NULL
+  return(x)
 }
 
-# MHW
-system.time(mhw_CO_5_2 <- cooccurrence(mhw_events_5day_2gap, ahw_events_5day_2gap)) # 82 seconds... would be faster without for loops...
-write.csv(mhw_CO_5_2, "data/mhw_CO_5_2.csv", row.names = F)
-system.time(mhw_CO_3_1 <- cooccurrence(mhw_events_5day_2gap, ahw_events_3day_1gap)) # 89 seconds
-write.csv(mhw_CO_3_1, "data/mhw_CO_3_1.csv", row.names = F)
-# MCS
-system.time(mcs_CO_5_2 <- cooccurrence(mcs_events_5day_2gap, acs_events_5day_2gap)) # 76 seconds
-write.csv(mcs_CO_5_2, "data/mcs_CO_5_2.csv", row.names = F)
-system.time(mcs_CO_3_1 <- cooccurrence(mcs_events_5day_2gap, acs_events_3day_1gap)) # 84 seconds
-write.csv(mcs_CO_3_1, "data/mcs_CO_3_1.csv", row.names = F)
+# test_x <- year.crop(x,y)
+# test_y <- year.crop(y, test_x)
+
+# Function that finds the size (i.e. percentile) of events (q) in a dataframe (x) and subsets accordingly
+size.crop <- function(x,q){ # 0.0 = all events, 0.5 = half of the events, 1.0 = only the largest event
+  x <- x[x$int_cum >= quantile(x$int_cum, probs = q),]
+}
+
+# test_x <- size.crop(test_x, 0.5)
+# test_y <- size.crop(test_y, 0.5)
+
+
+# Function that labels the percentile of the event (x = int_cum)
+# Designed to be run with group_by(site)
+percentile.label <- function(x){
+  quants <- quantile(x) # Can add the "probs =" argument here to change the percentiles calculated 
+  y <- rep(NA, length(x))
+  y[x >= quants[1]] <- 0
+  y[x >= quants[2]] <- 25
+  y[x >= quants[3]] <- 50
+  y[x >= quants[4]] <- 75
+  y[x >= quants[5]] <- 100
+  return(y)
+}
+
+# x <- filter(SACTN_events, site == levels(as.factor(SACTN_events$site))[1:2], type == "MHW")
+# x <- x %>% 
+#   group_by(site) %>%
+#   mutate(percentile = percentile.label(int_cum))
+
+
+# Function that finds events overlapping within a certain period of time for two dataframes (x, y)
+# It is expected that (x) is marine and (y) is atmosphere
+# It is also expected that (y) has been subsetted to match (x)
+# Meaning x$site == y$SACTN
+
+# x <- SACTN_events[SACTN_events$site == levels(as.factor(SACTN_events$site))[7],]
+# y <- SAWS_events_tmean[SAWS_events_tmean$SACTN == x$site[1],]
+# x <- x[x$type == "MHW",]
+# y <- SAWS_events_tmean[SAWS_events_tmean$SACTN == x$site[1],]
+# y <- y[y$type == "AHW",]
+# 
+# x <- year.crop(x,y)
+# y <- year.crop(y,x)
+# 
+# x <- size.crop(x, 0.5)
+# y <- size.crop(y, 0.5)
+
+event.match <- function(x,y){
+  y$ply_index <- seq(1:length(y$index))
+  y$percentile <- min(y$percentile, na.rm = T)
+  y <- ddply(y, .(ply_index), mutate,
+             b_14 = length(x$date_start[x$date_start %in% seq((date_start-14), date_start, 1)]),
+             b_10 = length(x$date_start[x$date_start %in% seq((date_start-10), date_start, 1)]),
+             b_06 = length(x$date_start[x$date_start %in% seq((date_start-6), date_start, 1)]),
+             b_02 = length(x$date_start[x$date_start %in% seq((date_start-2), date_start, 1)]),
+             a_02 = length(x$date_start[x$date_start %in% seq(date_start, (date_start+2),  1)]),
+             a_06 = length(x$date_start[x$date_start %in% seq(date_start, (date_start+6), 1)]),
+             a_10 = length(x$date_start[x$date_start %in% seq(date_start, (date_start+10), 1)]),
+             a_14 = length(x$date_start[x$date_start %in% seq(date_start, (date_start+14), 1)]))
+  y <- ddply(y, .(index), mutate,
+             b_14 = sum(b_14)/length(b_14),
+             b_10 = sum(b_10)/length(b_10),
+             b_06 = sum(b_06)/length(b_06),
+             b_02 = sum(b_02)/length(b_02),
+             a_02 = sum(a_02)/length(a_02),
+             a_06 = sum(a_06)/length(a_06),
+             a_10 = sum(a_10)/length(a_10),
+             a_14 = sum(a_14)/length(a_14))
+  results <- distinct(select(y, index, SACTN, site, percentile, b_14, b_10, b_06, b_02, a_02, a_06, a_10, a_14))
+  results[5:12] <- apply(results[5:12], 1, round_any, 0.01)
+  return(results)
+}
+
+
+
+# Function that extracts the correct SAWS sites based on the SACTN site
+# It then runs all of the functions created above, calculates and returns the results
+# NB: This function draws on an "ahw" variable from outside of this function
+# This is generated manually so as to allow a choice of tmean, tmin or tmax
+
+# mhw <- filter(SACTN_events, type == "MHW")
+# ahw <- filter(SAWS_events_tmean, type == "AHW")
+# 
+# x <- filter(SACTN_events, site == levels(as.factor(SACTN_events$site))[3], type == "MHW")
+
+cooccurrence <- function(x, y){
+  # 1) Subset SAWS data to match SACTN site
+  y <- filter(y, SACTN == x$site[1]) # NB: Must manually set "ahw" or "acs" outside of this function
+  # 2) Crop the years to have the same time span
+  x <- year.crop(x,y)
+  y <- year.crop(y,x)
+  # 3) Add percentile labels
+  x$percentile <- percentile.label(x$int_cum)
+  y <- y %>% 
+    group_by(index) %>%
+    mutate(percentile = percentile.label(int_cum))
+  # 4) Match events based on percentile labels
+  event_00 <- event.match(x,y)
+  event_25 <- event.match(filter(x, percentile >= 25), filter(y, percentile >= 25))
+  event_50 <- event.match(filter(x, percentile >= 50), filter(y, percentile >= 50))
+  event_75 <- event.match(filter(x, percentile >= 75), filter(y, percentile >= 75))
+  event_100 <- event.match(filter(x, percentile >= 100), filter(y, percentile >= 100))
+  events <- rbind(event_00, event_25, event_50, event_75, event_100)
+  return(events)
+}
+
+# mhw <- filter(SACTN_events, type == "MHW")
+# x <- filter(mhw, site == "Bordjies Deep")
+# test <- cooccurrence(x)
+
+# 1) Subset data
+mhw <- filter(SACTN_events, type == "MHW")
+mcs <- filter(SACTN_events, type == "MCS")
+ahw_tmean <- filter(SAWS_events_tmean, type == "AHW")
+acs_tmean <- filter(SAWS_events_tmean, type == "ACS")
+ahw_tmax <- filter(SAWS_events_tmax, type == "AHW")
+acs_tmax <- filter(SAWS_events_tmax, type == "ACS")
+ahw_tmin <- filter(SAWS_events_tmin, type == "AHW")
+acs_tmin <- filter(SAWS_events_tmin, type == "ACS")
+
+# 2) Run it all and save
+
+# Heat waves
+system.time(hw_tmean_CO <- ddply(mhw, .(site), cooccurrence, ahw_tmean, .parallel = TRUE)) ## ~80 seconds
+save(hw_tmean_CO, file = "data/hw_tmean_CO.Rdata")
+system.time(hw_tmax_CO <- ddply(mhw, .(site), cooccurrence, ahw_tmax, .parallel = TRUE))
+save(hw_tmax_CO, file = "data/hw_tmax_CO.Rdata")
+system.time(hw_tmin_CO <- ddply(mhw, .(site), cooccurrence, ahw_tmin, .parallel = TRUE))
+save(hw_tmin_CO, file = "data/hw_tmin_CO.Rdata")
+# Cold spells
+system.time(cs_tmean_CO <- ddply(mcs, .(site), cooccurrence, acs_tmean, .parallel = TRUE)) ## ~154 seconds
+save(cs_tmean_CO, file = "data/cs_tmean_CO.Rdata")
+system.time(cs_tmax_CO <- ddply(mcs, .(site), cooccurrence, acs_tmax, .parallel = TRUE))
+save(cs_tmax_CO, file = "data/cs_tmax_CO.Rdata")
+system.time(cs_tmin_CO <- ddply(mcs, .(site), cooccurrence, acs_tmin, .parallel = TRUE))
+save(cs_tmin_CO, file = "data/cs_tmin_CO.Rdata")
 
 
 # 3. Compute other metrics of comparison such as change over distance --------
@@ -154,7 +228,7 @@ mcs_CO_3_1$index <- paste(mcs_CO_3_1$lag, mcs_CO_3_1$direction, sep = "_")
 
 cooccurrenceQuantFigure <- function(dat){
   p2 <- ggplot(data = dat, aes(x = quantile, y = proportion)) + bw_update +
-    geom_line(aes(colour = as.factor(index))) + 
+    geom_line(aes(colour = as.factor(index))) +
     geom_point(aes(colour = as.factor(index))) +
     facet_grid(facet ~ direction) +
     ylab("proportion") + xlab("percentile (%)") #+

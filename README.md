@@ -22,3 +22,7 @@ The scripts and raw data used to compare atmospheric and marine heat waves and c
 * All for loops removed from extreme event calculation work flow
 * A for loop is still used to "grow" the SAWS data, allowing for it to be compared against each SACTN time series
 * All possible extreme events combinations etc. have been calculated as per current agreement on methodology
+
+## 2016/09/19
+* All for loops removed from the co-occurrence calculations
+* Co-occurrence calculated for all combinations of SACTN and SAWS sites inlcuding tmean, tmin and tmax
