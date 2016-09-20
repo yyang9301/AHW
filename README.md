@@ -26,3 +26,6 @@ The scripts and raw data used to compare atmospheric and marine heat waves and c
 ## 2016/09/19
 * All for loops removed from the co-occurrence calculations
 * Co-occurrence calculated for all combinations of SACTN and SAWS sites inlcuding tmean, tmin and tmax
+
+## 2016/09/20
+* Corrected error in calculation of co-occurrence proportions

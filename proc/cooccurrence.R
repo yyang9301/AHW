@@ -1,32 +1,34 @@
 #############################################################################
 ###"proc/coocurrence.R"
 ## This script does:
-# 1. Load events
+# 1. Load events and indices
 # 2. Compare rates of co-occurrence for matched sites
-# 3. Compute other metrics of comparison such as change over distance
-# 4. Create figures showing results
-# 5. Save
+# 3. Add distance and coast column to results and save
 ## DEPENDS ON:
 library(doMC); doMC::registerDoMC(cores = 4)
 library(stringr)
 library(zoo)
 library(lubridate)
-library(ggplot2)
+library(reshape2)
 library(plyr)
 library(dplyr)
 library(tidyr)
 library(broom)
 library(tibble)
 library(purrr)
-source("setupParams/theme.R")
 ## USED BY:
-# 
+# "proc/results.R"
 ## CREATES:
-# 
+# "data/hw_tmean_CO.Rdata"
+# "data/hw_tmax_CO.Rdata"
+# "data/hw_tmin_CO.Rdata"
+# "data/cs_tmean_CO.Rdata"
+# "data/cs_tmax_CO.Rdata"
+# "data/cs_tmin_CO.Rdata"
 #############################################################################
 
 
-# 1. Load events and iinices -----------------------------------------
+# 1. Load events and indices -----------------------------------------
 
 # SAWS events
 load("data/SAWS_events_tmean.Rdata")
@@ -41,13 +43,14 @@ load("data/SACTN_events.Rdata")
 
 # Other indices
 load("setupParams/distances_SACTN.Rdata")
+load("setupParams/SACTN_site_list.Rdata")
+load("setupParams/SAWS_site_list.Rdata")
 
-# 2. Create index of co-occurrence variables ------------------------------
-
-## A data frame that contains all possible comparison criteria
-# Direction
-# Lag
-# Size
+# Manually add coast values to SAWS site list
+# NB: THese have been decided based on location and are questionable
+# Sites around Cape Point could be either coast but are labeled here as "wc" for balance
+SAWS_site_list$coast <- c("wc","wc","wc","sc","sc","sc","sc","sc","ec","ec","ec")
+SACTN_site_list$coast <- as.character(SACTN_site_list$coast)
 
 # 2. Compare rates of co-occurrence for matched sites ---------------------
 
@@ -84,9 +87,9 @@ size.crop <- function(x,q){ # 0.0 = all events, 0.5 = half of the events, 1.0 = 
 # Function that labels the percentile of the event (x = int_cum)
 # Designed to be run with group_by(site)
 percentile.label <- function(x){
-  quants <- quantile(x) # Can add the "probs =" argument here to change the percentiles calculated 
+  quants <- quantile(x) # Can add the "probs =" argument here to change the percentiles calculated but must change the other labels accordingly
   y <- rep(NA, length(x))
-  y[x >= quants[1]] <- 0
+  y[x >= quants[1]] <- 0 # Change these manual labels if you change the quantiles to be calculated
   y[x >= quants[2]] <- 25
   y[x >= quants[3]] <- 50
   y[x >= quants[4]] <- 75
@@ -118,28 +121,28 @@ percentile.label <- function(x){
 # y <- size.crop(y, 0.5)
 
 event.match <- function(x,y){
-  y$ply_index <- seq(1:length(y$index))
+  y <- ddply(y, .(index), mutate, n = length(index)) # The total number of events being compared
+  y$ply_index <- seq(1:length(y$index)) # Allows ddply to analyse each individual SAWS event against the SACTN dataframe
   y$percentile <- min(y$percentile, na.rm = T)
   y <- ddply(y, .(ply_index), mutate,
-             b_14 = length(x$date_start[x$date_start %in% seq((date_start-14), date_start, 1)]),
+             b_14 = length(x$date_start[x$date_start %in% seq((date_start-14), date_start, 1)]), # Does the SACTN event occur within 14 days BEFORE the SAWS event?
              b_10 = length(x$date_start[x$date_start %in% seq((date_start-10), date_start, 1)]),
              b_06 = length(x$date_start[x$date_start %in% seq((date_start-6), date_start, 1)]),
              b_02 = length(x$date_start[x$date_start %in% seq((date_start-2), date_start, 1)]),
              a_02 = length(x$date_start[x$date_start %in% seq(date_start, (date_start+2),  1)]),
              a_06 = length(x$date_start[x$date_start %in% seq(date_start, (date_start+6), 1)]),
              a_10 = length(x$date_start[x$date_start %in% seq(date_start, (date_start+10), 1)]),
-             a_14 = length(x$date_start[x$date_start %in% seq(date_start, (date_start+14), 1)]))
-  y <- ddply(y, .(index), mutate,
-             b_14 = sum(b_14)/length(b_14),
-             b_10 = sum(b_10)/length(b_10),
-             b_06 = sum(b_06)/length(b_06),
-             b_02 = sum(b_02)/length(b_02),
-             a_02 = sum(a_02)/length(a_02),
-             a_06 = sum(a_06)/length(a_06),
-             a_10 = sum(a_10)/length(a_10),
-             a_14 = sum(a_14)/length(a_14))
-  results <- distinct(select(y, index, SACTN, site, percentile, b_14, b_10, b_06, b_02, a_02, a_06, a_10, a_14))
-  results[5:12] <- apply(results[5:12], 1, round_any, 0.01)
+             a_14 = length(x$date_start[x$date_start %in% seq(date_start, (date_start+14), 1)])) # Does the SACTN event occur within 14 days AFTER the SAWS event?
+  results <- ddply(y, .(index, site, SACTN, n, percentile), summarise,
+             b_14 = sum(b_14),
+             b_10 = sum(b_10),
+             b_06 = sum(b_06),
+             b_02 = sum(b_02),
+             a_02 = sum(a_02),
+             a_06 = sum(a_06),
+             a_10 = sum(a_10),
+             a_14 = sum(a_14))
+  colnames(results)[2] <- "SAWS"
   return(results)
 }
 
@@ -153,7 +156,8 @@ event.match <- function(x,y){
 # mhw <- filter(SACTN_events, type == "MHW")
 # ahw <- filter(SAWS_events_tmean, type == "AHW")
 # 
-# x <- filter(SACTN_events, site == levels(as.factor(SACTN_events$site))[3], type == "MHW")
+x <- filter(SACTN_events, site == levels(as.factor(SACTN_events$site))[1], type == "MHW")
+y <- filter(SAWS_events_tmean, type == "AHW")
 
 cooccurrence <- function(x, y){
   # 1) Subset SAWS data to match SACTN site
@@ -193,59 +197,59 @@ acs_tmin <- filter(SAWS_events_tmin, type == "ACS")
 # 2) Run it all and save
 
 # Heat waves
-system.time(hw_tmean_CO <- ddply(mhw, .(site), cooccurrence, ahw_tmean, .parallel = TRUE)) ## ~80 seconds
-save(hw_tmean_CO, file = "data/hw_tmean_CO.Rdata")
+system.time(hw_tmean_CO <- ddply(mhw, .(site), cooccurrence, ahw_tmean, .parallel = TRUE)) ## ~130 seconds
 system.time(hw_tmax_CO <- ddply(mhw, .(site), cooccurrence, ahw_tmax, .parallel = TRUE))
-save(hw_tmax_CO, file = "data/hw_tmax_CO.Rdata")
 system.time(hw_tmin_CO <- ddply(mhw, .(site), cooccurrence, ahw_tmin, .parallel = TRUE))
-save(hw_tmin_CO, file = "data/hw_tmin_CO.Rdata")
 # Cold spells
 system.time(cs_tmean_CO <- ddply(mcs, .(site), cooccurrence, acs_tmean, .parallel = TRUE)) ## ~154 seconds
-save(cs_tmean_CO, file = "data/cs_tmean_CO.Rdata")
 system.time(cs_tmax_CO <- ddply(mcs, .(site), cooccurrence, acs_tmax, .parallel = TRUE))
-save(cs_tmax_CO, file = "data/cs_tmax_CO.Rdata")
 system.time(cs_tmin_CO <- ddply(mcs, .(site), cooccurrence, acs_tmin, .parallel = TRUE))
-save(cs_tmin_CO, file = "data/cs_tmin_CO.Rdata")
 
 
-# 3. Compute other metrics of comparison such as change over distance --------
+# 3. Add distance and coast column to results and save --------
 
+# Melt and prep distance matrix
+distances_SACTN_melt <- melt(distances_SACTN)
+distances_SACTN_melt$index <- paste(distances_SACTN_melt$variable, distances_SACTN_melt$SACTN, sep = " - ")
+distances_SACTN_melt$value <- round_any(distances_SACTN_melt$value, 0.01)
 
-# 4. Create figures showing results ------------------------------------------
-
-#Prepares data for plotting
-
-# mhwCO$site <- factor(mhwCO$site, levels = siteOrder)
-mhw_CO_5_2$direction <- factor(mhw_CO_5_2$direction, levels = c("b", "x", "a"))
-mhw_CO_5_2$index <- paste(mhw_CO_5_2$lag, mhw_CO_5_2$direction, sep = "_")
-mhw_CO_3_1$direction <- factor(mhw_CO_3_1$direction, levels = c("b", "x", "a"))
-mhw_CO_3_1$index <- paste(mhw_CO_3_1$lag, mhw_CO_3_1$direction, sep = "_")
-# mcsCO$site <- factor(mcsCO$site, levels = siteOrder)
-mcs_CO_5_2$direction <- factor(mcs_CO_5_2$direction, levels = c("b", "x", "a"))
-mcs_CO_5_2$index <- paste(mcs_CO_5_2$lag, mcs_CO_5_2$direction, sep = "_")
-mcs_CO_3_1$direction <- factor(mcs_CO_3_1$direction, levels = c("b", "x", "a"))
-mcs_CO_3_1$index <- paste(mcs_CO_3_1$lag, mcs_CO_3_1$direction, sep = "_")
-
-cooccurrenceQuantFigure <- function(dat){
-  p2 <- ggplot(data = dat, aes(x = quantile, y = proportion)) + bw_update +
-    geom_line(aes(colour = as.factor(index))) +
-    geom_point(aes(colour = as.factor(index))) +
-    facet_grid(facet ~ direction) +
-    ylab("proportion") + xlab("percentile (%)") #+
-  #theme(axis.text.x = element_text(angle = 90, vjust = 0.5))
-  p2
+# Function to add distance and coast columns
+x <- hw_tmean_CO
+add.indices <- function(x){ # Ignore warnings... Upvote hypno toad
+  x$site <- NULL # Remove the artifact left over from ddply
+  x <- x %>% 
+    group_by(index) %>% 
+    mutate(dist = distances_SACTN_melt$value[distances_SACTN_melt$index == index][1])
+  x <- x %>% 
+    group_by(SAWS) %>%
+    mutate(SAWS_coast = SAWS_site_list$coast[SAWS_site_list$site == SAWS[1]])
+  x <- x %>% 
+    group_by(SACTN) %>%
+    mutate(SACTN_coast = SACTN_site_list$coast[SACTN_site_list$site == SACTN[1]])
+  x <- data.frame(x)
+  x$coast_index <- paste(x$SAWS_coast, x$SACTN_coast, sep = " - ")
+  return(x)
 }
-
-mhw_CO_5_2_fig <- cooccurrenceQuantFigure(mhw_CO_5_2)
-ggsave("graph/mhw_CO_5_2.pdf", width = 16, height = 30)
-mhw_CO_3_1_fig <- cooccurrenceQuantFigure(mhw_CO_3_1)
-ggsave("graph/mhw_CO_3_1.pdf", width = 16, height = 30)
-mcs_CO_5_2_fig <- cooccurrenceQuantFigure(mcs_CO_5_2)
-ggsave("graph/mcs_CO_5_2.pdf", width = 16, height = 30)
-mcs_CO_3_1_fig <- cooccurrenceQuantFigure(mcs_CO_3_1)
-ggsave("graph/mcs_CO_3_1.pdf", width = 16, height = 30)
+test <- add.indices(hw_tmean_CO)
 
 
-# 5. Save -----------------------------------------------------------------
+# Heat waves
+hw_tmean_CO <- add.indices(hw_tmean_CO)
+save(hw_tmean_CO, file = "data/hw_tmean_CO.Rdata")
+##
+hw_tmax_CO <- add.indices(hw_tmax_CO)
+save(hw_tmax_CO, file = "data/hw_tmax_CO.Rdata")
+##
+hw_tmin_CO <- add.indices(hw_tmin_CO)
+save(hw_tmin_CO, file = "data/hw_tmin_CO.Rdata")
 
+# Cold-spells
+cs_tmean_CO <- add.indices(cs_tmean_CO)
+save(cs_tmean_CO, file = "data/cs_tmean_CO.Rdata")
+##
+cs_tmax_CO <- add.indices(cs_tmax_CO)
+save(cs_tmax_CO, file = "data/cs_tmax_CO.Rdata")
+##
+cs_tmin_CO <- add.indices(cs_tmin_CO)
+save(cs_tmin_CO, file = "data/cs_tmin_CO.Rdata")
 
