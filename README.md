@@ -29,3 +29,4 @@ The scripts and raw data used to compare atmospheric and marine heat waves and c
 
 ## 2016/09/20
 * Corrected error in calculation of co-occurrence proportions
+* Produced a medley of initial figures to visualise first round of results
