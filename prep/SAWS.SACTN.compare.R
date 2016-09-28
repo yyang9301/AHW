@@ -105,25 +105,28 @@ save(SACTN_analysis_period, file = "setupParams/SACTN_analysis_period.Rdata")
 ## This is done so that each analysis period for each SACTN time series may be used against the SAWS data
 ## Must think of a way to do this without loops
 
-SAWS_grown <- data.frame()
-system.time(
-for(i in 1:length(levels(SAWS_homogenised$site))){
-  data1 <- droplevels(subset(SAWS_homogenised, site == levels(SAWS_homogenised$site)[i]))
-  for(j in 1:length(levels(SACTN_analysis_period$site))){
-    data2 <- subset(SACTN_analysis_period, site == levels(SACTN_analysis_period$site)[j])
-    dist <- distances_SACTN[distances_SACTN$SACTN == levels(data2$site)[j],]
-    dist <- round_any(as.numeric(dist[colnames(dist) == levels(data1$site)]), 0.01)
-    data3 <- data1
-    data3$SACTN <- data2$site[1]
-    data3$start <- data2$start[1]
-    data3$end <- data2$end[1]
-    data3$dist <- dist
-    SAWS_grown <- rbind(SAWS_grown, data3)
-  }
-}
-) ## 818 seconds
+## 2016/09/28
+## This step is no longer necessary as it is done without loops in "proc/SACTN.RMarineHeatwaves.R"
 
-SAWS_grown$index <- paste(SAWS_grown$site, SAWS_grown$SACTN, sep = " - ")
-
-save(SAWS_grown, file = "data/SAWS_grown.Rdata")
+# SAWS_grown <- data.frame()
+# system.time(
+# for(i in 1:length(levels(SAWS_homogenised$site))){
+#   data1 <- droplevels(subset(SAWS_homogenised, site == levels(SAWS_homogenised$site)[i]))
+#   for(j in 1:length(levels(SACTN_analysis_period$site))){
+#     data2 <- subset(SACTN_analysis_period, site == levels(SACTN_analysis_period$site)[j])
+#     dist <- distances_SACTN[distances_SACTN$SACTN == levels(data2$site)[j],]
+#     dist <- round_any(as.numeric(dist[colnames(dist) == levels(data1$site)]), 0.01)
+#     data3 <- data1
+#     data3$SACTN <- data2$site[1]
+#     data3$start <- data2$start[1]
+#     data3$end <- data2$end[1]
+#     data3$dist <- dist
+#     SAWS_grown <- rbind(SAWS_grown, data3)
+#   }
+# }
+# ) ## 818 seconds
+# 
+# SAWS_grown$index <- paste(SAWS_grown$site, SAWS_grown$SACTN, sep = " - ")
+# 
+# save(SAWS_grown, file = "data/SAWS_grown.Rdata")
 

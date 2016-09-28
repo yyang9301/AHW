@@ -4,6 +4,7 @@
 # 1. Load events and indices
 # 2. Compare rates of co-occurrence for matched sites
 # 3. Add distance and coast column to results and save
+# 4. Co-occurrence ofatmospheric events against one another
 ## DEPENDS ON:
 library(doMC); doMC::registerDoMC(cores = 4)
 library(stringr)
@@ -252,4 +253,9 @@ save(cs_tmax_CO, file = "data/cs_tmax_CO.Rdata")
 ##
 cs_tmin_CO <- add.indices(cs_tmin_CO)
 save(cs_tmin_CO, file = "data/cs_tmin_CO.Rdata")
+
+
+
+# 4. Co-occurrence of atmospheric events against one another ---------------
+
 

@@ -76,16 +76,18 @@ detect.SACTN <- function(dat){
 
 
 #  ------------------------------------------------------------------------
-## This function is designed to be used with step 3 in "proc/SAWS.RMarienHeatwaves.R"
+## These two functions are designed to be used with step 3 in "proc/SAWS.RMarienHeatwaves.R"
 
-dat <- SAWS_tmean[SAWS_tmean$index == levels(as.factor(SAWS_tmean$index))[89],]
+# dat <- SAWS_tmean[SAWS_tmean$site == levels(SAWS_tmean$site)[3],] ## For testing purposes
+# df <- SACTN_analysis_period[3,]
 
-detect.SAWS <- function(dat){
+# This function calculates the events for a single SAWS site using the the analysis period of a single SACTN site
+detect.SAWS.single <- function(df, dat){
   site <- as.character(dat$site[1])
-  SACTN <- as.character(dat$SACTN[1])
-  index <- dat$index[1]
-  start <- dat$start[1]
-  end <- dat$end[1]
+  SACTN <- as.character(df$site[1])
+  index <- paste(site, SACTN, sep = " - ")
+  start <- df$start[1]
+  end <- df$end[1]
   dat <- dat[,2:3]
   whole <- make_whole(dat)
   ahw <- detect(whole, climatology_start = start, climatology_end = end,
@@ -98,5 +100,14 @@ detect.SAWS <- function(dat){
   acs$type <- "ACS"
   events <- rbind(ahw, acs)
   events$site <- site
+  events <- data.frame(index, events)
   return(events)
 }
+
+# This function combines the output of the previous function
+load("setupParams/SACTN_analysis_period.Rdata")
+detect.SAWS <- function(dat){
+  system.time(results <- ddply(SACTN_analysis_period, .(site), detect.SAWS.single, dat = dat, .parallel = TRUE)) ## ~60 seconds
+  return(results)
+}
+

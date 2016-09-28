@@ -32,24 +32,35 @@ source("func/detect.full.R")
 # 1. Load the SAWS data and site lists ---------------
 
 # SAWS
-load("data/SAWS_grown.Rdata")
-colnames(SAWS_grown)[2] <- "t"
+load("data/SAWS/homogenised/SAWS_homogenised.Rdata")
+colnames(SAWS_homogenised)[2] <- "t"
 load("setupParams/SAWS_site_list.Rdata")
 
 # 2. Prep different SAWS temperature columns for use ----------------------
 
-SAWS_tmean <- SAWS_grown[,c(1,2,5,6:10)]
-SAWS_tmax <- SAWS_grown[,c(1,2,3,6:10)]
+SAWS_tmean <- SAWS_homogenised[,c(1,2,5)]
+SAWS_tmax <- SAWS_homogenised[,c(1,2,3)]
 colnames(SAWS_tmax)[3] <-"temp" 
-SAWS_tmin <- SAWS_grown[,c(1,2,4,6:10)]
+SAWS_tmin <- SAWS_homogenised[,c(1,2,4)]
 colnames(SAWS_tmin)[3] <-"temp"
 
 
 # 3. Calculate extreme SAWS events ----------------------------------------
 
-system.time(SAWS_events_tmean <- ddply(SAWS_tmean, .(index), detect.SAWS, .parallel = TRUE)) ## 735 seconds
-system.time(SAWS_events_tmax <- ddply(SAWS_tmax, .(index), detect.SAWS, .parallel = TRUE)) ## 607 seconds
-system.time(SAWS_events_tmin <- ddply(SAWS_tmin, .(index), detect.SAWS, .parallel = TRUE)) ## 672 seconds
+# test.sites <- levels(SAWS_tmean$site)[1] # No issues
+# test.sites <- levels(SAWS_tmean$site)[1:5] # No issues
+# test.sites <- levels(SAWS_tmean$site)[6:11] # No issues
+# test.sites <- levels(SAWS_tmean$site)[1:7] # No issues
+# test.sites <- levels(SAWS_tmean$site)[1:9] # No issues
+# test.sites <- levels(SAWS_tmean$site) # No issues. Not sure what caused the error with the full data.frame. Perhaps a RAM issue
+# 
+# test <- droplevels(subset(SAWS_tmean, site %in% test.sites))
+# 
+# system.time(events <- ddply(test, .(site), detect.SAWS, .parallel = TRUE)) ## 687 seconds
+
+system.time(SAWS_events_tmean <- ddply(SAWS_tmean, .(site), detect.SAWS, .parallel = TRUE)) ## 533 seconds
+system.time(SAWS_events_tmax <- ddply(SAWS_tmax, .(site), detect.SAWS, .parallel = TRUE)) ## 558 seconds
+system.time(SAWS_events_tmin <- ddply(SAWS_tmin, .(site), detect.SAWS, .parallel = TRUE)) ## 672 seconds
 
 
 # 3. Save the results -----------------------------------------------------
