@@ -23,9 +23,14 @@ library(tibble)
 library(RmarineHeatWaves) # Load this last to prevent purrr from replacing detect()
 source("func/detect.full.R")
 ## USED BY:
-# Nothing
+# "proc/cooccurrence.R"
 ## CREATES:
-# 
+# "data/SAWS_SAWS_events_tmean.Rdata"
+# "data/SAWS_SAWS_events_tmax.Rdata"
+# "data/SAWS_SAWS_events_tmin.Rdata"
+# "data/SAWS_SACTN_events_tmean.Rdata"
+# "data/SAWS_SACTN_events_tmax.Rdata"
+# "data/SAWS_SACTN_events_tmin.Rdata"
 #############################################################################
 
 

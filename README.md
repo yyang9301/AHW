@@ -25,7 +25,7 @@ The scripts and raw data used to compare atmospheric and marine heat waves and c
 
 ## 2016/09/19
 * All for loops removed from the co-occurrence calculations
-* Co-occurrence calculated for all combinations of SACTN and SAWS sites inlcuding tmean, tmin and tmax
+* Co-occurrence calculated for all combinations of SACTN and SAWS sites including tmean, tmin and tmax
 
 ## 2016/09/20
 * Corrected error in calculation of co-occurrence proportions
@@ -37,4 +37,6 @@ The scripts and raw data used to compare atmospheric and marine heat waves and c
 
 ## 2016/09/29
 * Calculated extreme events for SAWS time series based on a static analysis period (1981 - 2010)
-* Changed file naming convention for extreme event results to differentiate the results calculated with the static periodd
+* Changed file naming convention for extreme event results to differentiate the results calculated with the static period
+* Created function that calculates distance AND bearing between any two sites
+* Calculated distance and bearing between all possible sites within and among datasets

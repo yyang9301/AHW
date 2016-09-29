@@ -2,13 +2,14 @@
 ###"prep/SAWS.SACTN.compare.R"
 ## This script does:
 # 1. Load SAWS and SACTN site lists
-# 2. Calculate distance for each site between the datasets
+# 2. Calculate distance and bearing for each site between the datasets
 # 3. Calculate days of overlap for each site between the datasets and save
 # 4. Estimate best SAWS time series to use with each SACTN time series
 # 5. Calculate analysis period for each SACTN time series
 # 6. "grow" the SAWS time series for use in "proc/SAWS.RMarineHeatwaves.R"
 ## DEPENDS ON:
 library(doMC); registerDoMC(cores = 4)
+library(fossil)
 library(plyr)
 library(dplyr)
 library(reshape2)
@@ -21,6 +22,7 @@ source("func/earthdist.R")
 ## USED BY:
 # "setupParams/SAWS.SACTN.match.R"
 ## CREATES:
+# "setupParams/distances_bearings.Rdata"
 # "setupParams/distances_SACTN.Rdata"
 # "setupParams/distances_SAWS.Rdata"
 # "setupParams/SACTN_SAWS_nearest.Rdata"
@@ -40,10 +42,18 @@ load("setupParams/SACTN_site_list.Rdata")
 SACTN_site_list$dataset <- "SACTN"
 load("data/SACTN/SACTN_cropped.Rdata")
 
-# 2. Calculate distance from each site between the datasets and save ------
+# 2. Calculate distance and bearing for each site between the datasets ------
 
 # Combine site lists
 site_list <- rbind(SAWS_site_list[,c(1:3,23)], SACTN_site_list[,c(2,5,6,19)])
+
+## Calculate distances and bearings in long format
+
+distances_bearings <- ddply(site_list, .(site), dist.bear.many, df = site_list, .parallel = TRUE)
+distances_bearings$site <- NULL
+save(distances_bearings, file = "setupParams/distances_bearings.Rdata")
+
+## Calculate distances in wide format
 
 # Convert decimal degrees to radians
 site_list$lon <- deg2rad(site_list$lon); site_list$lat <- deg2rad(site_list$lat)

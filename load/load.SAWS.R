@@ -3,7 +3,7 @@
 ## This script does:
 # 1. Create a function for loading the homogenised SAWS data
 # 2. Load the SAWS data
-# 3. Save for use in "prep/SAWS.sitelist.R"
+# 3. Save for use in "prep/SAWS.meta.R"
 ## DEPENDS ON:
 library(doMC); registerDoMC(cores = 4)
 library(plyr)
