@@ -40,7 +40,7 @@ load("setupParams/SACTN_site_list.Rdata")
 SACTN_site_list$dataset <- "SACTN"
 load("data/SACTN/SACTN_cropped.Rdata")
 
-# 2. Calculate distance from each site between the datasets  and save ------
+# 2. Calculate distance from each site between the datasets and save ------
 
 # Combine site lists
 site_list <- rbind(SAWS_site_list[,c(1:3,23)], SACTN_site_list[,c(2,5,6,19)])

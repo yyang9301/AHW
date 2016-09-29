@@ -58,14 +58,25 @@ colnames(SAWS_tmin)[3] <-"temp"
 # 
 # system.time(events <- ddply(test, .(site), detect.SAWS, .parallel = TRUE)) ## 687 seconds
 
-system.time(SAWS_events_tmean <- ddply(SAWS_tmean, .(site), detect.SAWS, .parallel = TRUE)) ## 533 seconds
-system.time(SAWS_events_tmax <- ddply(SAWS_tmax, .(site), detect.SAWS, .parallel = TRUE)) ## 558 seconds
-system.time(SAWS_events_tmin <- ddply(SAWS_tmin, .(site), detect.SAWS, .parallel = TRUE)) ## 672 seconds
+# Using the SAWS analysis period of 1981 - 2010 for each time series
+system.time(SAWS_SAWS_events_tmean <- ddply(SAWS_tmean, .(site), detect.SAWS, clim = "SAWS", .parallel = TRUE)) ## 18 seconds
+system.time(SAWS_SAWS_events_tmax <- ddply(SAWS_tmax, .(site), detect.SAWS, clim = "SAWS", .parallel = TRUE)) ## 17 seconds
+system.time(SAWS_SAWS_events_tmin <- ddply(SAWS_tmin, .(site), detect.SAWS, clim = "SAWS", .parallel = TRUE)) ## 17 seconds
+
+system.time(SAWS_SACTN_events_tmean <- ddply(SAWS_tmean, .(site), detect.SAWS, clim = "SACTN", .parallel = TRUE)) ## 533 seconds
+system.time(SAWS_SACTN_events_tmax <- ddply(SAWS_tmax, .(site), detect.SAWS, clim = "SACTN", .parallel = TRUE)) ## 558 seconds
+system.time(SAWS_SACTN_events_tmin <- ddply(SAWS_tmin, .(site), detect.SAWS, clim = "SACTN", .parallel = TRUE)) ## 672 seconds
 
 
 # 3. Save the results -----------------------------------------------------
 
-save(SAWS_events_tmean, file = "data/SAWS_events_tmean.Rdata")
-save(SAWS_events_tmax, file = "data/SAWS_events_tmax.Rdata")
-save(SAWS_events_tmin, file = "data/SAWS_events_tmin.Rdata")
+# SAWS - SAWS
+save(SAWS_SAWS_events_tmean, file = "data/SAWS_SAWS_events_tmean.Rdata")
+save(SAWS_SAWS_events_tmax, file = "data/SAWS_SAWS_events_tmax.Rdata")
+save(SAWS_SAWS_events_tmin, file = "data/SAWS_SAWS_events_tmin.Rdata")
+
+# SAWS - SACTN
+save(SAWS_SACTN_events_tmean, file = "data/SAWS_SACTN_events_tmean.Rdata")
+save(SAWS_SACTN_events_tmax, file = "data/SAWS_SACTN_events_tmax.Rdata")
+save(SAWS_SACTN_events_tmin, file = "data/SAWS_SACTN_events_tmin.Rdata")
 

@@ -82,7 +82,7 @@ detect.SACTN <- function(dat){
 # df <- SACTN_analysis_period[3,]
 
 # This function calculates the events for a single SAWS site using the the analysis period of a single SACTN site
-detect.SAWS.single <- function(df, dat){
+detect.SAWS.SACTN <- function(df, dat){
   site <- as.character(dat$site[1])
   SACTN <- as.character(df$site[1])
   index <- paste(site, SACTN, sep = " - ")
@@ -104,10 +104,33 @@ detect.SAWS.single <- function(df, dat){
   return(events)
 }
 
-# This function combines the output of the previous function
+# This function calculates the extreme events for a time series
+# Choose to either use the "SAWS" analysis period or the "SACTN" analysis period
+# "SAWS" = 1981 - 2010 as per Kruger et al. (2016)
+# "SACTN" = first - last full year of data for the SACTN time series the SAWS time series is being compared against
 load("setupParams/SACTN_analysis_period.Rdata")
-detect.SAWS <- function(dat){
-  system.time(results <- ddply(SACTN_analysis_period, .(site), detect.SAWS.single, dat = dat, .parallel = TRUE)) ## ~60 seconds
+detect.SAWS <- function(dat, clim = "SAWS"){
+  if(clim == "SAWS"){
+    site <- as.character(dat$site[1])
+    start <- 1981
+    end <- 2010
+    dat <- dat[,2:3]
+    whole <- make_whole(dat)
+    ahw <- detect(whole, climatology_start = start, climatology_end = end,
+                  min_duration = 3, max_gap = 0, cold_spells = FALSE)
+    ahw <- ahw$event
+    ahw$type <- "AHW"
+    acs <- detect(whole, climatology_start = start, climatology_end = end,
+                  min_duration = 3, max_gap = 0, cold_spells = TRUE)
+    acs <- acs$event
+    acs$type <- "ACS"
+    results <- rbind(ahw, acs)
+    results$site <- site
+  } else if(clim == "SACTN"){
+    results <- ddply(SACTN_analysis_period, .(site), detect.SAWS.SACTN, dat = dat, .parallel = TRUE) ## ~60 seconds
+  } else {
+    stop("You must set 'clim' to either 'SAWS' or 'SACTN'.")
+  }
   return(results)
 }
 

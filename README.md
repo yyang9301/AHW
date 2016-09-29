@@ -34,3 +34,7 @@ The scripts and raw data used to compare atmospheric and marine heat waves and c
 ## 2016/09/28
 * Removed for loop used to "grow" the SAWS data
 * All extreme events re-calculated with same results
+
+## 2016/09/29
+* Calculated extreme events for SAWS time series based on a static analysis period (1981 - 2010)
+* Changed file naming convention for extreme event results to differentiate the results calculated with the static periodd
