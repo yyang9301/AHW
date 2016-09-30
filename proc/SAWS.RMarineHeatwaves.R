@@ -76,12 +76,12 @@ system.time(SAWS_SACTN_events_tmin <- ddply(SAWS_tmin, .(site), detect.SAWS, cli
 # 3. Save the results -----------------------------------------------------
 
 # SAWS - SAWS
-save(SAWS_SAWS_events_tmean, file = "data/SAWS_SAWS_events_tmean.Rdata")
-save(SAWS_SAWS_events_tmax, file = "data/SAWS_SAWS_events_tmax.Rdata")
-save(SAWS_SAWS_events_tmin, file = "data/SAWS_SAWS_events_tmin.Rdata")
+save(SAWS_SAWS_events_tmean, file = "data/events/SAWS_SAWS_events_tmean.Rdata")
+save(SAWS_SAWS_events_tmax, file = "data/events/SAWS_SAWS_events_tmax.Rdata")
+save(SAWS_SAWS_events_tmin, file = "data/events/SAWS_SAWS_events_tmin.Rdata")
 
 # SAWS - SACTN
-save(SAWS_SACTN_events_tmean, file = "data/SAWS_SACTN_events_tmean.Rdata")
-save(SAWS_SACTN_events_tmax, file = "data/SAWS_SACTN_events_tmax.Rdata")
-save(SAWS_SACTN_events_tmin, file = "data/SAWS_SACTN_events_tmin.Rdata")
+save(SAWS_SACTN_events_tmean, file = "data/events/SAWS_SACTN_events_tmean.Rdata")
+save(SAWS_SACTN_events_tmax, file = "data/events/SAWS_SACTN_events_tmax.Rdata")
+save(SAWS_SACTN_events_tmin, file = "data/events/SAWS_SACTN_events_tmin.Rdata")
 

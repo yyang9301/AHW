@@ -40,3 +40,9 @@ The scripts and raw data used to compare atmospheric and marine heat waves and c
 * Changed file naming convention for extreme event results to differentiate the results calculated with the static period
 * Created function that calculates distance AND bearing between any two sites
 * Calculated distance and bearing between all possible sites within and among datasets
+
+## 2016/09/30
+* Improved co-occurrence workflow to allow for calculation of extreme events between AND within datasets
+* Expanded results of co-occurrence analysis to also include the statistics of the co-occurring events
+* No longer constraining co-occurrence rates by set periods of days
+** Now the difference in days between the soonest occurring events is recorded

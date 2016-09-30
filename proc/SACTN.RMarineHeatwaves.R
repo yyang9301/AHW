@@ -49,5 +49,5 @@ system.time(SACTN_events <- ddply(SACTN_cropped, .(site), detect.SACTN, .paralle
 
 # 3. Save results for analysis in "proc/coocurrence.R" --------------------
 
-save(SACTN_events, file = "data/SACTN_events.Rdata")
+save(SACTN_events, file = "data/events/SACTN_events.Rdata")
 
