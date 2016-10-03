@@ -45,4 +45,8 @@ The scripts and raw data used to compare atmospheric and marine heat waves and c
 * Improved co-occurrence workflow to allow for calculation of extreme events between AND within datasets
 * Expanded results of co-occurrence analysis to also include the statistics of the co-occurring events
 * No longer constraining co-occurrence rates by set periods of days
-** Now the difference in days between the soonest occurring events is recorded
+* Now the difference in days between the latest occurring events is recorded
+
+## 2016/10/03
+* Calculated latest occurring events between AND within all sites AND datasets
+* Added distance, bearing and coastal section metrics for compared sites

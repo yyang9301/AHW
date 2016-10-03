@@ -3,13 +3,22 @@
 ## This script does:
 # 1. Loads all of the functions used by "proc/cooccurrence.R" to calculate co-occurrence between and within datasets
 ## DEPENDS ON:
-# 
+load("setupParams/distances_bearings.Rdata")
+load("setupParams/SACTN_site_list.Rdata")
+load("setupParams/SAWS_site_list.Rdata")
 ## USED BY:
 # "proc/cooccurrence.R"
 ## CREATES:
 # nothing
 #############################################################################
 
+# Manually add coast values to SAWS site list
+# NB: THese have been decided based on location and are questionable
+# Sites around Cape Point could be either coast but are labeled here as "wc" for balance
+SAWS_site_list$coast <- c("wc","wc","wc","sc","sc","sc","sc","sc","ec","ec","ec")
+SACTN_site_list$coast <- as.character(SACTN_site_list$coast)
+# Combine for a central data frame from which the coastal designation of the sites may be extracted
+site_list <- rbind(SAWS_site_list[,c(1:3,23)], SACTN_site_list[,c(2,5,6,9)])
 ## NB: It has been decided that all of these functions must be fed either heat wave or cold spell data frames
 ## Not data frames containing both types of events
 
@@ -60,10 +69,15 @@ percentile.label <- function(x){
 
 
 # Function that takes an event (x) and extracts the closest occurring event from a data frame (y)
-event.soon <- function(x,y){
+event.latest <- function(x,y){
   z <- y[knnx.index(as.matrix(y$date_start), as.matrix(x$date_start), k = 1),]
-  soon <- as.numeric(x$date_start)-as.numeric(z$date_start)
-  result <- data.frame(x,z,soon, index.2 = paste(x$site[1], z$site[1], sep = " - "))
+  latest <- as.numeric(x$date_start)-as.numeric(z$date_start)
+  result <- data.frame(x, z, latest, index.2 = paste(x$site[1], z$site[1], sep = " - "))
+  result$dist <- distances_bearings$dist[as.character(distances_bearings$index) == as.character(result$index.2)[1]]
+  result$bear <- distances_bearings$bear[as.character(distances_bearings$index) == as.character(result$index.2)[1]]
+  result$site_coast <- site_list$coast[as.character(site_list$site) == result$site[1]]
+  result$site.1_coast <- site_list$coast[as.character(site_list$site) == result$site.1[1]]
+  result$coast_index <- paste(result$site_coast, result$site.1_coast, sep = " - ")
   return(result)
 }
 
@@ -92,7 +106,7 @@ event.match <- function(x,y){
   z <- ddply(y, .(index), mutate, n = length(index)) # The total number of events being compared
   z$ply_index <- seq(1:length(z$index)) # Allows ddply to analyse each individual SAWS event against the SACTN dataframe
   z$percentile.idx <- min(z$percentile, na.rm = T)
-  results <- ddply(z, .(ply_index), event.soon, y = x, .parallel = TRUE)
+  results <- ddply(z, .(ply_index), event.latest, y = x, .parallel = TRUE)
   return(results)
 }
 
@@ -151,3 +165,26 @@ cooccurrence <- function(x,y, compare = "between"){
 # mhw <- filter(SACTN_events, type == "MHW")
 # x <- filter(mhw, site == "Bordjies Deep")
 # test <- cooccurrence(x)
+
+
+# Function to add distance, bearing and coast columns to co-occurrence results
+## NB: This is designed to be used with steps 2 and 3 in "proc/cooccurrence.R"
+
+
+# x <- SACTN_SAWS_hw_tmean_CO ## Tester
+add.indices <- function(x){ # Ignore warnings... Upvote hypno toad
+  x <- x %>% 
+    group_by(index.2) %>% 
+    mutate(dist = distances_bearings$dist[as.character(distances_bearings$index) == as.character(index.2)[1]]) %>% 
+    mutate(bear = distances_bearings$bear[as.character(distances_bearings$index) == as.character(index.2)[1]])
+  x <- x %>% 
+    group_by(site) %>%
+    mutate(site_coast = site_list$coast[as.character(site_list$site) == site[1]])
+  x <- x %>% 
+    group_by(site.1) %>%
+    mutate(site.1_coast = site_list$coast[as.character(site_list$site) == site.1[1]])
+  x <- data.frame(x)
+  x$coast_index <- paste(x$site_coast, x$site.1_coast, sep = " - ")
+  return(x)
+}
+# test <- add.indices(SACTN_SAWS_hw_tmean_CO)

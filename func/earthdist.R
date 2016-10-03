@@ -55,3 +55,4 @@ dist.bear.many <- function(site, df){
   results$site <- NULL
   return(results)
 }
+
