@@ -1,14 +1,15 @@
 #############################################################################
-###"proc/results.R"
+###"graph/figures2.R"
 ## This script does:
 # 1. Load co-occurrence results
-# 2. Calculates metrics from co-occurrence results
-# 3. Calculate change in co-occurrence over distance
+# 2. Create data frames for specific conditions
+# 3. Create figures
 ## DEPENDS ON:
 library(doMC); doMC::registerDoMC(cores = 4)
 library(stringr)
 library(zoo)
 library(lubridate)
+library(ggplot2)
 library(reshape2)
 library(plyr)
 library(dplyr)
@@ -16,8 +17,9 @@ library(tidyr)
 library(broom)
 library(tibble)
 library(purrr)
+source("setupParams/theme.R")
 ## USED BY:
-# "graph/figures.R"
+# 
 ## CREATES:
 # 
 #############################################################################
@@ -53,14 +55,20 @@ load("data/cooccurrence/SACTN_SAWS_cs_tmax_CO.Rdata")
 load("data/cooccurrence/SACTN_SAWS_cs_tmin_CO.Rdata")
 
 
-# 2. Calculates metrics from co-occurrence results ------------------------
+# # 2. Create density plots -----------------------------------------------
 
-# Function for calculating stats from co-occurrence results
-x <- hw_tmean_CO
-stats.CO <- function(x){
-  x1 <- ddply(x)
-}
+ggplot(SACTN_SAWS_hw_tmean_CO[abs(SACTN_SAWS_hw_tmean_CO$latest) <= 730,], aes(x = latest)) + bw_update + # Lay plot foundation
+  geom_density(fill = "grey", colour = "black", alpha = 0.6) +
+  labs(x = "Days between latest events", y = "Frequency")
 
-# Highest co-occurrence rates per percentile
-hw_tmax_stats <- hw_tmax_CO
+ggplot(SACTN_SAWS_hw_tmean_CO[abs(SACTN_SAWS_hw_tmean_CO$latest) <= 365,], aes(x = latest)) + bw_update + # Lay plot foundation
+  geom_density(fill = "brown", colour = "black", alpha = 0.6) +
+  labs(x = "Days between latest events", y = "Frequency")
 
+ggplot(SACTN_SAWS_hw_tmean_CO[abs(SACTN_SAWS_hw_tmean_CO$latest) <= 31,], aes(x = latest)) + bw_update + # Lay plot foundation
+  geom_density(fill = "salmon", colour = "black", alpha = 0.6) +
+  labs(x = "Days between latest events", y = "Frequency")
+
+ggplot(SACTN_SAWS_hw_tmean_CO[abs(SACTN_SAWS_hw_tmean_CO$latest) <= 7,], aes(x = latest)) + bw_update + # Lay plot foundation
+  geom_density(fill = "goldenrod", colour = "black", alpha = 0.6) +
+  labs(x = "Days between latest events", y = "Frequency")

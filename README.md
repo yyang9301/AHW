@@ -50,3 +50,4 @@ The scripts and raw data used to compare atmospheric and marine heat waves and c
 ## 2016/10/03
 * Calculated latest occurring events between AND within all sites AND datasets
 * Added distance, bearing and coastal section metrics for compared sites
+* Created a .Rmd file to explain the co-occurrence step of the work-flow

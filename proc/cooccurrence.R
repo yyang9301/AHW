@@ -21,12 +21,20 @@ source("func/cooccurrence.func.R")
 ## USED BY:
 # "proc/results.R"
 ## CREATES:
-# "data/SAWS_SACTN_hw_tmean_CO.Rdata"
-# "data/SAWS_SACTN_hw_tmax_CO.Rdata"
-# "data/SAWS_SACTN_hw_tmin_CO.Rdata"
-# "data/SAWS_SACTN_cs_tmean_CO.Rdata"
-# "data/SAWS_SACTN_cs_tmax_CO.Rdata"
-# "data/SAWS_SACTN_cs_tmin_CO.Rdata"
+# "data/cooccurrence/SAWS_SACTN_hw_tmean_CO.Rdata"
+# "data/cooccurrence/SAWS_SACTN_hw_tmax_CO.Rdata"
+# "data/cooccurrence/SAWS_SACTN_hw_tmin_CO.Rdata"
+# "data/cooccurrence/SAWS_SACTN_cs_tmean_CO.Rdata"
+# "data/cooccurrence/SAWS_SACTN_cs_tmax_CO.Rdata"
+# "data/cooccurrence/SAWS_SACTN_cs_tmin_CO.Rdata"
+# "data/cooccurrence/SACTN_SACTN_hw_tmean_CO.Rdata"
+# "data/cooccurrence/SACTN_SACTN_cs_tmean_CO.Rdata"
+# "data/cooccurrence/SAWS_SAWS_hw_tmean_CO.Rdata"
+# "data/cooccurrence/SAWS_SAWS_hw_tmax_CO.Rdata"
+# "data/cooccurrence/SAWS_SAWS_hw_tmin_CO.Rdata"
+# "data/cooccurrence/SAWS_SAWS_cs_tmean_CO.Rdata"
+# "data/cooccurrence/SAWS_SAWS_cs_tmax_CO.Rdata"
+# "data/cooccurrence/SAWS_SAWS_cs_tmin_CO.Rdata"
 #############################################################################
 
 
