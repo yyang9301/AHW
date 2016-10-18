@@ -57,6 +57,10 @@ load("data/cooccurrence/SACTN_SAWS_cs_tmin_CO.Rdata")
 
 # # 2. Create density plots -----------------------------------------------
 
+ggplot(SACTN_SAWS_hw_tmean_CO, aes(x = latest)) + bw_update + # Lay plot foundation
+  geom_density(fill = "grey", colour = "black", alpha = 0.6) +
+  labs(x = "Days between latest events", y = "Frequency")
+
 ggplot(SACTN_SAWS_hw_tmean_CO[abs(SACTN_SAWS_hw_tmean_CO$latest) <= 730,], aes(x = latest)) + bw_update + # Lay plot foundation
   geom_density(fill = "grey", colour = "black", alpha = 0.6) +
   labs(x = "Days between latest events", y = "Frequency")

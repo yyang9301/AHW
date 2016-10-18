@@ -30,7 +30,7 @@ site_list <- rbind(SAWS_site_list[,c(1:3,23)], SACTN_site_list[,c(2,5,6,9)])
 # Function that takes a dataframe (x) and removes any non-overlapping years found in another dataframe (y)
 year.crop <- function(x,y){
   x$yearStrt <- year(x$date_start)
-  y_yearStrt <- unique(year(y$date_start))
+  y_yearStrt <- seq(min(year(y$date_start)), max(year(y$date_start)))
   x <- x[x$yearStrt >= min(y_yearStrt), ]
   x <- x[x$yearStrt <= max(y_yearStrt), ]
   x$yearStrt <- NULL

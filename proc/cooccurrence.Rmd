@@ -243,7 +243,7 @@ Below are given the three other functions mentioned in the two sub-sections abov
 # Function that takes a dataframe (x) and removes any non-overlapping years found in another dataframe (y)
 year.crop <- function(x,y){
   x$yearStrt <- year(x$date_start)
-  y_yearStrt <- unique(year(y$date_start))
+  y_yearStrt <- seq(min(year(y$date_start)), max(year(y$date_start)))
   x <- x[x$yearStrt >= min(y_yearStrt), ]
   x <- x[x$yearStrt <= max(y_yearStrt), ]
   x$yearStrt <- NULL

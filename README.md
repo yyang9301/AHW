@@ -6,7 +6,7 @@ The scripts and raw data used to compare atmospheric and marine heat waves and c
 * The code used to prepare the raw data for use in the analysis may be found in "load/load.SACTN.R" and "load/load.SAWS.R"
 * The code used to create the site list/ meta-data for the two datasets may be found in "load/load.SACTN.R" and "prep/SACTN.sitelist.R"
 * The code used to calculate indices of comparison between the datasets may be found in "SAWS.SACTN.compare.R"
-* The code used to perform the extreme event analyses may be found in "proc/SACTN.RMarineHeatweaves.R" and "proc/SAWS.RMarineHeatweaves.R"
+* The code used to perform the extreme event analyses may be found in "proc/SACTN.RMarineHeatwaves.R" and "proc/SAWS.RMarineHeatwaves.R"
 * The code used to calculate the rates of co-occurrence may be found in "proc/cooccurrence.R"
 * The code used to create the figures seen in the paper may be found in "graph/..."
 * The code used to create the tables seen in the paper may be found in "..."
@@ -51,3 +51,7 @@ The scripts and raw data used to compare atmospheric and marine heat waves and c
 * Calculated latest occurring events between AND within all sites AND datasets
 * Added distance, bearing and coastal section metrics for compared sites
 * Created a .Rmd file to explain the co-occurrence step of the work-flow
+
+## 2016/10/18
+* Created figures for the largest (int_cum) heat wave and cold spell for each time series
+* Explored relationships between SAWS and SACTN heat waves occurring within 7 and 2 days of one another
