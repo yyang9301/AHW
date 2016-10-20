@@ -55,3 +55,10 @@ The scripts and raw data used to compare atmospheric and marine heat waves and c
 ## 2016/10/18
 * Created figures for the largest (int_cum) heat wave and cold spell for each time series
 * Explored relationships between SAWS and SACTN heat waves occurring within 7 and 2 days of one another
+
+## 2016/10/20
+* A small bug was detected in the original SACTN data set
+* Improved screening methods were implemented at the source to smooth this issue
+* These improved methods were applied to the load step in this project as well
+* All scripts were re-run with the newly screened data and all calculations/ figures compiled anew
+* The final co-occurrence rates are ever so slightly higher than previously

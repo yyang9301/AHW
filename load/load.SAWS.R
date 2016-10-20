@@ -13,6 +13,8 @@ library(zoo)
 library(tidyr)
 library(purrr)
 library(broom)
+library(readr)
+library(RmarineHeatWaves)
 source("func/expand.gaps.R")
 ## USED BY:
 # Nothing
@@ -25,51 +27,36 @@ source("func/expand.gaps.R")
 
 # The .csv format
 SAWS.csv <- function(x){
-  y <- read.csv(x, header = FALSE, skip = 0, sep = ",",
-           col.names = c("year","month","day","precip", "tmax", "tmin"))
-  y$site <- as.character(x)
-  y$site <- sapply(strsplit(y$site, "/"), "[[", 5)
+  y <- read_csv(x, skip = 0, col_types = "cnnnnn",
+           col_names = c("year","month","day","precip", "tmax", "tmin"))
+  # Correct to date format
+  y$date <- as.Date(paste(y$year, y$month, y$day, sep = "-"), "%Y-%m-%d", tz = "Africa/Johannesburg")
+  # Assign site
+  y$site <- sapply(strsplit(as.character(x), "/"), "[[", 5)
   y$site <- sapply(strsplit(y$site, ".csv"), "[[", 1)
-  y$site <- as.factor(y$site)
+  # Correct NA values
+  y$tmax[y$tmax == -99.9] <- NA
+  y$tmin[y$tmin == -99.9] <- NA
+  # Create mean temperature column
+  y$temp <- (y$tmax+y$tmin)/2
+  # Select appropriate columns
+  y <- y[,c(8,7,5,6,9)]
   return(y)
 }
 
 # The load function
 load.SAWS <- function(directory){
   files_list <- dir(directory, full.names = TRUE)
-  # Load data
-  dat <- ldply(files_list, SAWS.csv)
-  # Correct to date format
-  dat$date <- as.Date(paste(dat$year, dat$month, dat$day, sep = "-"), "%Y-%m-%d", tz = "Africa/Johannesburg")
-  # Select appropriate columns
-  dat <- dat[,c(7,8,5,6)]
-  # Trim leading and trailing NA values, remove duplicate and fill gaps with NAs
-  ## NB: Thiscauses immediate crashes of R
-  # dat <- dat %>%
-  #   group_by(site) %>%
-  #   mutate(temp = na.trim(temp)) %>%
-  #   nest() %>%
-  #   mutate(mod = data %>% map(expand.gaps))
-  # dat <- unnest(dat, mod)
-  # Correct NA values
-  dat$tmax[dat$tmax == -99.9] <- NA
-  dat$tmin[dat$tmin == -99.9] <- NA
-  # Create mean temperature column
-  dat$temp <- (dat$tmax+dat$tmin)/2
+  dat <- ldply(files_list, SAWS.csv, .parallel = T)
   return(dat)
 }
 
 
 # 2. Load the SAWS data -------------------------------------------------
 
-SAWS_homogenised <- load.SAWS("data/SAWS/homogenised/csv")
-SAWS_homogenised <- ddply(SAWS_homogenised, .(site), expand.gaps) 
-# No apparent gaps... but there appear to be later on in the workflow...
-SAWS_homogenised <- ddply(SAWS_homogenised, .(site), na.trim) 
-# Apparently there were still leading or trailing NA's
-## 341506 -> 329279
-SAWS_homogenised <- SAWS_homogenised[,c(2,1,3:5)]
+SAWS_homogenised <- load.SAWS("data/SAWS/homogenised/csv") # 341506
+SAWS_homogenised <- ddply(SAWS_homogenised, .(site), fast.gaps.air, .parallel = T) # 329279
 
-# 3. Save for use in "prep/SAWS.sitelist.R" -------------------------------
+# 3. Save for use in "prep/SAWS.meta.R" -------------------------------
 
 save(SAWS_homogenised, file = "data/SAWS/homogenised/SAWS_homogenised.Rdata")

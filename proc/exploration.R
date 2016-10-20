@@ -171,31 +171,31 @@ SACTN_SAWS_cs_tmin_CO_2_day <- SACTN_SAWS_cs_tmin_CO[abs(SACTN_SAWS_cs_tmin_CO$l
 # 6. Exploration ----------------------------------------------------------
 
 # The count of closely co-occurring events in relation to the percentile of their size
-nrow(SACTN_SAWS_hw_tmean_CO_2_day) # 1331
+nrow(SACTN_SAWS_hw_tmean_CO_2_day) # 1329
 
-nrow(SACTN_SAWS_hw_tmean_CO_2_day[SACTN_SAWS_hw_tmean_CO_2_day$percentile == 0,]) # 191
-nrow(SACTN_SAWS_hw_tmean_CO_2_day[SACTN_SAWS_hw_tmean_CO_2_day$percentile.1 == 0,]) # 150
-nrow(SACTN_SAWS_hw_tmean_CO_2_day[SACTN_SAWS_hw_tmean_CO_2_day$percentile.idx == 0,]) # 695
+nrow(SACTN_SAWS_hw_tmean_CO_2_day[SACTN_SAWS_hw_tmean_CO_2_day$percentile == 0,]) # 193
+nrow(SACTN_SAWS_hw_tmean_CO_2_day[SACTN_SAWS_hw_tmean_CO_2_day$percentile.1 == 0,]) # 147
+nrow(SACTN_SAWS_hw_tmean_CO_2_day[SACTN_SAWS_hw_tmean_CO_2_day$percentile.idx == 0,]) # 691
 
-nrow(SACTN_SAWS_hw_tmean_CO_2_day[SACTN_SAWS_hw_tmean_CO_2_day$percentile == 25,]) # 307
+nrow(SACTN_SAWS_hw_tmean_CO_2_day[SACTN_SAWS_hw_tmean_CO_2_day$percentile == 25,]) # 292
 nrow(SACTN_SAWS_hw_tmean_CO_2_day[SACTN_SAWS_hw_tmean_CO_2_day$percentile.1 == 25,]) # 278
-nrow(SACTN_SAWS_hw_tmean_CO_2_day[SACTN_SAWS_hw_tmean_CO_2_day$percentile.idx == 25,]) # 385
+nrow(SACTN_SAWS_hw_tmean_CO_2_day[SACTN_SAWS_hw_tmean_CO_2_day$percentile.idx == 25,]) # 382
 
-nrow(SACTN_SAWS_hw_tmean_CO_2_day[SACTN_SAWS_hw_tmean_CO_2_day$percentile == 50,]) # 356
-nrow(SACTN_SAWS_hw_tmean_CO_2_day[SACTN_SAWS_hw_tmean_CO_2_day$percentile.1 == 50,]) # 424
-nrow(SACTN_SAWS_hw_tmean_CO_2_day[SACTN_SAWS_hw_tmean_CO_2_day$percentile.idx == 50,]) # 189
+nrow(SACTN_SAWS_hw_tmean_CO_2_day[SACTN_SAWS_hw_tmean_CO_2_day$percentile == 50,]) # 342
+nrow(SACTN_SAWS_hw_tmean_CO_2_day[SACTN_SAWS_hw_tmean_CO_2_day$percentile.1 == 50,]) # 428
+nrow(SACTN_SAWS_hw_tmean_CO_2_day[SACTN_SAWS_hw_tmean_CO_2_day$percentile.idx == 50,]) # 190
 
-nrow(SACTN_SAWS_hw_tmean_CO_2_day[SACTN_SAWS_hw_tmean_CO_2_day$percentile == 75,]) # 413
-nrow(SACTN_SAWS_hw_tmean_CO_2_day[SACTN_SAWS_hw_tmean_CO_2_day$percentile.1 == 75,]) # 432
-nrow(SACTN_SAWS_hw_tmean_CO_2_day[SACTN_SAWS_hw_tmean_CO_2_day$percentile.idx == 75,]) # 60
+nrow(SACTN_SAWS_hw_tmean_CO_2_day[SACTN_SAWS_hw_tmean_CO_2_day$percentile == 75,]) # 433
+nrow(SACTN_SAWS_hw_tmean_CO_2_day[SACTN_SAWS_hw_tmean_CO_2_day$percentile.1 == 75,]) # 423
+nrow(SACTN_SAWS_hw_tmean_CO_2_day[SACTN_SAWS_hw_tmean_CO_2_day$percentile.idx == 75,]) # 63
 
-nrow(SACTN_SAWS_hw_tmean_CO_2_day[SACTN_SAWS_hw_tmean_CO_2_day$percentile == 100,]) # 64
-nrow(SACTN_SAWS_hw_tmean_CO_2_day[SACTN_SAWS_hw_tmean_CO_2_day$percentile.1 == 100,]) # 47
-nrow(SACTN_SAWS_hw_tmean_CO_2_day[SACTN_SAWS_hw_tmean_CO_2_day$percentile.idx == 100,]) # 2
+nrow(SACTN_SAWS_hw_tmean_CO_2_day[SACTN_SAWS_hw_tmean_CO_2_day$percentile == 100,]) # 69
+nrow(SACTN_SAWS_hw_tmean_CO_2_day[SACTN_SAWS_hw_tmean_CO_2_day$percentile.1 == 100,]) # 53
+nrow(SACTN_SAWS_hw_tmean_CO_2_day[SACTN_SAWS_hw_tmean_CO_2_day$percentile.idx == 100,]) # 3
 # It appears that there is definitely a relationship between these closely co-occurring events
 # I reached this conclusion based on the fact that the largest number of closely occurring events are in the 75th percentile
 
-top_1_2 <- droplevels(SACTN_SAWS_hw_tmean_CO_2_day[SACTN_SAWS_hw_tmean_CO_2_day$percentile.idx == 100,]) # 1
+top_1_2 <- droplevels(SACTN_SAWS_hw_tmean_CO_2_day[SACTN_SAWS_hw_tmean_CO_2_day$percentile.idx == 100,]) # 3
 top_1_7 <- droplevels(SACTN_SAWS_hw_tmean_CO_7_day[SACTN_SAWS_hw_tmean_CO_7_day$percentile.idx == 100,]) # 8
 
 nrow(SACTN_SAWS_hw_tmean_CO) # 40179

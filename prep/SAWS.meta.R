@@ -1,5 +1,5 @@
 #############################################################################
-###"prep/SAWS.sitelist.R"
+###"prep/SAWS.meta.R"
 ## This script does:
 # 1. Load SAWS_homogenised.Rdata
 # 2. Calculate meta-data
@@ -9,6 +9,7 @@
 # 6. Save as "setupParams/SAWS_site_list.Rdata" and "*.csv"
 ## DEPENDS ON:
 library(doMC); registerDoMC(cores = 4)
+library(FNN)
 library(plyr)
 library(dplyr)
 library(reshape2)
