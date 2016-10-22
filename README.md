@@ -62,3 +62,7 @@ The scripts and raw data used to compare atmospheric and marine heat waves and c
 * These improved methods were applied to the load step in this project as well
 * All scripts were re-run with the newly screened data and all calculations/ figures compiled anew
 * The final co-occurrence rates are ever so slightly higher than previously
+
+## 2016/10/22
+* Fix issues in which missing SACTN values were saved as NaN instead of NA
+* This had no effect on the calculations
