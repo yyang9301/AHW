@@ -107,7 +107,7 @@ largest.int.cum <- function(df){
   ggsave(paste("~/AHW/graph/single_event/", site, "_cs_int_cum.pdf", sep = ""), width = 12)
 }
 
-ddply(all_data, .(site), largest.int.cum)
+# ddply(all_data, .(site), largest.int.cum) # Don't run this unless you want to re-create ALL of the figures
 
 
 # 4. Subset only events within a 7 day co-occurrence ----------------------
@@ -202,6 +202,7 @@ nrow(SACTN_SAWS_hw_tmean_CO) # 40179
 nrow(SACTN_SAWS_hw_tmean_CO[SACTN_SAWS_hw_tmean_CO$latest <= 7 & SACTN_SAWS_hw_tmean_CO$latest >= 0,]) #1986
 nrow(SACTN_SAWS_hw_tmean_CO[SACTN_SAWS_hw_tmean_CO$latest >= -7 & SACTN_SAWS_hw_tmean_CO$latest <= 0,]) #1659
 
+## Create figures to show these results more clearly ##
 
 # 7. Line graphs for strong co-occurrence ---------------------------------
 
