@@ -66,3 +66,8 @@ The scripts and raw data used to compare atmospheric and marine heat waves and c
 ## 2016/10/22
 * Fix issues in which missing SACTN values were saved as NaN instead of NA
 * This had no effect on the calculations
+
+## 2016/10/31
+* WInd data for Port Nolloth added to project
+* Function created that can calculate mean daily wind vectors
+* First draft of a figure that shows wind vectors with temperatures

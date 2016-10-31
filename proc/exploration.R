@@ -8,6 +8,7 @@
 # 5. Subset only events within a 2 day co-occurrence
 # 6. Exploration
 # 7. Line graphs for strong co-occurrence
+# 8. Wind calculations
 ## DEPENDS ON:
 library(doMC); doMC::registerDoMC(cores = 4)
 library(stringr)
@@ -22,6 +23,7 @@ library(broom)
 library(tibble)
 library(purrr)
 library(RmarineHeatWaves)
+library(readr)
 source("setupParams/theme.R")
 ## USED BY:
 # "graph/figures.R"
@@ -58,6 +60,7 @@ load("data/cooccurrence/SACTN_SAWS_hw_tmin_CO.Rdata")
 load("data/cooccurrence/SACTN_SAWS_cs_tmean_CO.Rdata")
 load("data/cooccurrence/SACTN_SAWS_cs_tmax_CO.Rdata")
 load("data/cooccurrence/SACTN_SAWS_cs_tmin_CO.Rdata")
+
 
 # 2. Load OISST and in situ data from outside of this project -------------
 
@@ -223,3 +226,78 @@ ggplot(data = all_top, aes(x = date, y = temp)) + bw_update +
   geom_vline(data = top_1_7[1:6,], aes(xintercept = as.numeric(date_start.1), colour = site.1), linetype = "dashed", alpha = 0.7) +
   geom_vline(data = top_1_7[1:6,], aes(xintercept = as.numeric(date_stop.1), colour = site.1), linetype = "dashed", alpha = 0.7)
 ggsave("~/Desktop/Nov_2004.jpg", width = 10, height = 6)
+
+
+# 8. Wind calculations ----------------------------------------------------
+
+source("~/AHW/func/earthdist.R")
+
+# Load data
+wind <- read_csv("~/AHW/data/wind/port nolloth 1.csv", 
+                 col_names = c("century", "year", "month", "day", "hour", "speed", "bearing"),
+                 col_types = "iciiidi")
+# levels(as.factor(wind$year))
+# wind$year[wind$year == 0] <- 000
+wind$date <- as.Date(paste(paste(wind$century, wind$year, sep = ""), wind$month, wind$day, sep = "-"))
+wind <- wind[,c(8,6,7)]
+wind <- wind[complete.cases(wind),]
+# wind$speed[as.character(wind$speed) == "NaN"] <- NA
+
+# The function used to create mean wind vectors
+wind.vector <- function(df){
+  # This calculation runs better when 360 = 0
+  # df$bearing[df$bearing == 360] <- 0
+  # Then convert decimal degrees to radians
+  # df$bearing <- deg2rad(df$bearing)
+  # Calculate east-west and north-south components
+  # df <- filter(wind, date == "2000-01-04")
+  # df$bearing[1] <- 160
+  # df$bearing <- df$bearing-180
+  ve <- -sum(df$speed*sin(df$bearing * pi/180))/nrow(df)
+  vn <- -sum(df$speed*cos(df$bearing * pi/180))/nrow(df)
+  # Mean wind speed
+  u <- round_any((ve^2 + vn^2)^(1/2), 0.01)
+  # Mean direction
+  theta <- atan2(ve, vn) *180/pi
+  theta2 <- round_any(theta + 180, 0.01)
+  # theta <- atan2(vn, ve)
+  # Convert back to decimal degrees
+  # theta2 <- theta/pi*180
+  # Finally adjust the result accordingly
+  # if(!(is.na(theta))){
+  #   if(theta2 == 0){
+  #     theta3 <- 0
+  #   } else if(theta2 < 180 & theta2 > -0.01) {
+  #     theta3 <- round_any(theta2+180, 0.01)
+  #   } else if(theta2 > 180) {
+  #     theta3 <- round_any(theta2-180, 0.01)
+  #   } else if(theta2 < -0.01) {
+  #     theta3 <- round_any(theta2+360, 0.01)
+  #   }
+  # } else {
+  #   theta3 <- NA
+  # }
+  # x <- ve/pi*180
+  # y <- vn/pi*180
+  # Combine results into a new dataframe
+  df2 <- data.frame(date = df$date[1], speed = u, bearing = theta2)
+  return(df2)
+}
+
+# Testing
+test1 <- filter(wind, date == "1996-01-01") #180
+test1 <- filter(wind, date == "1996-01-04") #~180
+test1 <- filter(wind, date == "2000-01-04") #340
+test1$bearing[1] <- 160
+df <- test1
+test2 <- wind.vector(test1)
+
+wind2 <- ddply(wind, .(date), wind.vector, .parallel = T)
+
+# Fill gaps in daily values for plotting purposes
+wind3 <- wind2[order(wind2$date),]
+grid.df <- data.frame(date = seq(min(wind3$date, na.rm = T), max(wind3$date, na.rm = T), by = "day"))
+wind3 <- merge(wind3, grid.df, by = "date", all.y = T)
+
+wind_PN <- data.frame(site = "Port Nolloth", wind3)
+save(wind_PN, file = "data/wind/wind_PN.Rdata")
