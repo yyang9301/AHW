@@ -5,3 +5,55 @@ date: "31 October 2016"
 output: pdf_document
 ---
 
+```{r setup, include=TRUE, echo=FALSE}
+# This first chunk of code effectively prevents all other chunks from running so as to speed up the compiling process
+knitr::opts_chunk$set(
+	eval = FALSE,
+	echo = FALSE,
+	message = FALSE,
+	warning = FALSE
+)
+```
+
+# Overview
+In this document I outline the steps I took in the processing of the wind data, my reasoning behind the decisions I made in the workflow, and the outcome of the analyses performed.
+
+```{r}
+# First load all of the required libraries and sources
+library(doMC); doMC::registerDoMC(cores = 4)
+library(ggplot2)
+library(plyr)
+library(dplyr)
+library(weatherData)
+library(mgcv)
+library(scales)
+library(reshape2)
+library(gridExtra)
+library(lubridate)
+library(weathermetrics)
+source("setupParams/theme.R")
+```
+
+# Wind data
+I now have wind data for one site from Andries. These data start on January 1st, 1996 and are at least daily until December 31st, 2005. The first few years of wind data are sampled 3 times per day and the last few years were sampled every hour. To use these data more effectively with the daily temperature values I then created daily mean vectors from these data. The algorithm I used can be found below and was adapted from: http://www.webmet.com/met_monitoring/622.html. 
+
+```{r, echo = TRUE}
+wind.vector <- function(df){
+  # Calculate east-west and north-south components
+  ve <- -sum(df$speed*sin(df$bearing * pi/180))/nrow(df)
+  vn <- -sum(df$speed*cos(df$bearing * pi/180))/nrow(df)
+  # Mean wind speed
+  u <- round_any((ve^2 + vn^2)^(1/2), 0.01)
+  # Mean direction
+  theta <- atan2(ve, vn) * 180/pi
+  theta2 <- round_any(theta + 180, 0.01)
+  # Combine results into a new dataframe
+  df2 <- data.frame(date = df$date[1], speed = u, bearing = theta2)
+  return(df2)
+}
+```
+
+Once the daily wind vectors were calculated it was then possible to create line graphs of temperature data at times when co-occurrence of extreme events occurred with wind data shown alongside it.
+
+# Co-occurrence and wind
+The dates of co-occurrence for events is already calculated for all possible combinations so it was not necessary to run any more analyses in this regard. So I was able to jump firectly into this analysis. To do so I found start dates for events that co-occurred with events in the partner time series and then took the wind data for certain periods of time around around these start dates to see if there are any consistent patterns. In order to allow for a range of analyses to encapsulate what effect the atmospheric pressure may be having on the relationship of extreme events I calculated mean windf vectors over a number of days preceeding and including the time during which the events co-occurred.

@@ -16,6 +16,7 @@ library(gridExtra)
 library(lubridate)
 library(weathermetrics)
 source("setupParams/theme.R")
+source("func/detect.full.R")
 ## USED BY:
 # 
 ## CREATES:
@@ -85,3 +86,149 @@ dwd_p <-  ggplot(data = temp_PN_sub, aes(x = date, y = temp)) + bw_update +
   # scale_y_continuous(name = "Wind vectors (kn/h)\n", labels = v_labels, breaks = v_breaks)
 dwd_p
 
+
+# 3. Calculate wind values during co-occurrence ---------------------------
+
+# 1) Subset temperature data to match wind data dates
+temp_CC_sub <- filter(temp_CC, date %in% wind_PN$date)
+temp_PN_sub <- filter(temp_PN, date %in% wind_PN$date)
+
+# 2) Subset co-occurrence results to match wind data dates
+# Heat waves
+hw_tmean_CC_PN_sub <- filter(hw_tmean_CC_PN, date_start %in% wind_PN$date & abs(latest) <= 7)
+hw_tmax_CC_PN_sub <- filter(hw_tmax_CC_PN, date_start %in% wind_PN$date & abs(latest) <= 7)
+hw_tmin_CC_PN_sub <- filter(hw_tmin_CC_PN, date_start %in% wind_PN$date & abs(latest) <= 7)
+# Cold spells
+cs_tmean_CC_PN_sub <- filter(cs_tmean_CC_PN, date_start %in% wind_PN$date & abs(latest) <= 7)
+cs_tmax_CC_PN_sub <- filter(cs_tmax_CC_PN, date_start %in% wind_PN$date & abs(latest) <= 7)
+cs_tmin_CC_PN_sub <- filter(cs_tmin_CC_PN, date_start %in% wind_PN$date & abs(latest) <= 7)
+
+# This figure is designed to have a co-occurrence data frame fed into it via ddply by event_no AND percentile.idx
+  # Note that there may be duplicates within the dataframes due to the way these were originally sampled
+# The function then takes the week before and after the start of whichever event came first
+# The air and sea temps, and wind data are then subsetted and a figure is made so one can visually inspect possible relationships
+# Options for the 'stat' variable are: "temp", "tmax", "tmin"
+df <- hw_tmean_CC_PN_sub[1,]
+wind.figure <- function(df, stat){
+  # QC
+  if(nrow(df) > 1){
+    stop(paste("There are multiple events being subsetted! See:", df$index_start, sep = " "))
+  }
+  # Create date range based around first event for subsetting
+  if(df$latest >= 0){
+    dates <- seq(df$date_start.1-7, df$date_stop.1+7, by = "day") 
+  } else {
+    dates <- seq(df$date_start-7, df$date_stop+7, by = "day")
+  }
+  # Subset air temperatures and select correct column to match co-occurrence data frame
+  air1 <- filter(temp_CC_sub, date %in% dates)
+  air2 <- air1[colnames(air1) == stat]
+  air3 <- cbind(air1[,2], air2)
+  colnames(air3) <- c("date","temp")
+  air3$type <- "air"
+  # Subset sea temperatures
+  sea1 <- filter(temp_PN_sub, date %in% dates)
+  sea2 <- sea1[,4:5]
+  sea2$type <- "sea"
+  # Subset wind data and prep for plotting
+  wind <- filter(wind_PN, date %in% dates)
+  wind$u <- (1 * wind$speed) * sin((wind$bearing * pi/180))
+  wind$v <- (1 * wind$speed) * cos((wind$bearing * pi/180))
+  # Combine air and sea temps for better plotting
+  temps <- rbind(sea2, air3)
+  # Prep start and end dates of events for plotting
+  event_dates <- data.frame(dates = c(df$date_start, df$date_stop, df$date_start.1, df$date_stop.1), 
+                            type = c("air", "air", "sea", "sea"),
+                            range = c("begin", "end", "begin", "end"))
+  # Create file name of figure for saving
+  file_name <- paste(df$type, stat, dates[8], df$percentile.idx, sep = "_")
+  # Create figure
+  ggplot(data = temps, aes(x = date, y = temp)) + bw_update +
+    geom_line(aes(colour = type)) +
+    geom_segment(data = wind, aes(x = date, xend = date + u, y = 0, yend = v), arrow = arrow(length = unit(0.15, "cm")), size = 0.5) +
+    geom_point(data = wind, aes(x = date, y = 0), alpha = 0.5, size=1) +
+    geom_vline(data = event_dates, aes(xintercept = as.numeric(dates), colour = type, linetype = range), size = 1, alpha = 0.7) +
+    scale_x_date(name = "Date", labels = date_format("%Y-%m-%d"), breaks = date_breaks("3 days"))
+  ggsave(filename = paste("graph/all_wind/", file_name, ".jpg", sep = ""))
+}
+
+# This function differs from the one above with the same name in that it is designed to be fully automated for use with all time series
+# It must be subsetted by: index, index_start, percentile.idx
+df <- hw_tmean_CC_PN_sub[1,]
+wind.figure <- function(df, stat){
+  # QC
+  if(nrow(df) > 1){
+    stop(paste("There are multiple events being subsetted! See:", df$index_start, sep = " "))
+  }
+  # Create date range for wind data based on widest possible date range
+  if(df$date_start <= df$date_start.1){
+    start <- df$date_start
+  } else {
+    start <- df$date_start.1
+  }
+  if(df$date_stop >= df$date_stop.1){
+    stop <- df$date_stop
+  } else {
+    stop <- df$date_stop.1
+  }
+  dates <- seq(start-7, stop+7, by = "day")
+  # Ascertain what type of event is being calculated
+  if(df$type == "AHW"){
+    cold_spells = FALSE
+  } else if (df$type == "ACS"){
+    cold_spells = FALSE
+  } else {
+    stop("No event type detected.")
+  }
+  # Calculate events for sea temps
+  sea <- SACTN_cropped %>% 
+    select(site, date, temp) %>% 
+    filter(site == df$site.1[1]) %>% 
+    mutate(start = SACTN_analysis_period$start[SACTN_analysis_period$site == site][1]) %>% 
+    mutate(end = SACTN_analysis_period$end[SACTN_analysis_period$site == site][1])
+  sea <- droplevels(sea)
+  colnames(sea)[2] <- "t"
+  whole <- make_whole(sea[,2:3])
+  marine <- detect(whole, climatology_start = sea$start[1], climatology_end = sea$end[1],
+                min_duration = 5, max_gap = 2, cold_spells = cold_spells)
+  marine_event <- marine$event
+  marine_event <- marine_event[marine_event$event_no == df$event_no.1,]
+  marine$event <- marine_event
+  # Calculate events for air temps
+  air1 <- SAWS_homogenised[colnames(SAWS_homogenised) == stat]
+  air2 <- cbind(SAWS_homogenised[,1:2], air1)
+  air3 <- air2 %>% 
+    filter(site == df$site[1]) %>% 
+    mutate(start = SACTN_analysis_period$start[SACTN_analysis_period$site == df$site.1][1]) %>% 
+    mutate(end = SACTN_analysis_period$end[SACTN_analysis_period$site == df$site.1][1])
+  air3 <- droplevels(air3)
+  colnames(air3)[2] <- "t"
+  whole <- make_whole(air3[,2:3])
+  atmosphere <- detect(whole, climatology_start = air3$start[1], climatology_end = air3$end[1],
+                min_duration = 3, max_gap = 0, cold_spells = cold_spells)
+  atmosphere_event <- atmosphere$event
+  atmosphere_event <- atmosphere_event[atmosphere_event$event_no == df$event_no,]
+  atmosphere$event <- atmosphere_event
+  # Subset wind data and prep for plotting
+  wind <- filter(wind_PN, date %in% dates)
+  wind$u <- (1 * wind$speed) * sin((wind$bearing * pi/180))
+  wind$v <- (1 * wind$speed) * cos((wind$bearing * pi/180))
+  # Create the event_line and wind vector figures
+  m_fig <- event_line(marine, spread = 15, start_date = marine$event$date_start, end_date = marine$event$date_stop)
+  a_fig <- event_line(atmosphere, spread = 15, start_date = atmosphere$event$date_start, end_date = atmosphere$event$date_stop)
+  w_fig <- ggplot() + bw_update +
+    geom_segment(data = wind, aes(x = date, xend = date + u, y = 0, yend = v), arrow = arrow(length = unit(0.15, "cm")), size = 0.5) +
+    geom_point(data = wind, aes(x = date, y = 0), alpha = 0.5, size=1) +
+    scale_x_date(name = "Date", labels = date_format("%Y-%m-%d"), breaks = date_breaks("3 days"))
+  # Create file name of figure for saving
+  file_name <- paste(df$site[1], df$site.1[1], df$type, stat, dates[8], df$percentile.idx, sep = "_")
+  # Mosh it all together
+  jpeg(paste("graph/all_wind/", file_name, ".jpg", sep = ""), width = 900, height = 900, pointsize = 12) # Set PDF dimensions
+  vp1 <- viewport(x = 0.5, y = 1.0, w = 1.0, h = 0.33, just = "top") # marine
+  vp2 <- viewport(x = 0.5, y = 0.66, w = 1.0, h = 0.33, just = "top")  # atmosphere
+  vp3 <- viewport(x = 0.5, y = 0.33, w = 1.0, h = 0.2, just = "top")  # wind
+  print(m_fig, vp = vp1)
+  print(a_fig, vp = vp2)
+  print(w_fig, vp = vp3)
+  dev.off()
+}

@@ -245,40 +245,14 @@ wind <- wind[complete.cases(wind),]
 
 # The function used to create mean wind vectors
 wind.vector <- function(df){
-  # This calculation runs better when 360 = 0
-  # df$bearing[df$bearing == 360] <- 0
-  # Then convert decimal degrees to radians
-  # df$bearing <- deg2rad(df$bearing)
   # Calculate east-west and north-south components
-  # df <- filter(wind, date == "2000-01-04")
-  # df$bearing[1] <- 160
-  # df$bearing <- df$bearing-180
   ve <- -sum(df$speed*sin(df$bearing * pi/180))/nrow(df)
   vn <- -sum(df$speed*cos(df$bearing * pi/180))/nrow(df)
   # Mean wind speed
   u <- round_any((ve^2 + vn^2)^(1/2), 0.01)
   # Mean direction
-  theta <- atan2(ve, vn) *180/pi
+  theta <- atan2(ve, vn) * 180/pi
   theta2 <- round_any(theta + 180, 0.01)
-  # theta <- atan2(vn, ve)
-  # Convert back to decimal degrees
-  # theta2 <- theta/pi*180
-  # Finally adjust the result accordingly
-  # if(!(is.na(theta))){
-  #   if(theta2 == 0){
-  #     theta3 <- 0
-  #   } else if(theta2 < 180 & theta2 > -0.01) {
-  #     theta3 <- round_any(theta2+180, 0.01)
-  #   } else if(theta2 > 180) {
-  #     theta3 <- round_any(theta2-180, 0.01)
-  #   } else if(theta2 < -0.01) {
-  #     theta3 <- round_any(theta2+360, 0.01)
-  #   }
-  # } else {
-  #   theta3 <- NA
-  # }
-  # x <- ve/pi*180
-  # y <- vn/pi*180
   # Combine results into a new dataframe
   df2 <- data.frame(date = df$date[1], speed = u, bearing = theta2)
   return(df2)

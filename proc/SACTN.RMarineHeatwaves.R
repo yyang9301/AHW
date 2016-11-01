@@ -28,7 +28,7 @@ source("func/detect.full.R")
 #############################################################################
 
 
-# 1. Load the SAWS data and site lists ---------------
+# 1. Load the SACTN data and site list ---------------
 
 # SACTN
 load("data/SACTN/SACTN_cropped.Rdata")

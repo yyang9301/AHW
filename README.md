@@ -68,6 +68,9 @@ The scripts and raw data used to compare atmospheric and marine heat waves and c
 * This had no effect on the calculations
 
 ## 2016/10/31
-* WInd data for Port Nolloth added to project
+* Wind data for Port Nolloth added to project
 * Function created that can calculate mean daily wind vectors
 * First draft of a figure that shows wind vectors with temperatures
+
+## 2016/11/01
+* Worked out a couple of preliminary techniques for how best to visualise air, sea and wind data together during co-occurrence
