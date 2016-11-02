@@ -74,3 +74,6 @@ The scripts and raw data used to compare atmospheric and marine heat waves and c
 
 ## 2016/11/01
 * Worked out a couple of preliminary techniques for how best to visualise air, sea and wind data together during co-occurrence
+
+## 2016/11/02
+* The preliminary round of air, sea, wind figures

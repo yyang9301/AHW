@@ -108,7 +108,7 @@ cs_tmin_CC_PN_sub <- filter(cs_tmin_CC_PN, date_start %in% wind_PN$date & abs(la
 # The function then takes the week before and after the start of whichever event came first
 # The air and sea temps, and wind data are then subsetted and a figure is made so one can visually inspect possible relationships
 # Options for the 'stat' variable are: "temp", "tmax", "tmin"
-df <- hw_tmean_CC_PN_sub[1,]
+# df <- hw_tmean_CC_PN_sub[1,]
 wind.figure <- function(df, stat){
   # QC
   if(nrow(df) > 1){
@@ -148,9 +148,21 @@ wind.figure <- function(df, stat){
     geom_segment(data = wind, aes(x = date, xend = date + u, y = 0, yend = v), arrow = arrow(length = unit(0.15, "cm")), size = 0.5) +
     geom_point(data = wind, aes(x = date, y = 0), alpha = 0.5, size=1) +
     geom_vline(data = event_dates, aes(xintercept = as.numeric(dates), colour = type, linetype = range), size = 1, alpha = 0.7) +
-    scale_x_date(name = "Date", labels = date_format("%Y-%m-%d"), breaks = date_breaks("3 days"))
+    scale_x_date(name = "Date", labels = date_format("%Y-%m-%d"), breaks = date_breaks("3 days")) +
+    theme(axis.text.x = element_text(angle = 20, hjust = 0.4, vjust = 0.5, size = 8),
+          axis.text.y = element_text(size = 8))
   ggsave(filename = paste("graph/all_wind/", file_name, ".jpg", sep = ""))
 }
+# ddply(cs_tmin_CC_PN_sub, .(event_no, percentile.idx), wind.figure, stat = "tmin")
+## Create the desired figures
+# heat waves
+ddply(hw_tmean_CC_PN_sub, .(event_no, percentile.idx), wind.figure, stat = "temp")
+ddply(hw_tmax_CC_PN_sub, .(event_no, percentile.idx), wind.figure, stat = "tmax")
+ddply(hw_tmin_CC_PN_sub, .(event_no, percentile.idx), wind.figure, stat = "tmin")
+# cold-spells
+ddply(cs_tmean_CC_PN_sub, .(event_no, percentile.idx), wind.figure, stat = "temp")
+ddply(cs_tmax_CC_PN_sub, .(event_no, percentile.idx), wind.figure, stat = "tmax")
+ddply(cs_tmin_CC_PN_sub, .(event_no, percentile.idx), wind.figure, stat = "tmin")
 
 # This function differs from the one above with the same name in that it is designed to be fully automated for use with all time series
 # It must be subsetted by: index, index_start, percentile.idx

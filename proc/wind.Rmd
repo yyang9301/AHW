@@ -1,7 +1,7 @@
 ---
 title: "wind"
 author: "Robert Schlegel"
-date: "31 October 2016"
+date: "`r Sys.Date()`"
 output: pdf_document
 ---
 
@@ -35,7 +35,7 @@ source("setupParams/theme.R")
 ```
 
 # Wind data
-I now have wind data for one site from Andries. These data start on January 1st, 1996 and are at least daily until December 31st, 2005. The first few years of wind data are sampled 3 times per day and the last few years were sampled every hour. To use these data more effectively with the daily temperature values I then created daily mean vectors from these data. The algorithm I used can be found below and was adapted from: http://www.webmet.com/met_monitoring/622.html. 
+I now have wind data for one site, Port Nolloth, from Andries. These data start on January 1st, 1996 and are at least daily until December 31st, 2005. The first few years of wind data are sampled 3 times per day and the last few years were sampled every hour. To use these data more effectively with the daily temperature values I created daily mean vectors from these data. The algorithm I used can be found below and was adapted from: <http://www.webmet.com/met_monitoring/622.html>.
 
 ```{r, echo = TRUE}
 wind.vector <- function(df){
@@ -53,7 +53,14 @@ wind.vector <- function(df){
 }
 ```
 
-Once the daily wind vectors were calculated it was then possible to create line graphs of temperature data at times when co-occurrence of extreme events occurred with wind data shown alongside it.
+# Co-occurrence and wind figures
+As the dates of co-occurrence for events are already calculated for all possible combinations it is not necessary to run any more analyses in this regard. To show air and sea temperatures alongside wind data I first found the start dates for events that co-occurred within seven days of an event in the partner time series and then took the wind data for one week before and after the start and end dates of the events to see if there were any consistent patterns. I have made one individual figure for each paired extreme event (both heatwaves and cold-spells and tmean, tmax and tmin). These figures may be found at: <https://github.com/schrob040/AHW/tree/master/graph/all_wind> or <https://www.dropbox.com/home/AHW/graph/all_wind>. 
 
-# Co-occurrence and wind
-The dates of co-occurrence for events is already calculated for all possible combinations so it was not necessary to run any more analyses in this regard. So I was able to jump firectly into this analysis. To do so I found start dates for events that co-occurred with events in the partner time series and then took the wind data for certain periods of time around around these start dates to see if there are any consistent patterns. In order to allow for a range of analyses to encapsulate what effect the atmospheric pressure may be having on the relationship of extreme events I calculated mean windf vectors over a number of days preceeding and including the time during which the events co-occurred.
+The key to understanding the file names is as follows. Take the first file for example: 'ACS\_temp\_2005-05-02\_0.jpg'. 'ACS' denotes that this is showing cold-spells, if the file started with 'AHW' it would be showing heatwaves. Next, 'temp' shows that the atmospheric temperatures being shown are the mean, or tmean, temperatures. If this section of the file name is 'tmax' or 'tmin' it shows that the atmospheric temperatures being compared to the marine temperatures are those respective stats. The marine temperatures are always the daily means, and not tmax or tmin values as these generally don't exist. The next portion '2005-05-02' is the start date of whichever event began first. The last portion, here shown as '0' shows the maximum comparable percentile of the events being shown. The larger this number is the larger the events being shown are, and the more likely (hypothetically) the co-occurring events area actually having a real effect on one another in some way. Scrolling though the images one will notice that there are duplicates where the only difference is this one value in the file name. This is due to how the events are calculated so I left this in there as it is somewhat informative.
+
+![What appears to be a clear example of a south easterly wind leading to warm air, that then drove warm water.](wind.jpg)
+
+The above figure seems to make a clear case for what we thought may be occurring when atmospheric heatwaves (AHW) preceed marine heatwaves (MHW). A warm overland wind blows out onto the shore, warming the air and then the water temperatures increase to match. However, leafing through the images at the links given above, this relationship is often not clear. And when MHWs preceede AHWs there is no clearly consistent relationship. There are likely times in which the connection between land and sea are mediated by wind, but it does not look like it is the most important factor. Only three cold-spells co-occurred within 7 days of one another between the two time series. For two of the three the wind was pumping, which lends support to the hypothesis that wind driven upwelling may be the link between the cold events.
+
+# Further analyses
+In order to allow for a range of analyses to encapsulate what effect the wind speeds and bearings may be having on the relationship of extreme events I will calculate mean wind vectors over a number of days preceeding and including the time during which events co-occur. I'll also calculate median, max and mode stats for vectors as well as their constituent parts: speed and bearing. The figures created leading up to this step were designed to allow for insight into the possible connection, so as to perform more clever calculations of the numbers. They were not as clear as hoped so now it falls to statistical interpretation of this next step to see if some link can be teased out. Once this step has been completed it will be necessary to access more wind data as I assume that different sorts of relationships will be found on the three different coastlines of South Africa.
