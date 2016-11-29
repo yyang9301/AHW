@@ -3,6 +3,9 @@
 ## This script does:
 # 1. Load necessary data
 # 2. Create figures showing wind time series
+# 3. Calculate wind values during co-occurrence
+# 4. Calculate wind values during extreme events in air and sea independently
+# 5. Redundency analysis
 ## DEPENDS ON:
 library(doMC); doMC::registerDoMC(cores = 4)
 library(ggplot2)
@@ -44,6 +47,14 @@ temp_CC <- filter(SAWS_homogenised, site == "Cape Columbine")
 # 4) Combine temperature data frames
 
 # 5) Extreme events
+# SACTN
+load("data/events/SACTN_events.Rdata")
+SACTN_events_PN <- filter(SACTN_events, site == "Port Nolloth")
+# OISST
+load("data/events/SAWS_SAWS_events_tmean.Rdata")
+SAWS_SAWS_events_tmean_CC <- filter(SAWS_SAWS_events_tmean, site == "Cape Columbine")
+
+# 6) Co-occurrence
 # Heat waves
 load("data/cooccurrence/SACTN_SAWS_hw_tmean_CO.Rdata")
 hw_tmean_CC_PN <- filter(SACTN_SAWS_hw_tmean_CO, index == "Cape Columbine - Port Nolloth")
@@ -59,6 +70,7 @@ cs_tmax_CC_PN <- filter(SACTN_SAWS_cs_tmax_CO, index == "Cape Columbine - Port N
 load("data/cooccurrence/SACTN_SAWS_cs_tmin_CO.Rdata")
 cs_tmin_CC_PN <- filter(SACTN_SAWS_cs_tmin_CO, index == "Cape Columbine - Port Nolloth")
 
+
 # 2. Create figures showing wind time series ------------------------------
 
 # Prep wind data frame for use with ggplot
@@ -68,6 +80,7 @@ temp_CC_sub <- filter(temp_CC, date %in% dates)
 temp_PN_sub <- filter(temp_PN, date %in% dates)
 wd <- filter(wind_PN, date %in% dates)
 wd$bearing[wd$bearing == 0] <- 360
+# wd$bearing <- wd$bearing-180 # Correct to show direction where wind is coming from
 
 wd$u <- (1 * wd$speed) * sin((wd$bearing * pi / 180.0))
 wd$v <- (1 * wd$speed) * cos((wd$bearing * pi / 180.0))
@@ -82,8 +95,9 @@ dwd_p <-  ggplot(data = temp_PN_sub, aes(x = date, y = temp)) + bw_update +
   geom_line(data = temp_CC_sub, aes(x = date, y = temp), linetype = "dashed") +
   geom_segment(data = dw, aes(x = date, xend = date + u*10, y = 0, yend = v), arrow = arrow(length = unit(0.15, "cm")), size = 0.5) +
   geom_point(data = dw, aes(x = date, y = 0), alpha = 0.5, size=1) +
+  geom_point(data = dw[is.na(dw$speed),], aes(x = date, y = 0), alpha = 0.5, size = 4, colour = "grey") +
   scale_x_date(name="Date",labels = date_format("%Y-%m"),breaks = date_breaks("1 month")) #+
-  # scale_y_continuous(name = "Wind vectors (kn/h)\n", labels = v_labels, breaks = v_breaks)
+  # scale_y_continuous(name = "Wind vectors (kn/h)", labels = v_labels, breaks = v_breaks)
 dwd_p
 
 
@@ -244,3 +258,12 @@ wind.figure <- function(df, stat){
   print(w_fig, vp = vp3)
   dev.off()
 }
+
+
+# 4. Calculate wind values during extreme events in air and sea -----------
+
+PN_events_wind <- filter(SACTN_events_PN, date_start %in% wind_PN$date)
+
+
+# 5. Redundency analysis
+

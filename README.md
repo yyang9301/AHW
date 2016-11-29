@@ -77,3 +77,8 @@ The scripts and raw data used to compare atmospheric and marine heat waves and c
 
 ## 2016/11/02
 * The preliminary round of air, sea, wind figures
+
+## 2016/11/29
+* Updated exploratory analyses
+* More work done with wind data
+* Two new reports written up and knitted

@@ -1,0 +1,111 @@
+---
+title: "Redundancy Analysis (RDA)"
+author: "Robert Schlegel"
+date: "28 November 2016"
+output: pdf_document
+---
+
+# Introduction
+Hello again all. The last few weeks I've only had sparse access to my laptop. For the last few days though I have been able to focus largely on this project again and I had one specific question that I wanted to ask. Are there any relationships between the speed + bearing of the winds during the start of MHWs or AHWs and the intensity, duration, etc. of the said events? And more specifically, are these relationships different for events that co-occur within 7 days of another event? The purpose behind this question was to look for a statistical signal that could lead towards identifying some possible mechanistic explanation for the very seldom co-occurrence that we see in our data. For the purposes of keeping this report shorter I have also not calculated the relationship of MCSs and ACSs, as these show even weaker potential relationships than MHWs and AHWs I thought I would rather focus on this stronger link first, and if this methodology is deemed useful, I can analyse the cold-spell relationship next.
+
+```{r, load-libraries-and-files, echo=FALSE, message=FALSE}
+# 1) Load packages
+library(vegan)
+library(dplyr)
+library(ggplot2)
+library(RmarineHeatWaves)
+
+# 2) Load event data
+# MHW
+load("~/AHW/data/events/SACTN_events.Rdata")
+MHW <- filter(SACTN_events, site == "Port Nolloth" & type == "MHW")
+# AHW
+load("~/AHW/data/events/SAWS_SAWS_events_tmean.Rdata")
+AHW <- filter(SAWS_SAWS_events_tmean, site == "Cape Columbine" & type == "AHW")
+# Co-occurrence
+load("~/AHW/data/cooccurrence/SACTN_SAWS_hw_tmean_CO.Rdata")
+hw_tmean_CC_PN <- filter(SACTN_SAWS_hw_tmean_CO, index == "Cape Columbine - Port Nolloth")
+
+# 3) Load climate data
+load("~/AHW/data/wind/wind_PN.Rdata")
+load("~/AHW/data/SACTN/SACTN_cropped.Rdata")
+temp_PN <- filter(SACTN_cropped, site == "Port Nolloth")
+load("~/AHW/data/SAWS/homogenised/SAWS_homogenised.Rdata")
+temp_CC <- filter(SAWS_homogenised, site == "Cape Columbine")
+```
+
+# The analysis
+In order to answer the above question it was necessary to run a multivariate analysis on the data. And, as the title of this document implies, I settled on a redundancy analysis (RDA) because this draws multiple correlations between the dependent and independent variables fed to it in order to find not only which relationships are the strongest, but to also pull out which variables explain the most variance present within the models used. Similar to a PCA. Happily, R does all of this very easily.
+
+```{r, format-data-for-RDA, echo=FALSE}
+# 1) MHW
+MHW_start <- filter(MHW, date_start %in% wind_PN$date)
+MHW_start_sub <- MHW_start[, c(4,8:23)] # Remove non-numeric are non-relevant variables
+wind_MHW <- filter(wind_PN, date %in% (MHW_start$date_start-0)) # Change the number here for lag
+
+# 2) AHW
+AHW_start <- filter(AHW, date_start %in% wind_PN$date)
+AHW_start_sub <- AHW_start[, c(4,8:23)]
+wind_AHW <- filter(wind_PN, date %in% (AHW_start$date_start-0))
+
+# 3) Co-occurrence
+CO_start <- filter(hw_tmean_CC_PN, date_start %in% wind_PN$date & latest <=7 & latest >= -7)
+CO_start <- CO_start[CO_start$event_no == unique(CO_start$event_no),]
+CO_start <- CO_start[1:8,]
+CO_start_sub <- CO_start[, c(5,9:24,35,39:54)]
+wind_CO_SAWS <- filter(wind_PN, date %in% CO_start$date_start) # The start dates of the AHWs
+wind_CO_SACTN <- filter(wind_PN, date %in% CO_start$date_start.1) # The start dates of the MHWs
+wind_CO_SACTN <- wind_CO_SACTN[c(1:3,3,4:7),] # Extend as one of the MHWs is paired to two AHWs
+```
+
+# The sites
+The following RDA analysis used the SACTN (seawater) site "Port Nolloth" as this is the closest SACTN site to the location of the single wind time series currently being analysed, which also comes from Port Nolloth. The nearest SAWS (atmospheric) time series to which these data may be compared is "Cape Columbine", which is unfortunately 408 km away. Making these two sites the furthest apart of all of the paired time series in this project. While this is definitely not ideal, both time series are located on the same coastal section, so it is not all bad. But future analyses must include wind time series for sites that are much closer to one another. On average the other paired time series are ~20-30 km apart. With some paired sites being over 100 km apart.
+
+```{r, site-distances, echo=FALSE}
+load("~/AHW/setupParams/SACTN_SAWS_nearest.Rdata")
+SACTN_SAWS_nearest
+```
+
+# The wind data
+As mentioned above, the wind data are from Port Nolloth, which is at the very top of the West Coast of South Africa, ~200 km south of the border with Namibia. These data were discussed in detail in a previous report I e-mailed out so I won't go into detail on them again here.
+
+# Results
+We start with the RDA results for the MHWs. The following information and figure shows that the relationship between the MHWs and the wind on the start date of the events were not significant (p =~ 0.5, note that because the significance is determined from permutations, the p-value will change slightly every time the anova() function is run) and that very little of the variance in the model is explained by the wind variables. Interestingly, the `rate_decline`, metric seems to have the best relationship with one of the environmental vectors, the bearing of the wind. This implies that the bearing from which the wind was blowing on the start date of the MHW may relate to the speed at which the extreme temperature returned to normal. Thereby implying that if ind forcing is a factor in the creation of MHWs, the bearing of that wind forcing may relate to the sudden or slow decline of that event.
+```{r, RDA-MHW}
+MHW_RDA <- rda(MHW_start_sub ~ speed + bearing, data = wind_MHW, scale = T)
+# summary(MHW_RDA)
+anova(MHW_RDA)
+plot(MHW_RDA, scaling = 1)
+```
+
+Next we look at the RDA results for the AHWs and see that the relationship between them and the wind at the start date of the events is significant (p =~ 0.04). Whereas a significant relationship may have been found, the wind variables still explain very little of the overall variance present in the AHWs. Again we see a strong relationship between rate of decline and the bearing of the wind, as well as the mean absolute intensity and the maximum absolute intensity. In this case "absolute" means the full temperature, not just the excess amount above the threshold (e.g. if the maximum temperature of an event is 22°C, and the threshold on that day was 19°C, the relative maximum temperature would be 3°C, whereas the absolute maximum temperature is 22°C). The relationship of these variable with the bearing variable implies that wind forcing from a specific direction may cause more extreme AHWs. Assuming that a causal link does exist.
+```{r, RDA-AHW}
+AHW_RDA <- rda(AHW_start_sub ~ speed + bearing, data = wind_AHW, scale = T)
+# summary(AHW_RDA)
+anova(AHW_RDA)
+plot(AHW_RDA, scaling = 1)
+```
+
+Lastly, we look at the results of the RDA on the statistics for both MHWs and AHWs that occurred within 7 days of one another. This first chunk of information shows the relationship between the statistics for these events and the wind variables on the start day of the AHWs. We see that even though much of the variance in the model is explained by the wind variables, the relationship is not significant (p =~ 0.2). We also see that the bearing of the wind does not have as clear a relationship with the dependent variables (the MHW and AHW statistics) in the model. The speed of the wind however does appear to relate to the duration of the MHWs and the absolute cumulative intensity of the MHWs (any variable that ends in ".1" is from the MHWs). This is interesting as it implies that when a MHW is occurring within 7 days of an AHW, the cumulative intensity and duration of the MHW will relate to the speed of the wind during the beginning of the AHW.
+```{r, RDA-CO-SAWS}
+CO_SAWS_RDA <- rda(CO_start_sub ~ speed + bearing, data = wind_CO_SAWS, scale = T)
+# summary(CO_SAWS_RDA)
+anova(CO_SAWS_RDA)
+plot(CO_SAWS_RDA, scaling = 1)
+```
+
+When we look at the relationship of the co-occurring events and the wind variables on the start date of the MHWs we see a different picture. The relationship is also not significant (p =~ 0.3), even though much of the variance in the model is explained by the wind variables, but the relationship of the event statistics with the wind variables is different, with little meaning coming from the ordination.
+```{r, RDA_CO_SACTN}
+CO_SAWS_RDA <- rda(CO_start_sub ~ speed + bearing, data = wind_CO_SACTN, scale = T)
+# summary(CO_SAWS_RDA)
+anova(CO_SAWS_RDA)
+plot(CO_SAWS_RDA, scaling = 1)
+```
+
+# Discussion
+The most important discovery from this research is that only the AHWs have a significant relationship with the wind data. This is a bit surprising considering that the site at which these AHWs were measured is ~400 km from where these wind data were gathered. I am definitely interested in seeing how well AHWs at other sites compare with wind data sampled from much closer locations. The fact that MHWs did not have a significant relationship with the wind data is also an important discovery. It means that potentially (as I am beginning to suspect) there is little to no relationship between wind and extreme events happening in coastal waters. I am not completely convinced of this yet though. Everything I have seen thus far implies that there may be specific conditions in the atmosphere that may force or reinforce MHWs.
+
+Also worth noting is that while not significant, the wind variables at the start of AHWs that co-occurred with MHWs better explained the variance in the MHWs than the wind variables at the start of the MHWs did. I'm not quite sure what to make of that, but it may imply that a specific type of wind forcing an AHW may then relate better to a MHW. But this relationship is definitely a tricky one to parse out and there are not enough data points here to do so with any confidence.
+
+# Next step
+In order to improve on this analysis all of the available wind data for these coastal stations will need to be factored into the RDA analysis, which must then be run for all 26 paired time series, not just 1. Once this has been done I think that some useful patterns may begin to emerge. But the causal link between these events proves to remain an elusive one.

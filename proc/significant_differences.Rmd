@@ -1,0 +1,231 @@
+---
+title: "Significant Differences"
+author: "Robert Schlegel"
+date: "28 November 2016"
+output: pdf_document
+---
+
+# Introduction
+Following on from the RDA analysis, we can now say which variables are more likely important in the determination of a relationship between an extreme event and wind variables. Therefore we can see if these variable are significantly different for all events within a time series and only those that co-occurred with other events. Happily, all of these co-occurring events have already been calculated and need only be loaded for us to begin this next analysis. For the purpose of simplicity I have limited all of these comparisons to the "tmean" statistic from the atmospheric data. The "tmin" and "tmax" values have all been calculate, but I find "tmean" to be a more relaistic indicator of temperature comparisons over a series of days. It is true however that different relationships will likely be found given the use of the different temeperature metrics. I have also limited this analysis to heat waves. Cold-spells may be included easily at a later date if this analysis is deemed useful.
+
+```{r, load-libraries, echo=FALSE, message=FALSE}
+library(doMC); doMC::registerDoMC(cores = 4)
+library(stringr)
+library(zoo)
+library(lubridate)
+library(reshape2)
+library(ggplot2)
+library(plyr)
+library(dplyr)
+library(tidyr)
+library(broom)
+library(tibble)
+library(purrr)
+library(RmarineHeatWaves)
+library(readr)
+source("~/AHW/setupParams/theme.R")
+```
+
+# Methods
+Getting started all of the calculated events and co-occurring events were loaded.
+```{r, load-events, message=FALSE}
+# Marine
+load("~/AHW/data/events/SACTN_events.Rdata")
+# Atmosphere
+load("~/AHW/data/events/SAWS_SACTN_events_tmean.Rdata")
+# Co-occurring heat waves
+load("~/AHW/data/cooccurrence/SACTN_SAWS_hw_tmean_CO.Rdata")
+```
+
+Once the events were loaded, it was then necessary to screen out only events that co-occurred with another event within 7 days. Note that this 7 day lag is in both directions, not just MHWs occurring before or after the AHWs. This is an important consideration as the results of this anlysis then do not show if the relationship between the events has a direction, simply that there may be a relationship. Also, I initially performed this analysis on a 2 day lag, as well as the 7 day lag shown here. I have omitted the 2 day lag data as often there are two few events to calculate a t.test. And the results were not much different than the 7 day lag results.
+
+```{r, subset-co-occurrence}
+# Heat waves
+SACTN_SAWS_hw_tmean_CO_7_day <- SACTN_SAWS_hw_tmean_CO[abs(SACTN_SAWS_hw_tmean_CO$latest) <= 7,]
+```
+
+```{r, nearest-sites, echo=FALSE, message=FALSE}
+# Load index of closest occurring sites
+load("~/AHW/setupParams/SACTN_SAWS_nearest.Rdata")
+SACTN_SAWS_nearest$index <- seq(1:nrow(SACTN_SAWS_nearest))
+# Add more useful SACTN index column to the SAWS results
+SAWS_SACTN_events_tmean$SACTN <- sapply(strsplit(as.character(SAWS_SACTN_events_tmean$index), " - "), "[[", 2)
+```
+
+After loading and screening everything I created a function (which may be seen in the .Rmd version of this file) that took two paired sites (the nearest SACTN to SAWS sites) and first checked for significant differences between the heat waves (marine and atmosphere) at those sites. The test used was a non-paired, two sided t.test that does not assume equal variance. The statistics compared were: `rate_decline` (the rate of decline of the temperature of the event back to the climatological average), `int_mean_abs` (the "absolute" mean temperature of the event, as explained in the RDA report), `int_max_abs` (the "absolute" maximum temperature of the event), `int_cum_abs` (the "absolute" cummulative intensity of the event, effectively the temperature over the threshold for each day of the event added together, this can become very large) amd `duration` (the length of the event in days). These variables were chosen as they appeared to have the best relationship with at least one of the wind variables from the RDA analysis.
+
+```{r, evnt.sig, echo=FALSE, message=FALSE}
+event.sig <- function(df){
+  ## Subset events
+  MHW_sub <- filter(SACTN_events, site == df$SACTN[1] & type == "MHW")
+  MHW_sub$rate_decline[MHW_sub$rate_decline == Inf] <- NA
+  AHW_tmean_sub <- filter(SAWS_SACTN_events_tmean, 
+                          site == df$SAWS[1] & SACTN == df$SACTN[1] & type == "AHW")
+  AHW_tmean_sub$rate_decline[AHW_tmean_sub$rate_decline == Inf] <- NA
+  
+  ## Subset CO-events
+  # 7 day lag
+  HW_tmean_CO_7_sub <- filter(SACTN_SAWS_hw_tmean_CO_7_day, site == df$SAWS[1] & site.1 == df$SACTN[1])
+  
+  ## Remove duplicate CO-events from data frames
+  # 7 day lag
+  HW_tmean_CO_7_sub <- HW_tmean_CO_7_sub[1:length(unique(HW_tmean_CO_7_sub$event_no)),]
+  HW_tmean_CO_7_sub$rate_decline[HW_tmean_CO_7_sub$rate_decline == Inf] <- NA
+  HW_tmean_CO_7_sub$rate_decline.1[HW_tmean_CO_7_sub$rate_decline.1 == Inf] <- NA
+  
+  ## Remove duplicate events and events with co-occurring partners from main data frames
+  # Marine
+  MHW_sub_sub <- MHW_sub[!(MHW_sub$event_no %in% HW_tmean_CO_7_sub$event_no.1),]
+  # Atmosphere
+  AHW_tmean_sub_sub <- AHW_tmean_sub[!(AHW_tmean_sub$event_no %in% HW_tmean_CO_7_sub$event_no),]
+  
+  ## 1) T-tests ##
+  # 1.1) MHW vs. AHW
+  MHW_vs_AHW_t.test <- data.frame(
+    comparison = "MHW vs AHW",
+    rate_decline = 
+      t.test(MHW_sub$rate_decline, AHW_tmean_sub$rate_decline, 
+             alternative = "two.sided", paired = F)$p.value,
+    int_mean_abs =
+      t.test(MHW_sub$int_mean_abs, AHW_tmean_sub$int_mean_abs, 
+             alternative = "two.sided", paired = F)$p.value,
+    int_max_abs =
+      t.test(MHW_sub$int_max_abs, AHW_tmean_sub$int_max_abs, 
+             alternative = "two.sided", paired = F)$p.value,
+    int_cum_abs = 
+      t.test(MHW_sub$int_cum_abs, AHW_tmean_sub$int_cum_abs, 
+             alternative = "two.sided", paired = F)$p.value,
+    duration =
+      t.test(MHW_sub$duration, AHW_tmean_sub$duration, 
+             alternative = "two.sided", paired = F)$p.value
+  )
+  MHW_vs_AHW_t.test[,2:length(MHW_vs_AHW_t.test)] <- apply(MHW_vs_AHW_t.test[,2:length(MHW_vs_AHW_t.test)], 
+                                                           2, round_any, 0.0001)
+  # 1.2) MHW vs. CO-MHW
+  if(nrow(HW_tmean_CO_7_sub[complete.cases(HW_tmean_CO_7_sub$rate_decline.1),]) <= 2){
+    MHW_vs_COMHW_t.test <- data.frame(
+      comparison = "MHW vs CO-MHW",
+      rate_decline = NA,
+      int_mean_abs = NA,
+      int_max_abs = NA,
+      int_cum_abs = NA,
+      duration = NA
+    )
+  } else {
+    MHW_vs_COMHW_t.test <- data.frame(
+      comparison = "MHW vs CO-MHW",
+      rate_decline = 
+        t.test(MHW_sub_sub$rate_decline, HW_tmean_CO_7_sub$rate_decline.1, 
+               alternative = "two.sided", paired = F)$p.value,
+      int_mean_abs =
+        t.test(MHW_sub_sub$int_mean_abs, HW_tmean_CO_7_sub$int_mean_abs.1, 
+               alternative = "two.sided", paired = F)$p.value,
+      int_max_abs =
+        t.test(MHW_sub_sub$int_max_abs, HW_tmean_CO_7_sub$int_max_abs.1, 
+               alternative = "two.sided", paired = F)$p.value,
+      int_cum_abs = 
+        t.test(MHW_sub_sub$int_cum_abs, HW_tmean_CO_7_sub$int_cum_abs.1, 
+               alternative = "two.sided", paired = F)$p.value,
+      duration =
+        t.test(MHW_sub_sub$duration, HW_tmean_CO_7_sub$duration.1, 
+               alternative = "two.sided", paired = F)$p.value
+    )
+    MHW_vs_COMHW_t.test[,2:length(MHW_vs_COMHW_t.test)] <- apply(MHW_vs_COMHW_t.test[,2:length(MHW_vs_COMHW_t.test)], 
+                                                                 2, round_any, 0.0001)
+  }
+  # 1.3) AHW vs. CO-AHW
+  if(nrow(HW_tmean_CO_7_sub[complete.cases(HW_tmean_CO_7_sub$rate_decline),]) <= 2){
+    AHW_vs_COAHW_t.test <- data.frame(
+      comparison = "AHW vs CO-AHW",
+      rate_decline = NA,
+      int_mean_abs = NA,
+      int_max_abs = NA,
+      int_cum_abs = NA,
+      duration = NA
+    )
+  } else {
+    AHW_vs_COAHW_t.test <- data.frame(
+      comparison = "AHW vs CO-AHW",
+      rate_decline = 
+        t.test(AHW_tmean_sub_sub$rate_decline, HW_tmean_CO_7_sub$rate_decline, 
+               alternative = "two.sided", paired = F)$p.value,
+      int_mean_abs =
+        t.test(AHW_tmean_sub_sub$int_mean_abs, HW_tmean_CO_7_sub$int_mean_abs, 
+               alternative = "two.sided", paired = F)$p.value,
+      int_max_abs =
+        t.test(AHW_tmean_sub_sub$int_max_abs, HW_tmean_CO_7_sub$int_max_abs, 
+               alternative = "two.sided", paired = F)$p.value,
+      int_cum_abs = 
+        t.test(AHW_tmean_sub_sub$int_cum_abs, HW_tmean_CO_7_sub$int_cum_abs, 
+               alternative = "two.sided", paired = F)$p.value,
+      duration =
+        t.test(AHW_tmean_sub_sub$duration, HW_tmean_CO_7_sub$duration, 
+               alternative = "two.sided", paired = F)$p.value
+    )
+    AHW_vs_COAHW_t.test[,2:length(AHW_vs_COAHW_t.test)] <- apply(AHW_vs_COAHW_t.test[,2:length(AHW_vs_COAHW_t.test)], 
+                                                                 2, round_any, 0.0001)
+  }
+  # Stitch it up
+  ALL_t.test <- rbind(MHW_vs_AHW_t.test, MHW_vs_COMHW_t.test, AHW_vs_COAHW_t.test)
+  # Add meta-data
+  ALL_t.test$SACTN <- df$SACTN[1]
+  ALL_t.test$SAWS <- df$SAWS[1]
+  ALL_t.test$distance <- df$distance[1]
+  # Melt it
+  ALL_t.test <- melt(ALL_t.test,
+                     id.vars = c("SACTN", "SAWS", "distance","comparison"),
+                     variable.name = "stat",
+                     value.name = "p")
+  return(ALL_t.test)
+}
+```
+
+# Results
+With all of that sorted, it was then time to have a peak at the results. And to see if anything interesting popped out.
+
+```{r, event.sig-results}
+event_sig <- ddply(SACTN_SAWS_nearest, .(index), event.sig, .parallel = T)
+head(event_sig)
+```
+
+Quickly scanning the results it does appear that in almost all instances, these flagship variables are significantly different between the MHWs and AHWs at each site. It also appears that MHWs that do not occur within 7 days of an AHWs are often significantly different from MHWs that do co-occur. This patern does not appear as clear with AHWs. With results this dense it can be difficult to effectively summarise them with one figure, but I have attempted to do so below.
+
+```{r, event-sig-prep, echo=FALSE, message=FALSE, warning=FALSE}
+event_sig$index <- paste(event_sig$SACTN, event_sig$SAWS, sep = " - ")
+event_sig$index <- as.factor(event_sig$index)
+index_guide <- data.frame(index = paste(SACTN_SAWS_nearest$SACTN, SACTN_SAWS_nearest$SAWS, sep = " - "),
+                          order = seq(1:nrow(SACTN_SAWS_nearest)))
+index_guide$index <- reorder(index_guide$index, index_guide$order)
+event_sig <- event_sig %>%
+  group_by(index) %>%
+  mutate(order = index_guide$order[index_guide$index == index][1])
+event_sig <- data.frame(event_sig)
+event_sig <- event_sig[order(event_sig$order),]
+event_sig$index <- reorder(event_sig$index, event_sig$order)
+event_sig$order <- NULL
+rownames(event_sig) <- NULL
+```
+
+It is difficult to see the site names in the following figure due to the limiting page size, but they are given in geographical order from the Namibian border to the Mozambiquan border, as shown in the following table.
+
+```{r, nearest-sites-table, echo=FALSE}
+SACTN_SAWS_nearest
+```
+
+```{r, event-sig-fig, echo=FALSE, message=FALSE, warning=FALSE, fig.cap="Dot plot showing p-value result of t.tests that compare the statistics seen on the x axis between various groups of events, which are shown in colour. Significant differences are highlighted with black 'x' shapes. Note that some panels only have peach dots. This is because there are fewer than 3 events co-occurring within 7 days of each other for the paired time series. Also note that some panels do not have blue dots, this is because the rate of decline for the AHWs is not always able to be calculated, therefore some site pairings do not have 3 or more complete AHWs co-occurring within 7 days of MHWs."}
+ggplot(data = event_sig, aes(x = stat, y = p)) + bw_update +
+  geom_point(aes(colour = comparison)) +
+  geom_point(data = event_sig[!(is.na(event_sig$p)) & event_sig$p <= 0.05,], shape = 4, size = 1.5) +
+  facet_wrap(~index, ncol = 7) +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.3))
+```
+
+One may see that almost all of the peach dots are highlighted with black 'x's, meaning for most site pairings, these important variables are significantly different between MHWs and AHWs. This is not terribly surprising, but is important to note none the less. Additionally, while note often significantly different from one another, the non-co-occurrring MHWs do tend to be significantly different from the co-occurring MHWs more often than the non-co-occurring AHWs are significantly different form the co-occurring AHWs.
+
+# Discussion
+That almost all of the important variables for MHWs are significantly different from the AHWs at almost all sites is an interesting result in that it shows that the variables that may be best linking these events to wind forcing are significantly different from one another. This implies that MHWs and AHWs must be responding to wind forcing in intrinsically different ways. I'm sure this could be taken forward, but I can't quite think of how just now. There is likely something very complex going on, but I'll need to do more reading to get at what that may be. That being said, what reading I have done on this topic is not very reassuring, in that there may not be an answer out there. The interaction between air and sea at mid-latitudes is very poorly understood and some claim that a clear signal may not exist, as it does nearer the equator.
+
+Besides significantly different MHWs and AHWs, we see that some sites show significant differences between co-occurring and non-co-occurring events. I was hoping that more of these results would be significant, as this would then imply that the events that are co-occurring with their air/ sea counterpart are different from the events that don't co-occur. Were this the case, then it would give us something to focus on when looking for that illusive signal. Some of these do however show significant difference and so a part of the keyt may be in there.
+
+# Next step
+I've been at this for a bit now and am aware I'm starting to ramble. Like that sentence (and this one). If this avenue of research is deemed worthwhile then the next step will be to zero in on the sites that show significant difference between co-occurring and non-co-occurring events. The differences between these events may illucidate some driver as to the potential forcing occurring between these different systems. Though I am beginning to wonder, if it is this difficult to find a signal, does one really exist? Or will it be a product of deep fishing?
