@@ -82,3 +82,7 @@ The scripts and raw data used to compare atmospheric and marine heat waves and c
 * Updated exploratory analyses
 * More work done with wind data
 * Two new reports written up and knitted
+
+## 2017/02/07
+* Script created to download BRAN data
+* These data are saved in an external folder as they are to multitudinous for GitHub
