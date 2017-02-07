@@ -1,0 +1,27 @@
+\begin{thebibliography}{3}
+\expandafter\ifx\csname natexlab\endcsname\relax\def\natexlab#1{#1}\fi
+\expandafter\ifx\csname url\endcsname\relax
+  \def\url#1{\texttt{#1}}\fi
+\expandafter\ifx\csname urlprefix\endcsname\relax\def\urlprefix{URL }\fi
+
+\bibitem[{Easterling et~al.(2000)Easterling, Meehl, Parmesan, Changnon, Karl,
+  and Mearns}]{Easterling2000}
+Easterling, D.~R., Meehl, G.~A., Parmesan, C., Changnon, S.~A., Karl, T.~R.,
+  Mearns, L.~O., 2000. {Climate extremes: observations, modeling, and impacts}.
+  Science 289~(5487), 2068--2074.
+
+\bibitem[{Jentsch et~al.(2007)Jentsch, Kreyling, and
+  Beierkuhnlein}]{Jentsch2007}
+Jentsch, A., Kreyling, J., Beierkuhnlein, C., 2007. {A new generation of
+  climate-change experiments: events, not trends}. Frontiers in Ecology and the
+  Environment 5~(6), 315--324.
+
+\bibitem[{Stocker et~al.(2013)Stocker, Qin, Plattner, Tignor, Allen, Boschung,
+  Nauels, Xia, Bex, and Midgley}]{IPCC2014}
+Stocker, T., Qin, D., Plattner, G.~K., Tignor, M., Allen, S.~K., Boschung, J.,
+  Nauels, A., Xia, Y., Bex, V., Midgley, P.~M. (Eds.), 2013. {Climate change
+  2013: the physical science basis: Working Group I contribution to the Fifth
+  Assessment Report of the Intergovernmental Panel on Climate Change}.
+  Cambridge University Press, Cambridge, United Kingdom and New York, NY, USA.
+
+\end{thebibliography}

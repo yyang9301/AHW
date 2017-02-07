@@ -1,0 +1,153 @@
+\documentclass[a4paper,10pt,review]{elsarticle}
+
+\usepackage{lineno,hyperref} % Use this line to activate reference hyperlinks
+% \usepackage{lineno} % Use this line to deactivate reference hyperlinks for ease of reviewing
+\modulolinenumbers[5]
+
+% START: Inserted by AJS
+\frenchspacing
+\usepackage{ifxetex}
+\ifxetex
+  \usepackage{fontspec}
+  \defaultfontfeatures{Ligatures=TeX} % To support LaTeX quoting style
+  \setromanfont{Hoefler Text}
+  % \setmainfont[Ligatures=TeX]{Palatino}
+\else
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{lmodern}
+  \usepackage{textcomp} % directly use the degree (and some other) symbol
+\fi
+
+\usepackage{fixltx2e}
+\usepackage[]{graphicx}
+\usepackage{wrapfig}
+\usepackage{lscape}
+\usepackage{rotating}
+\usepackage{epstopdf}
+\usepackage{ragged2e}  % for '\RaggedRight' macro (allows hyphenation)
+\usepackage[pdftex]{color}
+\usepackage[margin=2.75cm]{geometry}
+\usepackage{upquote}
+\usepackage{textgreek}
+\usepackage{microtype} % place after fonts; even better typesetting for improved readability
+\usepackage{xfrac} % nice fractions
+\usepackage{booktabs} % nice tables without vertical lines
+\setlength\heavyrulewidth{0.1em}
+\setlength\lightrulewidth{0.0625em}
+\usepackage[color=yellow, textsize=tiny]{todonotes}
+\usepackage[font={small}, labelfont=bf]{caption} % tweaking the captions
+\usepackage{gensymb}
+\usepackage{amsmath,amssymb}
+\usepackage{cleveref} % clever cross referencing figures and tables; last package to include
+% END: Inserted by AJS
+\usepackage{natbib}
+
+\journal{Progress in Oceanography}
+
+%%%%%%%%%%%%%%%%%%%%%%%
+%% Elsevier bibliography styles
+%%%%%%%%%%%%%%%%%%%%%%%
+%% To change the style, put a % in front of the second line of the current style and
+%% remove the % from the second line of the style you would like to use.
+%%%%%%%%%%%%%%%%%%%%%%%
+
+%% Numbered
+%\bibliographystyle{model1-num-names}
+
+%% Numbered without titles
+% \bibliographystyle{model1a-num-names}
+
+%% Harvard
+% \bibliographystyle{model2-names.bst}\biboptions{authoryear}
+
+%% Vancouver numbered
+%\usepackage{numcompress}\bibliographystyle{model3-num-names}
+
+%% Vancouver name/year
+% \usepackage{numcompress}\bibliographystyle{model4-names}\biboptions{authoryear}
+
+%% APA style
+% \bibliographystyle{model5-names}\biboptions{authoryear}
+
+%% AMA style
+%\usepackage{numcompress}\bibliographystyle{model6-num-names}
+
+%% `Elsevier LaTeX' style
+% \bibliographystyle{elsarticle-num}
+\bibliographystyle{elsarticle-harv}\biboptions{authoryear}
+% \bibliographystyle{elsarticle-num-names}
+%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{document}
+
+\begin{frontmatter}
+
+\title{The state of the union: air-sea interactions during coastal marine heatwaves}
+
+%% or include affiliations in footnotes:
+\author[firstaddress]{Robert W. Schlegel\corref{mycorrespondingauthor}}
+\cortext[mycorrespondingauthor]{Corresponding author}
+\ead{3503570@myuwc.ac.za}
+\author[secondaddress,thirdaddress]{Eric C. J. Oliver}
+\author[fourthaddress]{Sarah Kirkpatrick}
+\author[fifthaddress]{Andries Kruger}
+\author[firstaddress]{Albertus J. Smit}
+
+
+% \author[mysecondaryaddress]{Global Customer Service\corref{mycorrespondingauthor}}
+
+\address[firstaddress]{Department of Biodiversity and Conservation Biology, University of the Western Cape, Private Bag X17, Bellville 7535, South Africa}
+
+\address[secondaddress]{ARC Centre of Excellence for Climate System Science, Australia}
+
+\address[thirdaddress]{Institute for Marine and Antarctic Studies, University of Tasmania, Hobart, Australia}
+
+\address[fourthaddress]{UWA Oceans Institute and School of Plant Biology, The University of Western Australia, Crawley, 6009 Western Australia, Australia}
+
+\address[fifthaddress]{SAWS, South Africa}
+
+\begin{abstract}
+As the study of extreme climatic events increases, it becomes necessary to document the history of these events more thoroughly. In addition to documentation it behooves us to investigate potential mechanistic causal pathways that may allow us to better forecast the occurrence of these devastating events. To this end we have taken oceanic and atmospheric reanalysis data to examine the state of the air and sea surrounding coastal areas along the coast of South Africa at time in which extreme events have been documented. It was found that X, Y and Z occurred often in tandem with coastal MHWs. This may be taken as the first step of a more in depth exploratory analysis between what may be a causal link in the air sea interaction at these mid-latitude locations.
+\end{abstract}
+
+\begin{keyword}
+extreme events \sep air-sea interaction \sep remotely-sensed SST \sep \emph{in situ} data \sep climate change \sep nearshore
+\end{keyword}
+
+\end{frontmatter}
+
+\linenumbers
+
+\section{Introduction}
+The negative impact of anthropogenically forced warming on both marine and terrestrial ecosystems has become progressively better documented over the last few decades. The primary topic of focus for changing climates often manifests itself as linear increases in mean temperatures in given areas. Whereas these long term changes are important and are already having documented impacts on a myriad of systems identified as critically important \citep{IPCC2014}, the major impacts on humans and ecosystems in the present are due to extreme events \citep{Easterling2000}. Often unpredictable, cyclones, floods, heatwaves and cold-spells may already begin and end before any warning systems may be of use. It is for this reason, and others, that focus in climate change research is now being applied to the study of these extreme events \citep{Jentsch2007}.
+
+\section{Methods}
+
+\section{Results}
+
+\section{Discussion}
+
+\section{Conclusion}
+
+\section*{Acknowledgements}
+We would like to thank DAFF, DEA, EKZNW, KZNSB, SAWS and SAEON for contributing all of the raw data used in this study. Without it, this article and the South African Coastal Temperature Network (SACTN) would not be possible. This research was supported by NRF Grant (CPRR14072378735) and by the Australian Research Council (FT110100174). This paper makes a contribution to the objectives of the Australian Research Council Centre of Excellence for Climate System Science (ARCCSS). The authors report no financial conflicts of interests. The data and analyses used in this paper may be found at https://github.com/schrob040/MHW. The Bluelink ocean data products were provided by CSIRO. Bluelink is a collaboration involving the Commonwealth Bureau of Meteorology, the Commonwealth Scientific and Industrial Research Organisation and the Royal Australian Navy.
+
+\section*{References}
+
+
+% Eric's paper outlining the methodology
+% Oliver, E. C. J., V. Lago, N. J. Holbrook, S. D. Ling, C. N. Mundy, A. J. Hobday (2017), Eastern Tasmania Marine Heatwave Atlas, Institute for Marine and Antarctic Studies, University of Tasmania. doi: 10.4226/77/587e97d9b2bf9. http://metadata.imas.utas.edu.au/geonetwork/srv/eng/metadata.show?uuid=20188863-0af6-4032-98f8-def671cdaa58
+
+% Citing ERA-interim
+% http://onlinelibrary.wiley.com/doi/10.1002/qj.828/abstract
+
+% Disable the following line when wanting to repopulate the .bbl file from the AHW.bib file
+%\bibpunct{(}{)}{;}{a}{}{,} % Not certain this line is necessary...
+
+\bibliography{AHW} % Comment out when manually copying the references from the .bbl file
+% Delete all of the following when using the AHW.bib file with the above line
+% No one here but us chickens...
+% Delete the above line when using the AHW.bib file instead of copying in the .bbl file
+
+\end{document}
