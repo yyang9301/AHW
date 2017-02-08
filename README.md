@@ -87,3 +87,7 @@ The scripts and raw data used to compare atmospheric and marine heat waves and c
 * Script created to download BRAN data
 * These data are saved in an external folder as they are to multitudinous for GitHub
 * First steps taken for the creation of the LaTeX version of the manuscript
+
+## 2017/02/08
+* Script created to load BRAN data into R in long format
+* Additional text added to manuscript
