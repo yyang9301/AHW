@@ -89,5 +89,5 @@ The scripts and raw data used to compare atmospheric and marine heat waves and c
 * First steps taken for the creation of the LaTeX version of the manuscript
 
 ## 2017/02/08
-* Script created to load BRAN data into R in long format
+* Function created to load BRAN data into R in long format
 * Additional text added to manuscript

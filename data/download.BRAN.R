@@ -87,20 +87,20 @@ for (i in vars){ # the variable level
 
 
  
-# Load an ncdf file to ensure it saved correctly
-load("~/data/BRAN/ocean_v_1994_01.Rdata")
-
-# Melt it down for plotting
-library(reshape2)
-stor2 <- stor.nc$var[,,1]
-rownames(stor2) <- stor.nc$x
-colnames(stor2) <- stor.nc$y
-sst <- melt(stor2)
-colnames(sst) <- c("x", "y", "temp")
-sst$date <- NA # Blank for now
-
-# Test visualisation
-library(ggplot2)
-ggplot(data = sst, aes(x = x, y = y, colour = temp)) +
-  geom_point()
+# # Load an ncdf file to ensure it saved correctly
+# load("~/data/BRAN/ocean_v_1994_01.Rdata")
+# 
+# # Melt it down for plotting
+# library(reshape2)
+# stor2 <- stor.nc$var[,,1]
+# rownames(stor2) <- stor.nc$x
+# colnames(stor2) <- stor.nc$y
+# sst <- melt(stor2)
+# colnames(sst) <- c("x", "y", "temp")
+# sst$date <- NA # Blank for now
+# 
+# # Test visualisation
+# library(ggplot2)
+# ggplot(data = sst, aes(x = x, y = y, colour = temp)) +
+#   geom_point()
 
