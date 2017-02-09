@@ -61,7 +61,7 @@ for (i in vars){ # the variable level
           # Create subsetting indices
           index_x <- nc.data$x[nc.data$x<=elon & nc.data$x>=wlon] # lon
           index_y<- nc.data$y[nc.data$y<=nlat & nc.data$y>=slat] # lat
-          index_z <- nc.data$z[nc.data$z == 2.5] # Select only first depth layer of the ocean
+          index_z <- 1 # Select only first depth layer of the ocean
           index_t <- nc.data$t # Select ALL days of data
           
           # Group it all for prettier coding
@@ -71,9 +71,6 @@ for (i in vars){ # the variable level
           # Download data as desired from correct subsets
           stor.nc <- list()
           # var[x, y, z, t] # The subsetting format
-          
-          test <- ncvar_get(nc.stor, nc.stor$dim[[6]], start = start[2], count = count[2])
-          
           stor.nc$var <- ncvar_get(nc.stor, nc.stor$var[[5]], start = start, count = count)
           stor.nc$x <- ncvar_get(nc.stor, nc.stor$dim[[5]], start = start[1], count = count[1])
           stor.nc$y <- ncvar_get(nc.stor, nc.stor$dim[[6]], start = start[2], count = count[2])
