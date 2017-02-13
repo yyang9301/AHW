@@ -25,7 +25,7 @@ slat <- -40
 
 ## Download the BRAN data
 # select only specific variables to control the download process
-vars <- c("ocean_temp", "ocean_u", "ocean_v", "ocean_w")
+vars <- c("ocean_temp", "ocean_u", "ocean_v")
 # vars <- c("ocean_temp") 
 month.special <- c("01","02","03","04","05","06","07","08","09","10","11","12") # months must be this way for URLs to work
 month.incomplete <- c("09","10","11","12") # These months are not yet available for 2016
@@ -60,7 +60,7 @@ for (i in vars){ # the variable level
           
           # Create subsetting indices
           index_x <- nc.data$x[nc.data$x<=elon & nc.data$x>=wlon] # lon
-          index_y<- nc.data$y[nc.data$y<=nlat & nc.data$y>=slat] # lat
+          index_y <- nc.data$y[nc.data$y<=nlat & nc.data$y>=slat] # lat
           index_z <- 1 # Select only first depth layer of the ocean
           index_t <- nc.data$t # Select ALL days of data
           
