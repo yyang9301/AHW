@@ -31,8 +31,15 @@ BRAN.Rdata <- function(x){
   BRAN_file <- as.character(x$files)
   load(BRAN_file)
   stor_length <- nrow(as.data.frame(stor.nc$var[1,1,]))
-  # Unfortunately the date value is not saved directly in the list
-  # It is necessary to use a for loop to construct the date while subsetting
+  stor_year <- sapply(strsplit(basename(BRAN_file), "_"), "[[", 3)
+  stor_month <- sapply(strsplit(basename(BRAN_file), "_"), "[[", 4)
+  stor_month <- sapply(strsplit(stor_month, ".Rdata"), "[[", 1)
+  # The following apply functions do not transpose the data frame correctly
+  # Rather using for loop as it is also faster... somehows
+  # stor_date <- paste0(stor_year,"_",stor_month)
+  # system.time(BRAN_data <- data.frame(lapply(data.frame(t(sapply(stor.nc, "["))), unlist))) # 3 seconds
+  # length(levels(as.factor(paste0(round(BRAN_data$x,2), round(BRAN_data$y),2))))
+  # system.time(BRAN_data$date <- as.Date(paste0(stor_date,"_",rep(1:stor_length, each = length(stor.nc$x)*length(stor.nc$y))), "%Y_%m_%e")) # 5 seconds
   BRAN_data <- data.frame()
   for(i in 1:stor_length){
     # Subset and melt one day of data
@@ -110,7 +117,8 @@ ERA.ncdf <- function(nc.file, date_idx){
     # stor3$stat <- "temp"
     ERA_temp <- rbind(ERA_temp, stor3)
   }
-  ERA_temp <- ddply(ERA_temp, .(x, y), summarise, var = mean(var, na.rm = T), .parallel = T)
+  ERA_temp <- data.table(ERA_temp)
+  ERA_temp <- ERA_temp[, .(var = mean(var, na.rm = TRUE)), by = .(x,y)] # 1 seconds
   ERA_temp$stat <- "temp"
   
   # U
@@ -126,7 +134,8 @@ ERA.ncdf <- function(nc.file, date_idx){
     # stor3$stat <- "u"
     ERA_u <- rbind(ERA_u, stor3)
   }
-  ERA_u <- ddply(ERA_u, .(x, y), summarise, var = mean(var, na.rm = T), .parallel = T)
+  ERA_u <- data.table(ERA_u)
+  ERA_u <- ERA_u[, .(var = mean(var, na.rm = TRUE)), by = .(x,y)] # 1 seconds
   ERA_u$stat <- "u"
   
   # V
@@ -142,7 +151,8 @@ ERA.ncdf <- function(nc.file, date_idx){
     # stor3$stat <- "v"
     ERA_v <- rbind(ERA_v, stor3)
   }
-  ERA_v <- ddply(ERA_v, .(x, y), summarise, var = mean(var, na.rm = T), .parallel = T)
+  ERA_v <- data.table(ERA_v)
+  ERA_v <- ERA_v[, .(var = mean(var, na.rm = TRUE)), by = .(x,y)] # 1 seconds
   ERA_v$stat <- "v"
   
   # Combine
