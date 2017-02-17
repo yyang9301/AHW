@@ -61,17 +61,28 @@ detect.SACTN <- function(dat){
   end <- dat$end[1]
   dat <- dat[,2:3]
   whole <- make_whole(dat)
+  # MHW
   mhw <- detect(whole, climatology_start = start, climatology_end = end,
                     min_duration = 5, max_gap = 2, cold_spells = FALSE)
-  mhw <- mhw$event
-  mhw$type <- "MHW"
+  mhw$event$type <- "MHW"
+  mhw$event$site <- site
+  mhw$clim$type <- "MHW"
+  mhw$clim$site <- site
+  # mhw <- mhw$event
+  # mhw$type <- "MHW"
+  # mhw$site <- site
+  #MCS
   mcs <- detect(whole, climatology_start = start, climatology_end = end,
                 min_duration = 5, max_gap = 2, cold_spells = TRUE)
-  mcs <- mcs$event
-  mcs$type <- "MCS"
-  events <- rbind(mhw, mcs)
-  events$site <- site
-  return(events)
+  mcs$event$type <- "MCS"
+  mcs$event$site <- site
+  mcs$clim$type <- "MCS"
+  mcs$clim$site <- site
+  # Combine
+  event <- data.frame(rbind(data.frame(mhw$event), data.frame(mcs$event)))
+  clim <- data.frame(rbind(data.frame(mhw$clim), data.frame(mcs$clim)))
+  res <- list(event = event, clim =  clim)
+  return(res)
 }
 
 

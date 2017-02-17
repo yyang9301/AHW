@@ -42,12 +42,29 @@ SACTN_cropped <- SACTN_cropped %>%
   mutate(end = SACTN_analysis_period$end[SACTN_analysis_period$site == site][1])
 SACTN_cropped <- data.frame(SACTN_cropped)
 
+SACTN_cropped$idx <- as.numeric(SACTN_cropped$site) # Use numeric values as site names introduce problems
+
+# SACTN_cropped <- filter(SACTN_cropped, site %in% levels(SACTN_cropped$site)[1:4]) # Testing
+
 # 2. Calculate the extreme SACTN events -----------------------------------
 
-system.time(SACTN_events <- ddply(SACTN_cropped, .(site), detect.SACTN, .parallel = TRUE)) ## 14 seconds
+system.time(SACTN_all <- dlply(SACTN_cropped, .(idx), detect.SACTN, .parallel = TRUE)) ## 54 seconds
 
 
 # 3. Save results for analysis in "proc/coocurrence.R" --------------------
 
+# Events
+SACTN_events <- data.frame()
+for(i in 1:max(SACTN_cropped$idx)){
+  events <- SACTN_all[[i]]$event
+  SACTN_events <- rbind(SACTN_events, events)
+}
 save(SACTN_events, file = "data/events/SACTN_events.Rdata")
 
+# Climatologies
+SACTN_clims <- data.frame()
+for(i in 1:max(SACTN_cropped$idx)){
+  clims <- SACTN_all[[i]]$clim
+  SACTN_clims <- rbind(SACTN_clims, clims)
+}
+save(SACTN_clims, file = "data/events/SACTN_clims.Rdata")

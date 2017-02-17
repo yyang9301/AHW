@@ -94,8 +94,12 @@ The scripts and raw data used to compare atmospheric and marine heat waves and c
 
 ## 2017/02/13
 * Function created to load ERA Interim data into R in long format
-* First proof of concept figure for synoptic air/ sea view during events created
+* First proof of concept figure for synoptic air-sea view during events created
 
-## 2017/02/13
+## 2017/02/14
 * Reanalysis data processing pipeline improved
 * Wind vectors visualised
+
+## 2017/02/17
+* Summary data boxes added to synoptic air-sea figure
+* Rough draft of introduction complete
