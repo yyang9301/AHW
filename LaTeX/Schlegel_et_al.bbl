@@ -1,8 +1,23 @@
-\begin{thebibliography}{3}
+\begin{thebibliography}{14}
 \expandafter\ifx\csname natexlab\endcsname\relax\def\natexlab#1{#1}\fi
 \expandafter\ifx\csname url\endcsname\relax
   \def\url#1{\texttt{#1}}\fi
 \expandafter\ifx\csname urlprefix\endcsname\relax\def\urlprefix{URL }\fi
+
+\bibitem[{Barsugli and Battisti(1998)}]{Barsugli1998}
+Barsugli, J.~J., Battisti, D.~S., 1998. {The Basic Effects of
+  Atmosphere–Ocean Thermal Coupling on Midlatitude Variability*}. Journal of
+  the Atmospheric Sciences 55~(4), 477--493.
+
+\bibitem[{Benthuysen et~al.(2014)Benthuysen, Feng, and Zhong}]{Benthuysen2014}
+Benthuysen, J., Feng, M., Zhong, L., 2014. {Spatial patterns of warming off
+  Western Australia during the 2011 Ningaloo Ni{\~{n}}o: quantifying impacts of
+  remote and local forcing}. Continental Shelf Research 91, 232--246.
+
+\bibitem[{Deser et~al.(2010)Deser, Alexander, Xie, and Phillips}]{Deser2010}
+Deser, C., Alexander, M.~A., Xie, S.~P., Phillips, A.~S., 2010. {Sea surface
+  temperature variability: patterns and mechanisms}. Annual Review of Marine
+  Science 2, 115--143.
 
 \bibitem[{Easterling et~al.(2000)Easterling, Meehl, Parmesan, Changnon, Karl,
   and Mearns}]{Easterling2000}
@@ -10,11 +25,56 @@ Easterling, D.~R., Meehl, G.~A., Parmesan, C., Changnon, S.~A., Karl, T.~R.,
   Mearns, L.~O., 2000. {Climate extremes: observations, modeling, and impacts}.
   Science 289~(5487), 2068--2074.
 
+\bibitem[{Feng et~al.(2013)Feng, McPhaden, Xie, and Hafner}]{Feng2013}
+Feng, M., McPhaden, M.~J., Xie, S.-P., Hafner, J., 2013. {La Ni{\~{n}}a forces
+  unprecedented Leeuwin Current warming in 2011.} Scientific Reports 3, 1277.
+
+\bibitem[{Frankignoul(1985)}]{Frankignoul1985}
+Frankignoul, C., 1985. {Sea surface temperature anomalies, planetary waves, and
+  air-sea feedback in the middle latitudes}.
+
+\bibitem[{Garrabou et~al.(2009)Garrabou, Coma, Bensoussan, Bally,
+  Chevaldonn{\'{e}}, Cigliano, Diaz, Harmelin, Gambi, Kersting, Ledoux,
+  Lejeusne, Linares, Marschal, P{\'{e}}rez, Ribes, Romano, Serrano, Teixido,
+  Torrents, Zabala, Zuberer, and Cerrano}]{Garrabou2009}
+Garrabou, J., Coma, R., Bensoussan, N., Bally, M., Chevaldonn{\'{e}}, P.,
+  Cigliano, M., Diaz, D., Harmelin, J.~G., Gambi, M.~C., Kersting, D.~K.,
+  Ledoux, J.~B., Lejeusne, C., Linares, C., Marschal, C., P{\'{e}}rez, T.,
+  Ribes, M., Romano, J.~C., Serrano, E., Teixido, N., Torrents, O., Zabala, M.,
+  Zuberer, F., Cerrano, C., 2009. {Mass mortality in Northwestern Mediterranean
+  rocky benthic communities: effects of the 2003 heat wave}. Global Change
+  Biology 15~(5), 1090--1103.
+
+\bibitem[{Hobday et~al.(2016)Hobday, Alexander, Perkins, Smale, Straub, Oliver,
+  Benthuysen, Burrows, Donat, Feng, Holbrook, Moore, Scannell, {Sen Gupta}, and
+  Wernberg}]{Hobday2016}
+Hobday, A.~J., Alexander, L.~V., Perkins, S.~E., Smale, D.~A., Straub, S.~C.,
+  Oliver, E.~C., Benthuysen, J.~A., Burrows, M.~T., Donat, M.~G., Feng, M.,
+  Holbrook, N.~J., Moore, P.~J., Scannell, H.~A., {Sen Gupta}, A., Wernberg,
+  T., 2016. {A hierarchical approach to defining marine heatwaves}. Progress in
+  Oceanography 141, 227--238.
+
 \bibitem[{Jentsch et~al.(2007)Jentsch, Kreyling, and
   Beierkuhnlein}]{Jentsch2007}
 Jentsch, A., Kreyling, J., Beierkuhnlein, C., 2007. {A new generation of
   climate-change experiments: events, not trends}. Frontiers in Ecology and the
   Environment 5~(6), 315--324.
+
+\bibitem[{Krishnamurti et~al.(1988)Krishnamurti, Oosterhof, and
+  Mehta}]{Krishnamurti1988}
+Krishnamurti, T.~N., Oosterhof, D.~K., Mehta, A.~V., 1988. {Air–Sea
+  Interaction on the Time Scale of 30 to 50 Days}.
+\newline\urlprefix\url{http://dx.doi.org/10.1175/1520-0469(1988)045{\%}3C1304:AIOTTS{\%}3E2.0.CO;2}
+
+\bibitem[{Perkins and Alexander(2013)}]{Perkins2013}
+Perkins, S.~E., Alexander, L.~V., 2013. {On the measurement of heat waves}.
+  Journal of Climate 26~(13), 4500--4517.
+
+\bibitem[{Schlegel and Smit(2016)}]{Schlegel2016}
+Schlegel, R.~W., Smit, A.~J., 2016. {Climate Change in Coastal Waters: Time
+  Series Properties Affecting Trend Estimation}. Journal of Climate 29~(24),
+  9113--9124.
+\newline\urlprefix\url{http://journals.ametsoc.org/doi/10.1175/JCLI-D-16-0014.1}
 
 \bibitem[{Stocker et~al.(2013)Stocker, Qin, Plattner, Tignor, Allen, Boschung,
   Nauels, Xia, Bex, and Midgley}]{IPCC2014}
@@ -23,5 +83,14 @@ Stocker, T., Qin, D., Plattner, G.~K., Tignor, M., Allen, S.~K., Boschung, J.,
   2013: the physical science basis: Working Group I contribution to the Fifth
   Assessment Report of the Intergovernmental Panel on Climate Change}.
   Cambridge University Press, Cambridge, United Kingdom and New York, NY, USA.
+
+\bibitem[{Wernberg et~al.(2016)Wernberg, Bennett, Babcock, Bettignies, Cure,
+  Depczynski, Dufois, Fromont, Fulton, Hovey, Harvey, Holmes, Kendrick,
+  Radford, Santana-garcon, Saunders, Smale, and Thomsen}]{Wernberg2016}
+Wernberg, T., Bennett, S., Babcock, R.~C., Bettignies, T.~D., Cure, K.,
+  Depczynski, M., Dufois, F., Fromont, J., Fulton, C.~J., Hovey, R.~K., Harvey,
+  E.~S., Holmes, T.~H., Kendrick, G.~A., Radford, B., Santana-garcon, J.,
+  Saunders, B.~J., Smale, D.~A., Thomsen, M.~S., 2016. {Climate driven regime
+  shift of a temperate marine ecosystem}. Science 149~(1996), 2009--2012.
 
 \end{thebibliography}

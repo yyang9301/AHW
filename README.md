@@ -103,3 +103,6 @@ The scripts and raw data used to compare atmospheric and marine heat waves and c
 ## 2017/02/17
 * Summary data boxes added to synoptic air-sea figure
 * Rough draft of introduction complete
+
+## 2017/02/20
+* Outline of synoptic air-sea figure complete

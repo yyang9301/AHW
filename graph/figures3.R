@@ -2,9 +2,17 @@
 ###"graph/figures3.R"
 ## This script does:
 # 1. Load SACTN event data
-# 2. Prepare graphing function for sea/ air state during events
-# 3. Create figure for each event
+# 2. Load data for sea/ air state during event
+# 3. Create sea state figure
+# 4. Create sea state anomaly figure
+# 5. Create air state figure
+# 6. Create air state anomaly figure
+# 7. The event figure
+# 8. The info boxes
+# 9. Combine figures and save
 ## DEPENDS ON:
+library(PBSmapping)
+library(marmap)
 library(grid)
 library(ggplot2)
 library(viridis)
@@ -47,10 +55,6 @@ names(southern_africa_coast)[1] <- "lon"
 load("graph/sa_shore.Rdata") # Hires
 names(sa_shore)[4:5] <- c("lon","lat")
 
-# Load SA bathymetry
-# load("~/SA_map/bathy.RData") # HiRes for 200m isobath
-# load("~/SA_map/sa_bathy.RData") # LowRes for deeper
-
 # ERA Interim file indices
 file_1_dates <- seq(as.Date("1979-01-01"), as.Date("1989-01-01"), by = "day")
 file_2_dates <- seq(as.Date("1990-01-01"), as.Date("1998-01-01"), by = "day")
@@ -65,7 +69,11 @@ slat <- -40
 
 sa_lons <- c(10, 40); sa_lats <- c(-40, -25)
 
-# 2. Prepare graphing function for sea/ air state during events -----------
+# Load SA bathymetry
+# sa_bathy <- as.xyz(getNOAA.bathy(lon1 = sa_lons[1], lon2 = sa_lons[2], lat1 = sa_lats[1], lat2 = sa_lats[2], resolution =  4))
+# colnames(sa_bathy) <- c("lon", "lat", "depth")
+# save(sa_bathy, file = "data/sa_bathy.Rdata")
+load("data/sa_bathy.Rdata")
 
 # Create the base map figure
 sa <- ggplot() + bw_update +
@@ -81,7 +89,8 @@ sa <- ggplot() + bw_update +
   ylab("")
 # sa
 
-# First test run
+
+# 2. Load data for sea/ air state during event ----------------------------
 
 # Extract longest event
 # event <- SACTN_events[SACTN_events$duration == max(SACTN_events$duration),]
@@ -112,6 +121,10 @@ system.time(BRAN_temp <- ddply(temp_idx, .(files), BRAN.Rdata, .progress = "text
 BRAN_temp <- filter(BRAN_temp, date %in% date_idx)
 BRAN_temp <- data.table(BRAN_temp)
 system.time(BRAN_temp <- BRAN_temp[, .(temp = mean(temp, na.rm = TRUE)), by = .(x,y)]) # 1 seconds
+# scale_factor: 0.00778221990913153
+# add_offset: 245
+# true_data = scale*(filedata - offset)
+# test <- 0.00778221990913153*(BRAN_temp$temp+245)
 # BRAN_temp$stat <- "temp"
 
 # U value
@@ -120,6 +133,8 @@ system.time(BRAN_u <- ddply(u_idx, .(files), BRAN.Rdata, .parallel = T)) # ~18 s
 BRAN_u <- filter(BRAN_u, date %in% date_idx)
 BRAN_u <- data.table(BRAN_u)
 system.time(BRAN_u <- BRAN_u[, .(u = mean(u, na.rm = TRUE)), by = .(x,y)]) # 1 seconds
+# scale_factor: 0.000305185094475746
+# add_offset: 0
 # BRAN_u$stat <- "u"
 
 # V value
@@ -128,11 +143,13 @@ system.time(BRAN_v <- ddply(v_idx, .(files), BRAN.Rdata, .parallel = T)) # ~21 s
 BRAN_v <- filter(BRAN_v, date %in% date_idx)
 BRAN_v <- data.table(BRAN_v)
 system.time(BRAN_v <- BRAN_v[, .(v = mean(v, na.rm = TRUE)), by = .(x,y)]) # 1 seconds
+# scale_factor: 0.000305185094475746
+# add_offset: 0
 # BRAN_v$stat <- "v"
 
 # Create wind data frame
-BRAN_wind <- merge(BRAN_u, BRAN_v, by = c("x", "y")); rm(BRAN_u, BRAN_v)
-BRAN_scaler <- 1
+BRAN_current <- merge(BRAN_u, BRAN_v, by = c("x", "y"))#; rm(BRAN_u, BRAN_v)
+# BRAN_scaler <- 1 # m/sec
 
 
 ### Extract ERA Interim data during this event
@@ -161,43 +178,198 @@ if(exists("ERA1")) ERA_all <- rbind(ERA_all, ERA1)
 if(exists("ERA2")) ERA_all <- rbind(ERA_all, ERA2)
 if(exists("ERA3")) ERA_all <- rbind(ERA_all, ERA3)
 if(exists("ERA4")) ERA_all <- rbind(ERA_all, ERA4)
+## Temp
+# scale_factor: 0.000792118659444478
+# add_offset: 290.912567807858
+# test <- filter(ERA_all, stat == "temp")
+# test <- 0.000792118659444478*(test$var+290.912567807858)
+## U
+# scale_factor: 0.000818316682150179
+# add_offset: 0.869177786239003
+## V
+# scale_factor: 0.000769519781168815
+# add_offset: 1.45813422204301
 
-# Test visualisation
 ERA_temp <- ERA_all[ERA_all$stat == "temp", ]
-colnames(ERA_temp)[3] <- "temp"
+# colnames(ERA_temp)[3] <- "temp"
 ERA_wind <- merge(ERA_all[ERA_all$stat == "u", ], ERA_all[ERA_all$stat == "v", ], by = c("x", "y"))[,c(1,2,3,5)]
-ERA_scaler <- 1  # Use this to change unit. E.g., from meters per minute to meters per second.
+# ERA_scaler <- 1  # m s**-1
 colnames(ERA_wind) <- c("x","y","u","v")
-rm(ERA_all)
+# rm(ERA_all)
 
-## Combine data and create air-sea state figure
-BRAN_temp$type <- "BRAN"
-BRAN_wind$type <- "BRAN"
-ERA_temp$type <- "ERA"
-ERA_temp$stat <- NULL
-ERA_wind$type <- "ERA"
+# 3. Create sea state figure ----------------------------------------------
+# Double up temperatures for plotting
+BRAN_temp2 <- rbind(BRAN_temp, BRAN_temp)
+BRAN_temp2$type <- rep(c("BRAN", "BRAN_c"), each = nrow(BRAN_temp))
 
-RE_temp <- rbind(BRAN_temp, ERA_temp)
-RE_wind <- rbind(BRAN_wind, ERA_wind)
+# Remove some current rows for clearer plotting
+BRAN_current2 <- BRAN_current
+BRAN_current2$u <- BRAN_current2$u*rep(c(1,NA), each = 1)
+BRAN_current2$v <- BRAN_current2$v*rep(c(1,NA), each = 1)
+BRAN_current2 <- BRAN_current2[complete.cases(BRAN_current2$u)]
+# Repeat to reduce vectors further
+BRAN_current2$u <- BRAN_current2$u*rep(c(1,NA), each = 1)
+BRAN_current2$v <- BRAN_current2$v*rep(c(1,NA), each = 1)
+BRAN_current2 <- BRAN_current2[complete.cases(BRAN_current2$u)]
+BRAN_current2$type <- "BRAN_c"
 
+# The label dataframes
+BRAN_plot_data <- data_frame(txt = c("SST + Bathy", "SST + Currents", "1.0 m/s\n"),
+                             x = c(25,25,25), y = c(-28,-28,-31),
+                             type = c("BRAN", "BRAN_c", "BRAN_c"))
+BRAN_plot_seg <- data.frame(x = 24, y = -31.5, xend = 26, yend = -31.5, type = "BRAN_c")
 
-all_reanalyses <- sa + geom_raster(data = RE_temp, aes(x = x, y = y, fill = temp)) +
+# Bathy
+sa_bathy$type = "BRAN"
+# bathy$type = "BRAN"
+
+# The figure
+BRAN_state <- sa + geom_raster(data = BRAN_temp2, aes(x = x, y = y, fill = temp)) +
+  stat_contour(data = sa_bathy[sa_bathy$depth < -200,], aes(x = lon, y = lat, z = depth, alpha = ..level..),
+               colour = "white", size = 0.5, binwidth = 1000, na.rm = TRUE, show.legend = FALSE) +
   geom_polygon(data = southern_africa_coast, aes(x = lon, y = lat, group = group),
                fill = "grey70", colour = "black", size = 0.1, show.legend = FALSE) +
-  geom_segment(data = RE_wind, aes(x = x, y = y, xend = x + u * BRAN_scaler, yend = y + v * BRAN_scaler),
+  geom_segment(data = BRAN_current2, aes(x = x, y = y, xend = x + u * 2, yend = y + v * 2),
                arrow = arrow(angle = 15, length = unit(0.02, "inches"), type = "closed"), alpha = 0.2) +
+  geom_label(data = BRAN_plot_data, aes(x = x, y = y, label = txt)) +
+  geom_segment(data = BRAN_plot_seg, aes(x = x, y = y, xend = xend, yend = yend)) +
   scale_fill_viridis(expression(paste("Temp. (",degree,"C)"))) +
   facet_grid(.~type) +
-  labs(caption = paste0("Average air-sea state during ", event$site[1], " event #", event$event_no[1], 
-                 " (", format(event$date_start, "%d %b %Y"), " - ", format(event$date_stop, "%d %b %Y"), ")")) +
-  theme(plot.caption = element_text(hjust = 0.5))
-all_reanalyses
+  guides(fill = guide_legend(keyheight = 4)) +
+  theme(legend.position = "right",
+        legend.direction = "vertical",
+        strip.text = element_blank())
+BRAN_state
 
-## The event figure
+
+# 4. Create sea state anomaly figure --------------------------------------
+## NB: Currently using normal temperatures as anomalies have not yet been calculated
+# Double up temperatures for plotting
+BRAN_anom2 <- rbind(BRAN_temp, BRAN_temp)
+BRAN_anom2$type <- rep(c("BRAN", "BRAN_c"), each = nrow(BRAN_temp))
+
+# Remove some current rows for clearer plotting
+BRAN_current_anom2 <- BRAN_current
+BRAN_current_anom2$u <- BRAN_current_anom2$u*rep(c(1,NA), each = 1)
+BRAN_current_anom2$v <- BRAN_current_anom2$v*rep(c(1,NA), each = 1)
+BRAN_current_anom2 <- BRAN_current_anom2[complete.cases(BRAN_current_anom2$u)]
+# Repeat to reduce vectors further
+BRAN_current_anom2$u <- BRAN_current_anom2$u*rep(c(1,NA), each = 1)
+BRAN_current_anom2$v <- BRAN_current_anom2$v*rep(c(1,NA), each = 1)
+BRAN_current_anom2 <- BRAN_current_anom2[complete.cases(BRAN_current_anom2$u)]
+BRAN_current_anom2$type <- "BRAN_c"
+
+# The label dataframes
+BRAN_plot_anom_data <- data_frame(txt = c("SST + Bathy\nAnomaly", "SST + Currents\nAnomaly", "1.0 m/s\n"),
+                             x = c(25,25,25), y = c(-28,-28,-31),
+                             type = c("BRAN", "BRAN_c", "BRAN_c"))
+BRAN_plot_anom_seg <- data.frame(x = 24, y = -31.5, xend = 26, yend = -31.5, type = "BRAN_c")
+
+# Bathy
+sa_bathy$type = "BRAN"
+# bathy$type = "BRAN"
+
+# The figure
+BRAN_state_anom <- sa + geom_raster(data = BRAN_anom2, aes(x = x, y = y, fill = temp)) +
+  stat_contour(data = sa_bathy[sa_bathy$depth < -200,], aes(x = lon, y = lat, z = depth, alpha = ..level..),
+               colour = "white", size = 0.5, binwidth = 1000, na.rm = TRUE, show.legend = FALSE) +
+  geom_polygon(data = southern_africa_coast, aes(x = lon, y = lat, group = group),
+               fill = "grey70", colour = "black", size = 0.1, show.legend = FALSE) +
+  geom_segment(data = BRAN_current_anom2, aes(x = x, y = y, xend = x + u * 2, yend = y + v * 2),
+               arrow = arrow(angle = 15, length = unit(0.02, "inches"), type = "closed"), alpha = 0.2) +
+  geom_label(data = BRAN_plot_anom_data, aes(x = x, y = y, label = txt)) +
+  geom_segment(data = BRAN_plot_anom_seg, aes(x = x, y = y, xend = xend, yend = yend)) +
+  scale_fill_viridis(expression(paste("Temp. (",degree,"C)"))) +
+  facet_grid(.~type) +
+  guides(fill = guide_legend(keyheight = 4)) +
+  theme(legend.position = "right",
+        legend.direction = "vertical",
+        strip.text = element_blank())
+BRAN_state_anom
+
+
+# 5. Create air state figure ----------------------------------------------
+
+ERA_temp2 <- ERA_temp[,1:3]
+colnames(ERA_temp2)[3] <- "temp"
+
+# Remove some wind rows for clearer plotting
+ERA_wind2 <- ERA_wind
+ERA_wind2$u <- ERA_wind2$u*rep(c(1,NA), each = 1)
+ERA_wind2$v <- ERA_wind2$v*rep(c(1,NA), each = 1)
+ERA_wind2 <- ERA_wind2[complete.cases(ERA_wind2$u)]
+# Repeat to reduce vectors further
+# ERA_wind2$u <- ERA_wind2$u*rep(c(1,NA), each = 1)
+# ERA_wind2$v <- ERA_wind2$v*rep(c(1,NA), each = 1)
+# ERA_wind2 <- ERA_wind2[complete.cases(ERA_wind2$u)]
+# ERA_wind2$type <- "ERA_c"
+
+# The label dataframes
+ERA_plot_data <- data_frame(txt = c("Air temp + Winds", "4.0 m/s\n"),
+                             x = c(25,25), y = c(-28,-31))
+ERA_plot_seg <- data.frame(x = 24, y = -31.5, xend = 26, yend = -31.5)
+
+# The figure
+ERA_state <- sa + geom_raster(data = ERA_temp2, aes(x = x, y = y, fill = temp)) +
+  geom_polygon(data = southern_africa_coast, aes(x = lon, y = lat, group = group),
+               fill = "grey70", colour = "black", size = 0.1, show.legend = FALSE) +
+  geom_segment(data = ERA_wind2, aes(x = x, y = y, xend = x + u * 0.5, yend = y + v * 0.5),
+               arrow = arrow(angle = 15, length = unit(0.02, "inches"), type = "closed"), alpha = 0.2) +
+  geom_label(data = ERA_plot_data, aes(x = x, y = y, label = txt)) +
+  geom_segment(data = ERA_plot_seg, aes(x = x, y = y, xend = xend, yend = yend)) +
+  scale_fill_viridis(expression(paste("Temp. (",degree,"C)"))) +
+  guides(fill = guide_legend(keyheight = 4)) +
+  theme(legend.position = "right",
+        legend.direction = "vertical",
+        strip.text = element_blank())
+ERA_state
+
+
+# 6. Create air state anomaly figure --------------------------------------
+
+ERA_anom2 <- ERA_temp[,1:3]
+colnames(ERA_anom2)[3] <- "temp"
+
+# Remove some wind rows for clearer plotting
+ERA_wind_anom2 <- ERA_wind
+ERA_wind_anom2$u <- ERA_wind_anom2$u*rep(c(1,NA), each = 1)
+ERA_wind_anom2$v <- ERA_wind_anom2$v*rep(c(1,NA), each = 1)
+ERA_wind_anom2 <- ERA_wind_anom2[complete.cases(ERA_wind_anom2$u)]
+# Repeat to reduce vectors further
+# ERA_wind_anom2$u <- ERA_wind_anom2$u*rep(c(1,NA), each = 1)
+# ERA_wind_anom2$v <- ERA_wind_anom2$v*rep(c(1,NA), each = 1)
+# ERA_wind_anom2 <- ERA_wind_anom2[complete.cases(ERA_wind_anom2$u)]
+# ERA_wind_anom2$type <- "ERA_c"
+
+# The label dataframes
+ERA_plot_anom_data <- data_frame(txt = c("Air temp + Winds\nAnomaly", "4.0 m/s\n"),
+                            x = c(25,25), y = c(-28,-31))
+ERA_plot_anom_seg <- data.frame(x = 24, y = -31.5, xend = 26, yend = -31.5)
+
+# The figure
+ERA_state_anom <- sa + geom_raster(data = ERA_anom2, aes(x = x, y = y, fill = temp)) +
+  geom_polygon(data = southern_africa_coast, aes(x = lon, y = lat, group = group),
+               fill = "grey70", colour = "black", size = 0.1, show.legend = FALSE) +
+  geom_segment(data = ERA_wind_anom2, aes(x = x, y = y, xend = x + u * 0.5, yend = y + v * 0.5),
+               arrow = arrow(angle = 15, length = unit(0.02, "inches"), type = "closed"), alpha = 0.2) +
+  geom_label(data = ERA_plot_anom_data, aes(x = x, y = y, label = txt)) +
+  geom_segment(data = ERA_plot_anom_seg, aes(x = x, y = y, xend = xend, yend = yend)) +
+  scale_fill_viridis(expression(paste("Temp. (",degree,"C)"))) +
+  guides(fill = guide_legend(keyheight = 4)) +
+  theme(legend.position = "right",
+        legend.direction = "vertical",
+        strip.text = element_blank())
+ERA_state_anom
+
+
+# 7. The event figure -----------------------------------------------------
+
+# Determine spread and subset days
 spread <- 31
 spread_clim <- filter(SACTN_clims, site == event$site & date %in% ((date_idx[1]-spread):(date_idx[length(date_idx)]+spread)))
 event_clim <- filter(SACTN_clims, site == event$site & date %in% ((date_idx[1]-1):(date_idx[length(date_idx)]+1)))
 
+# The figure
 event_flame <- ggplot(data = spread_clim, aes(x = date, y = temp, y2 = thresh_clim_year)) +
   geom_flame(aes(y = temp, y2 = thresh_clim_year, fill = "other"), show.legend = T) +
   geom_flame(data = event_clim, aes(y = temp, y2 = thresh_clim_year, fill = "main"), show.legend = T) +
@@ -207,10 +379,15 @@ event_flame <- ggplot(data = spread_clim, aes(x = date, y = temp, y2 = thresh_cl
   scale_colour_manual(name = "Line Colour", values = c("temp" = "black", "thresh" = "forestgreen", "seas" = "grey80")) +
   scale_fill_manual(name = "Event Colour", values = c("other" = "salmon", "main" = "red")) +
   guides(colour = guide_legend(override.aes = list(fill = NA))) +
-  xlab("Date") + ylab("Temperature [degrees C]")
+  xlab("Date") + ylab("Temperature [degrees C]") +
+  ggtitle(paste0("Average air-sea state during ", event$site[1], " event #", event$event_no[1], 
+                        " (", format(event$date_start, "%d %b %Y"), " - ", format(event$date_stop, "%d %b %Y"), ")")) +
+  theme(plot.title = element_text(hjust = 0.5))
 event_flame
 
-## The info box
+
+# 8. The info boxes -------------------------------------------------------
+
 # All events at the chosen site
 site_events <- filter(SACTN_events, site == event$site)
 # The properties of the event
@@ -274,17 +451,25 @@ all_rank_text <- ggplot(data = all_ranks, aes(x = x, y = y)) + theme_void() +
         panel.grid.major = element_blank())
 all_rank_text
 
-## Combine figures and save
-pdf("~/Desktop/third_concept.pdf", width = 10, height = 7, pointsize = 10) # Set PDF dimensions
-vp1 <- viewport(x = 0.5, y = 1.4, w = 1.00, h = 1.40, just = "top")  # Air/ Sea
-vp2 <- viewport(x = 0.05, y = 0.05, w = 0.60, h = 0.35, just = c("left", "bottom")) # Flame
-vp3 <- viewport(x = 0.81, y = 0.1, w = 0.17, h = 0.25, just = c("right", "bottom"))  # Event metrics
-vp4 <- viewport(x = 0.87, y = 0.1, w = 0.07, h = 0.25, just = c("right", "bottom"))  # Site rank
-vp5 <- viewport(x = 0.93, y = 0.1, w = 0.07, h = 0.25, just = c("right", "bottom"))  # All rank
-print(all_reanalyses, vp = vp1)
-print(event_flame, vp = vp2)
-print(prop_text, vp = vp3)
-print(site_rank_text, vp = vp4)
-print(all_rank_text, vp = vp5)
+
+# 9. Combine figures and save ---------------------------------------------
+
+pdf("~/Desktop/fourth_concept.pdf", width = 17, height = 12, pointsize = 10) # Set PDF dimensions
+vp1 <- viewport(x = 0.02, y = 1.3, w = 0.60, h = 1.0, just = c("left", "top"))  # Sea
+vp2 <- viewport(x = 0.02, y = 1.05, w = 0.60, h = 1.0, just = c("left", "top"))  # Sea anomaly
+vp3 <- viewport(x = 0.98, y = 1.15, w = 0.35, h = 0.7, just = c("right", "top"))  # Air
+vp4 <- viewport(x = 0.98, y = 0.90, w = 0.35, h = 0.7, just = c("right", "top"))  # Air anomaly
+vp5 <- viewport(x = 0.05, y = 0.05, w = 0.60, h = 0.35, just = c("left", "bottom")) # Flame
+vp6 <- viewport(x = 0.77, y = 0.09, w = 0.12, h = 0.25, just = c("right", "bottom"))  # Event metrics
+vp7 <- viewport(x = 0.82, y = 0.09, w = 0.05, h = 0.25, just = c("right", "bottom"))  # Site rank
+vp8 <- viewport(x = 0.87, y = 0.09, w = 0.05, h = 0.25, just = c("right", "bottom"))  # All rank
+print(BRAN_state, vp = vp1)
+print(BRAN_state_anom, vp = vp2)
+print(ERA_state, vp = vp3)
+print(ERA_state_anom, vp = vp4)
+print(event_flame, vp = vp5)
+print(prop_text, vp = vp6)
+print(site_rank_text, vp = vp7)
+print(all_rank_text, vp = vp8)
 dev.off()
 
