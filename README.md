@@ -106,3 +106,7 @@ The scripts and raw data used to compare atmospheric and marine heat waves and c
 
 ## 2017/02/20
 * Outline of synoptic air-sea figure complete
+
+## 2017/02/23
+* Calculation of daily climatologies for air-sea state
+* The data frames are not stored here as they are too large
