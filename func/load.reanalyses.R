@@ -8,6 +8,7 @@ library(doMC); registerDoMC(cores = 4)
 library(plyr)
 library(dplyr)
 library(reshape2)
+library(data.table)
 library(ncdf4)
 library(ncdf.tools)
 ## USED BY:
@@ -17,13 +18,20 @@ library(ncdf.tools)
 # ERA Interim dataframes as requested
 #############################################################################
 
+# The default lon/ lat ranges
+wlon <- 10
+elon <- 40
+nlat <- -25
+slat <- -40
+
+sa_lons <- c(10, 40); sa_lats <- c(-40, -25)
 
 # 1. Create a function for loading BRAN data ------------------------------
 
 # The BRAN data have already been downloaded and saved as lists with .Rdata file extension
 # It is therefore necessary to pass individual file names to the following function so that
 # it may load and subset only the files required
-# Note that this does not subset any dates etc. presently
+# Note that this does not subset any dates etc.
 
 # The .Rdata format
 # x <- files_list[1,] # tester...
@@ -34,28 +42,23 @@ BRAN.Rdata <- function(x){
   stor_year <- sapply(strsplit(basename(BRAN_file), "_"), "[[", 3)
   stor_month <- sapply(strsplit(basename(BRAN_file), "_"), "[[", 4)
   stor_month <- sapply(strsplit(stor_month, ".Rdata"), "[[", 1)
-  # The following apply functions do not transpose the data frame correctly
-  # Rather using for loop as it is also faster... somehows
-  # stor_date <- paste0(stor_year,"_",stor_month)
-  # system.time(BRAN_data <- data.frame(lapply(data.frame(t(sapply(stor.nc, "["))), unlist))) # 3 seconds
-  # length(levels(as.factor(paste0(round(BRAN_data$x,2), round(BRAN_data$y),2))))
-  # system.time(BRAN_data$date <- as.Date(paste0(stor_date,"_",rep(1:stor_length, each = length(stor.nc$x)*length(stor.nc$y))), "%Y_%m_%e")) # 5 seconds
-  BRAN_data <- data.frame()
-  for(i in 1:stor_length){
-    # Subset and melt one day of data
-    stor2 <- stor.nc$var[,,i]
-    rownames(stor2) <- stor.nc$x
-    colnames(stor2) <- stor.nc$y
-    stor3 <- melt(stor2)
-    stor_var <- sapply(strsplit(basename(BRAN_file), "_"), "[[", 2)
-    colnames(stor3) <- c("x", "y", stor_var)
-    stor_year <- sapply(strsplit(basename(BRAN_file), "_"), "[[", 3)
-    stor_month <- sapply(strsplit(basename(BRAN_file), "_"), "[[", 4)
-    stor_month <- sapply(strsplit(stor_month, ".Rdata"), "[[", 1)
-    stor_day <- i
-    stor3$date <- as.Date(paste0(stor_year,"-",stor_month,"-",stor_day))
-    BRAN_data <- rbind(BRAN_data, stor3)
+  stor_date <- seq(as.Date(paste(stor_year, stor_month,1, sep = "-")), 
+                   as.Date(paste(stor_year, stor_month,stor_length, sep = "-")), by = "day")
+  
+  # Function for converting a variable from a list to a dataframe
+  BRAN.to.df <- function(){
+    df1 <- data.frame(stor.nc[1])
+    rownames(df1) <- stor.nc$x
+    colnames(df1) <- rep(stor.nc$y, stor_length)
+    df2 <- melt(as.matrix(df1), value.name = "var")
+    df2$date <- rep(stor_date, each = (length(stor.nc$x)*length(stor.nc$y))) # At this step the hour values are removed
+    colnames(df2)[1:2] <- c("x","y")
+    return(df2)
+    # df2 <- data.table(df2)
+    # df2 <- df2[, .(var = mean(var, na.rm = TRUE)), by = .(x,y,date)]
   }
+  
+  BRAN_data <- BRAN.to.df()
   return(BRAN_data)
 }
 
@@ -85,77 +88,52 @@ ERA.ncdf <- function(nc.file, date_idx){
   index_t <- nc.data$t[as.Date(nc.data$t) %in% date_idx] # days
   
   # Group it all for prettier coding
-  start <- c(which(nc.data$x == index_x[1]), which(nc.data$y == index_y[1]), which(nc.data$t == index_t[1]))
-  count <- c(length(index_x), length(index_y), length(index_t))
+  start <- c(which(nc.data$x == index_x[1]), which(nc.data$y == index_y[1]), 1)
+  count <- c(length(index_x), length(index_y), -1)
   
   # Download data as desired from correct subsets
   stor.nc <- list()
   # var[x, y, z, t] # The subsetting format
-  stor.nc$temp <- ncvar_get(nc.stor, nc.stor$var[[3]], start = start, count = count)-273.15 # K to C
-  stor.nc$u <- ncvar_get(nc.stor, nc.stor$var[[1]], start = start, count = count)
-  stor.nc$v <- ncvar_get(nc.stor, nc.stor$var[[2]], start = start, count = count)
+  stor.nc$temp <- (ncvar_get(nc.stor, nc.stor$var[[3]], start = start, count = count)[,,which(nc.data$t %in% index_t)])-273.15 # K to C
+  stor.nc$u <- (ncvar_get(nc.stor, nc.stor$var[[1]], start = start, count = count)[,,which(nc.data$t %in% index_t)])
+  stor.nc$v <- (ncvar_get(nc.stor, nc.stor$var[[2]], start = start, count = count)[,,which(nc.data$t %in% index_t)])
   stor.nc$x <- ncvar_get(nc.stor, nc.stor$dim[[1]], start = start[1], count = count[1])
   stor.nc$y <- ncvar_get(nc.stor, nc.stor$dim[[2]], start = start[2], count = count[2])
-  stor.nc$t <- ncvar_get(nc.stor, nc.stor$dim[[3]], start = start[3], count = count[3])
+  stor.nc$t <- (ncvar_get(nc.stor, nc.stor$dim[[3]], start = start[3])[which(nc.data$t %in% index_t)])
   stor.nc$t <-  convertDateNcdf2R(stor.nc$t, units = "hours", 
                                   origin = as.POSIXct("1900-01-01 00:00:0.0", tz = "UTC"), time.format = c("%Y-%m-%d %H:%M:%S"))
   nc_close(nc.stor)
   stor_length <- nrow(as.data.frame(stor.nc$temp[1,1,]))
   
-  # Convert from a list to a dataframe
-  # This will be converted to a proper function just now
-  # Temp
-  ERA_temp <- data.frame()
-  for(i in 1:stor_length){
-    # Subset and melt one day of data
-    temp <- stor.nc$temp[,,i]
-    rownames(temp) <- stor.nc$x
-    colnames(temp) <- stor.nc$y
-    stor3 <- melt(temp)
-    colnames(stor3) <- c("x", "y", "var")
-    # stor3$date <- stor.nc$t[i]
-    # stor3$stat <- "temp"
-    ERA_temp <- rbind(ERA_temp, stor3)
+  # Function for converting a variable from a list to a dataframe
+  ERA.to.df <- function(col){
+    df1 <- data.frame(stor.nc[col])
+    rownames(df1) <- stor.nc$x
+    colnames(df1) <- rep(stor.nc$y, stor_length)
+    df2 <- melt(as.matrix(df1), value.name = "var")
+    df2$date <- rep(as.Date(stor.nc$t), each = (length(stor.nc$x)*length(stor.nc$y))) # At this step the hour values are removed
+    colnames(df2)[1:2] <- c("x","y")
+    df2 <- data.table(df2)
+    df2 <- df2[, .(var = mean(var, na.rm = TRUE)), by = .(x,y,date)]
+    return(df2)
   }
-  ERA_temp <- data.table(ERA_temp)
-  ERA_temp <- ERA_temp[, .(var = mean(var, na.rm = TRUE)), by = .(x,y)] # 1 seconds
-  ERA_temp$stat <- "temp"
+  
+  # Temperature
+  ERA_temp <- ERA.to.df(1)
+  colnames(ERA_temp)[4] <- "temp"
   
   # U
-  ERA_u <- data.frame()
-  for(i in 1:stor_length){
-    # Subset and melt one day of data
-    u <- stor.nc$u[,,i]
-    rownames(u) <- stor.nc$x
-    colnames(u) <- stor.nc$y
-    stor3 <- melt(u)
-    colnames(stor3) <- c("x", "y", "var")
-    # stor3$date <- stor.nc$t[i]
-    # stor3$stat <- "u"
-    ERA_u <- rbind(ERA_u, stor3)
-  }
-  ERA_u <- data.table(ERA_u)
-  ERA_u <- ERA_u[, .(var = mean(var, na.rm = TRUE)), by = .(x,y)] # 1 seconds
-  ERA_u$stat <- "u"
+  ERA_u <- ERA.to.df(2)
+  colnames(ERA_u)[4] <- "u"
   
   # V
-  ERA_v <- data.frame()
-  for(i in 1:stor_length){
-    # Subset and melt one day of data
-    v <- stor.nc$v[,,i]
-    rownames(v) <- stor.nc$x
-    colnames(v) <- stor.nc$y
-    stor3 <- melt(v)
-    colnames(stor3) <- c("x", "y", "var")
-    # stor3$date <- stor.nc$t[i]
-    # stor3$stat <- "v"
-    ERA_v <- rbind(ERA_v, stor3)
-  }
-  ERA_v <- data.table(ERA_v)
-  ERA_v <- ERA_v[, .(var = mean(var, na.rm = TRUE)), by = .(x,y)] # 1 seconds
-  ERA_v$stat <- "v"
+  ERA_v <- ERA.to.df(3)
+  colnames(ERA_v)[4] <- "v"
   
   # Combine
-  ERA_all <- rbind(ERA_temp, ERA_u, ERA_v)
+  ERA_uv <- merge(ERA_u, ERA_v, by = c("x", "y", "date"))
+  ERA_all <- merge(ERA_temp, ERA_uv, by = c("x", "y", "date"))
+  # ERA_all <- order(ERA_all, ERA_all$x)
   return(ERA_all)
 }
+

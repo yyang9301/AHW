@@ -254,8 +254,48 @@ save(BRAN_uv_daily, file = "data/BRAN/BRAN_uv_daily.Rdata")
 
 # 3. Load, create, and save mean air state files --------------------------
 
+# Function for loading entire ncdf file
+# nc.file <- "~/data/ERA/ERA_1979_1989.nc" # testing...
+# date_idx <- date_idx$date
+# date_idx <- date_idx$date[100:162]
+ERA.daily <- function(nc.file){
+  nc.stor <- nc_open(nc.file)
+  # print(nc.stor)
+  date_idx <- ncvar_get(nc.stor, nc.stor$dim[[3]])
+  nc_close(nc.stor)
+  date_idx <- data.frame(date = unique(as.Date(convertDateNcdf2R(date_idx, units = "hours", 
+                                        origin = as.POSIXct("1900-01-01 00:00:0.0", tz = "UTC"), time.format = c("%Y-%m-%d %H:%M:%S")))))
+  system.time(ERA <- ERA.ncdf(nc.file, date_idx$date)) # 8 seconds
+  system.time(ERA$date <- format(ERA$date, "%m-%d")) # 28 seconds
+  ERA <- data.table(ERA)
+  system.time(ERA <- ERA[, .(temp = mean(temp, na.rm = TRUE),
+                             u = mean(u, na.rm = TRUE),
+                             v = mean(v, na.rm = TRUE)), by = .(x,y,date)]) # 14 seconds
+  return(ERA)
+}
+
+system.time(ERA1 <- ERA.daily("~/data/ERA/ERA_1979_1989.nc")) # 156 seconds
+save(ERA1, file = "data/ERA/ERA1.Rdata")
+system.time(ERA2 <- ERA.daily("~/data/ERA/ERA_1990_1998.nc")) # 133 seconds
+save(ERA2, file = "data/ERA/ERA2.Rdata")
+system.time(ERA3 <- ERA.daily("~/data/ERA/ERA_1999_2007.nc")) # 138 seconds
+save(ERA3, file = "data/ERA/ERA3.Rdata")
+system.time(ERA4 <- ERA.daily("~/data/ERA/ERA_2008_2016.nc")) # 139 seconds
+save(ERA4, file = "data/ERA/ERA4.Rdata")
 
 
 # 4. Combine and save air state files -------------------------------------
 
+load("data/ERA/ERA1.Rdata")
+load("data/ERA/ERA2.Rdata")
+load("data/ERA/ERA3.Rdata")
+load("data/ERA/ERA4.Rdata")
+
+ERA_all_daily <- rbind(ERA1, ERA2, ERA3, ERA4)
+ERA_all_daily <- data.table(ERA_all_daily)
+system.time(ERA_all_daily <- ERA_all_daily[, .(temp = mean(temp, na.rm = TRUE),
+                                               u = mean(u, na.rm = TRUE),
+                                               v = mean(v, na.rm = TRUE)), by = .(x,y,date)]) # 1 seconds
+
+save(ERA_all_daily, file = "data/ERA/ERA_all_daily.Rdata")
 
