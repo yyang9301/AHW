@@ -113,3 +113,6 @@ The scripts and raw data used to compare atmospheric and marine heat waves and c
 
 ## 2017/02/23
 * Temperature anomalies added to synoptic figure
+
+## 2017/02/25
+* Current and wind anomalies added

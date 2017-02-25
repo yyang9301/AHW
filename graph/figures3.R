@@ -48,6 +48,8 @@ load("setupParams/SACTN_site_list.Rdata")
 # Frequency ploygons of event duration
 # ggplot(data = SACTN_events, aes(x = duration, group = site)) +
 #   geom_freqpoly(binwidth = 5)
+# SACTN_events2 <- filter(SACTN_events, duration >= 15)
+# levels(as.factor(SACTN_events2$site))
 
 # Load SA map data
 load("graph/southern_africa_coast.RData") # Lowres
@@ -59,10 +61,10 @@ names(sa_shore)[4:5] <- c("lon","lat")
 load("data/BRAN/BRAN_temp_daily.Rdata")
 load("data/BRAN/BRAN_uv_daily.Rdata")
 load("data/ERA/ERA_all_daily.Rdata")
-# ERA_temp_daily <- filter(ERA_all_daily, stat == "temp")
-# ERA_uv_daily <-  dcast(filter(ERA_all_daily, stat %in% c("u", "v")), x+y+date ~ stat)
+# ERA_temp_daily <- ERA_all_daily[,1:4]
+# ERA_uv_daily <-  ERA_all_daily[,c(1:3,5:6)]
 
-# ERA Interim file indices
+#ERA Interim file indices
 file_1_dates <- seq(as.Date("1979-01-01"), as.Date("1989-01-01"), by = "day")
 file_2_dates <- seq(as.Date("1990-01-01"), as.Date("1998-01-01"), by = "day")
 file_3_dates <- seq(as.Date("1999-01-01"), as.Date("2007-01-01"), by = "day")
@@ -100,14 +102,14 @@ sa <- ggplot() + bw_update +
 # 2. Load data for sea/ air state during event ----------------------------
 
 # Extract longest event
-# event <- SACTN_events[SACTN_events$duration == max(SACTN_events$duration),]
-# event$lat <- SACTN_site_list$lat[SACTN_site_list$site == event$site]
-# event$lon <- SACTN_site_list$lon[SACTN_site_list$site == event$site]
-
-# Extract smallest event
-event <- SACTN_events[SACTN_events$duration == min(SACTN_events$duration),][1,]
+event <- SACTN_events[SACTN_events$duration == max(SACTN_events$duration),]
 event$lat <- SACTN_site_list$lat[SACTN_site_list$site == event$site]
 event$lon <- SACTN_site_list$lon[SACTN_site_list$site == event$site]
+
+# Extract smallest event
+# event <- SACTN_events[SACTN_events$duration == min(SACTN_events$duration),][1,]
+# event$lat <- SACTN_site_list$lat[SACTN_site_list$site == event$site]
+# event$lon <- SACTN_site_list$lon[SACTN_site_list$site == event$site]
 
 ### Extract BRAN data during this event
 ## The index of months to load
@@ -123,7 +125,7 @@ v_idx <- data.frame(files = paste0("~/data/BRAN/ocean_v_",format(seq(event$date_
 
 ### Load the BRAN data
 ## Temperature
-system.time(BRAN_temp <- ddply(temp_idx, .(files), BRAN.Rdata, .progress = "text")) # ~5 seconds for one file
+system.time(BRAN_temp <- ddply(temp_idx, .(files), BRAN.Rdata, .parallel = T)) # ~5 seconds for one file
 BRAN_temp <- filter(BRAN_temp, date %in% date_idx)
 BRAN_temp$files <- NULL
 colnames(BRAN_temp)[3] <- "temp"
@@ -144,7 +146,7 @@ BRAN_u <- data.table(BRAN_u)
 BRAN_u <- BRAN_u[, .(u = mean(u, na.rm = TRUE)), by = .(x,y)]
 
 # V value
-system.time(BRAN_v <- ddply(v_idx, .(files), BRAN.Rdata, .parallel = T)) # ~21 seconds for one file
+system.time(BRAN_v <- ddply(v_idx, .(files), BRAN.Rdata, .parallel = T)) # ~5 seconds for one file
 BRAN_v <- filter(BRAN_v, date %in% date_idx)
 BRAN_v$files <- NULL
 colnames(BRAN_v)[3] <- "v"
@@ -153,6 +155,13 @@ BRAN_v <- BRAN_v[, .(v = mean(v, na.rm = TRUE)), by = .(x,y)]
 
 # Create uv data frame
 BRAN_uv <- merge(BRAN_u, BRAN_v, by = c("x", "y"))#; rm(BRAN_u, BRAN_v)
+# Anomaly
+BRAN_uv_anom <- filter(BRAN_uv_daily, date %in% date_idx_2)
+BRAN_uv_anom <- data.table(BRAN_uv_anom)
+BRAN_uv_anom <- BRAN_uv_anom[, .(u = mean(u, na.rm = TRUE),
+                                   v = mean(v, na.rm = TRUE)), by = .(x,y)]
+BRAN_uv_anom$u <- BRAN_uv$u-BRAN_uv_anom$u
+BRAN_uv_anom$v <- BRAN_uv$v-BRAN_uv_anom$v
 
 
 ### Extract ERA Interim data during this event
@@ -182,17 +191,40 @@ if(exists("ERA2")) ERA_all <- rbind(ERA_all, ERA2)
 if(exists("ERA3")) ERA_all <- rbind(ERA_all, ERA3)
 if(exists("ERA4")) ERA_all <- rbind(ERA_all, ERA4)
 
-ERA_temp <- ERA_all[,c(1:4)]
-ERA_uv <- ERA_all[,c(1:3,5:6)]
+ERA_all <- ERA_all[, .(temp = mean(temp, na.rm = TRUE),
+                       u = mean(u, na.rm = TRUE),
+                       v = mean(v, na.rm = TRUE)), by = .(x,y)]
+# # Temperature
+ERA_temp <- ERA_all[,c(1:3)]
+# # UV
+ERA_uv <- ERA_all[,c(1:2,4:5)]
 # rm(ERA_all)
+# Anomalies
+ERA_all_anom <- filter(ERA_all_daily, date %in% date_idx_2)
+ERA_all_anom <- data.table(ERA_all_anom)
+ERA_all_anom <- ERA_all_anom[, .(temp = mean(temp, na.rm = TRUE),
+                                 u = mean(u, na.rm = TRUE),
+                                 v = mean(v, na.rm = TRUE)), by = .(x,y)]
+ERA_all_anom$temp <- ERA_all$temp-ERA_all_anom$temp
+ERA_all_anom$u <- ERA_all$u-ERA_all_anom$u
+ERA_all_anom$v <- ERA_all$v-ERA_all_anom$v
+# It is necessary to split temp from uv so that the winds may be subsetted further
+ERA_temp_anom <- ERA_all_anom[,c(1:3)]
+ERA_uv_anom <- ERA_all_anom[,c(1:2,4:5)]
+
 
 # 3. Create sea state figure ----------------------------------------------
+
 # Double up temperatures for plotting
 BRAN_temp2 <- rbind(BRAN_temp, BRAN_temp)
 BRAN_temp2$type <- rep(c("BRAN", "BRAN_c"), each = nrow(BRAN_temp))
 
 # Remove some current rows for clearer plotting
 BRAN_uv2 <- BRAN_uv
+BRAN_uv2$u <- BRAN_uv2$u*rep(c(1,NA), each = 1) # Thes following warnings may be disregarded
+BRAN_uv2$v <- BRAN_uv2$v*rep(c(1,NA), each = 1)
+BRAN_uv2 <- BRAN_uv2[complete.cases(BRAN_uv2$u)]
+# Repeat to reduce vectors further
 BRAN_uv2$u <- BRAN_uv2$u*rep(c(1,NA), each = 1)
 BRAN_uv2$v <- BRAN_uv2$v*rep(c(1,NA), each = 1)
 BRAN_uv2 <- BRAN_uv2[complete.cases(BRAN_uv2$u)]
@@ -238,19 +270,23 @@ BRAN_state
 BRAN_temp_anom2 <- rbind(BRAN_temp_anom, BRAN_temp_anom)
 BRAN_temp_anom2$type <- rep(c("BRAN", "BRAN_c"), each = nrow(BRAN_temp_anom))
 
-# Remove some current rows for clearer plotting
-BRAN_current_anom2 <- BRAN_current
-BRAN_current_anom2$u <- BRAN_current_anom2$u*rep(c(1,NA), each = 1)
-BRAN_current_anom2$v <- BRAN_current_anom2$v*rep(c(1,NA), each = 1)
-BRAN_current_anom2 <- BRAN_current_anom2[complete.cases(BRAN_current_anom2$u)]
+# Remove some uv rows for clearer plotting
+BRAN_uv_anom2 <- BRAN_uv_anom
+BRAN_uv_anom2$u <- BRAN_uv_anom2$u*rep(c(1,NA), each = 1) # Thes following warnings may be disregarded
+BRAN_uv_anom2$v <- BRAN_uv_anom2$v*rep(c(1,NA), each = 1)
+BRAN_uv_anom2 <- BRAN_uv_anom2[complete.cases(BRAN_uv_anom2$u)]
 # Repeat to reduce vectors further
-BRAN_current_anom2$u <- BRAN_current_anom2$u*rep(c(1,NA), each = 1)
-BRAN_current_anom2$v <- BRAN_current_anom2$v*rep(c(1,NA), each = 1)
-BRAN_current_anom2 <- BRAN_current_anom2[complete.cases(BRAN_current_anom2$u)]
-BRAN_current_anom2$type <- "BRAN_c"
+BRAN_uv_anom2$u <- BRAN_uv_anom2$u*rep(c(1,NA), each = 1)
+BRAN_uv_anom2$v <- BRAN_uv_anom2$v*rep(c(1,NA), each = 1)
+BRAN_uv_anom2 <- BRAN_uv_anom2[complete.cases(BRAN_uv_anom2$u)]
+# Repeat to reduce vectors further
+BRAN_uv_anom2$u <- BRAN_uv_anom2$u*rep(c(1,NA), each = 1)
+BRAN_uv_anom2$v <- BRAN_uv_anom2$v*rep(c(1,NA), each = 1)
+BRAN_uv_anom2 <- BRAN_uv_anom2[complete.cases(BRAN_uv_anom2$u)]
+BRAN_uv_anom2$type <- "BRAN_c"
 
 # The label dataframes
-BRAN_plot_anom_data <- data_frame(txt = c("SST + Bathy\nAnomaly", "SST + Currents\nAnomaly", "1.0 m/s\n"),
+BRAN_plot_anom_data <- data_frame(txt = c("SST + Bathy\nAnomaly", "SST + currents\nAnomaly", "1.0 m/s\n"),
                              x = c(25,25,25), y = c(-28,-28,-31),
                              type = c("BRAN", "BRAN_c", "BRAN_c"))
 BRAN_plot_anom_seg <- data.frame(x = 24, y = -31.5, xend = 26, yend = -31.5, type = "BRAN_c")
@@ -265,8 +301,8 @@ BRAN_state_anom <- sa + geom_raster(data = BRAN_temp_anom2, aes(x = x, y = y, fi
                colour = "white", size = 0.5, binwidth = 1000, na.rm = TRUE, show.legend = FALSE) +
   geom_polygon(data = southern_africa_coast, aes(x = lon, y = lat, group = group),
                fill = "grey70", colour = "black", size = 0.1, show.legend = FALSE) +
-  # geom_segment(data = BRAN_current_anom2, aes(x = x, y = y, xend = x + u * 2, yend = y + v * 2),
-               # arrow = arrow(angle = 15, length = unit(0.02, "inches"), type = "closed"), alpha = 0.2) +
+  geom_segment(data = BRAN_uv_anom2, aes(x = x, y = y, xend = x + u * 2, yend = y + v * 2),
+               arrow = arrow(angle = 15, length = unit(0.02, "inches"), type = "closed"), alpha = 0.2) +
   geom_label(data = BRAN_plot_anom_data, aes(x = x, y = y, label = txt)) +
   geom_segment(data = BRAN_plot_anom_seg, aes(x = x, y = y, xend = xend, yend = yend)) +
   scale_fill_viridis(expression(paste("Temp. (",degree,"C)"))) +
@@ -280,30 +316,29 @@ BRAN_state_anom
 
 # 5. Create air state figure ----------------------------------------------
 
-ERA_temp2 <- ERA_temp[,1:3]
-colnames(ERA_temp2)[3] <- "temp"
+ERA_temp2 <- ERA_temp
 
-# Remove some wind rows for clearer plotting
-ERA_wind2 <- ERA_wind
-ERA_wind2$u <- ERA_wind2$u*rep(c(1,NA), each = 1)
-ERA_wind2$v <- ERA_wind2$v*rep(c(1,NA), each = 1)
-ERA_wind2 <- ERA_wind2[complete.cases(ERA_wind2$u)]
+# Remove some uv rows for clearer plotting
+ERA_uv2 <- ERA_uv
+ERA_uv2$u <- ERA_uv2$u*rep(c(1,NA), each = 1)
+ERA_uv2$v <- ERA_uv2$v*rep(c(1,NA), each = 1)
+ERA_uv2 <- ERA_uv2[complete.cases(ERA_uv2$u)]
 # Repeat to reduce vectors further
-# ERA_wind2$u <- ERA_wind2$u*rep(c(1,NA), each = 1)
-# ERA_wind2$v <- ERA_wind2$v*rep(c(1,NA), each = 1)
-# ERA_wind2 <- ERA_wind2[complete.cases(ERA_wind2$u)]
-# ERA_wind2$type <- "ERA_c"
+# ERA_uv2$u <- ERA_uv2$u*rep(c(1,NA), each = 1)
+# ERA_uv2$v <- ERA_uv2$v*rep(c(1,NA), each = 1)
+# ERA_uv2 <- ERA_uv2[complete.cases(ERA_uv2$u)]
+# ERA_uv2$type <- "ERA_c"
 
 # The label dataframes
-ERA_plot_data <- data_frame(txt = c("Air temp + Winds", "4.0 m/s\n"),
+ERA_plot_data <- data_frame(txt = c("Air temp + winds", "4.0 m/s\n"),
                              x = c(25,25), y = c(-28,-31))
 ERA_plot_seg <- data.frame(x = 24, y = -31.5, xend = 26, yend = -31.5)
 
 # The figure
 ERA_state <- sa + geom_raster(data = ERA_temp2, aes(x = x, y = y, fill = temp)) +
   geom_polygon(data = southern_africa_coast, aes(x = lon, y = lat, group = group),
-               fill = "grey70", colour = "black", size = 0.1, show.legend = FALSE) +
-  geom_segment(data = ERA_wind2, aes(x = x, y = y, xend = x + u * 0.5, yend = y + v * 0.5),
+               fill = NA, colour = "black", size = 0.1, show.legend = FALSE) +
+  geom_segment(data = ERA_uv2, aes(x = x, y = y, xend = x + u * 0.5, yend = y + v * 0.5),
                arrow = arrow(angle = 15, length = unit(0.02, "inches"), type = "closed"), alpha = 0.2) +
   geom_label(data = ERA_plot_data, aes(x = x, y = y, label = txt)) +
   geom_segment(data = ERA_plot_seg, aes(x = x, y = y, xend = xend, yend = yend)) +
@@ -317,19 +352,18 @@ ERA_state
 
 # 6. Create air state anomaly figure --------------------------------------
 
-ERA_anom2 <- ERA_temp[,1:3]
-colnames(ERA_anom2)[3] <- "temp"
+ERA_temp_anom2 <- ERA_temp_anom
 
 # Remove some wind rows for clearer plotting
-ERA_wind_anom2 <- ERA_wind
-ERA_wind_anom2$u <- ERA_wind_anom2$u*rep(c(1,NA), each = 1)
-ERA_wind_anom2$v <- ERA_wind_anom2$v*rep(c(1,NA), each = 1)
-ERA_wind_anom2 <- ERA_wind_anom2[complete.cases(ERA_wind_anom2$u)]
+ERA_uv_anom2 <- ERA_uv_anom
+ERA_uv_anom2$u <- ERA_uv_anom2$u*rep(c(1,NA), each = 1)
+ERA_uv_anom2$v <- ERA_uv_anom2$v*rep(c(1,NA), each = 1)
+ERA_uv_anom2 <- ERA_uv_anom2[complete.cases(ERA_uv_anom2$u)]
 # Repeat to reduce vectors further
-# ERA_wind_anom2$u <- ERA_wind_anom2$u*rep(c(1,NA), each = 1)
-# ERA_wind_anom2$v <- ERA_wind_anom2$v*rep(c(1,NA), each = 1)
-# ERA_wind_anom2 <- ERA_wind_anom2[complete.cases(ERA_wind_anom2$u)]
-# ERA_wind_anom2$type <- "ERA_c"
+# ERA_uv_anom2$u <- ERA_uv_anom2$u*rep(c(1,NA), each = 1)
+# ERA_uv_anom2$v <- ERA_uv_anom2$v*rep(c(1,NA), each = 1)
+# ERA_uv_anom2 <- ERA_uv_anom2[complete.cases(ERA_uv_anom2$u)]
+# ERA_uv_anom2$type <- "ERA_c"
 
 # The label dataframes
 ERA_plot_anom_data <- data_frame(txt = c("Air temp + Winds\nAnomaly", "4.0 m/s\n"),
@@ -337,10 +371,10 @@ ERA_plot_anom_data <- data_frame(txt = c("Air temp + Winds\nAnomaly", "4.0 m/s\n
 ERA_plot_anom_seg <- data.frame(x = 24, y = -31.5, xend = 26, yend = -31.5)
 
 # The figure
-ERA_state_anom <- sa + geom_raster(data = ERA_anom2, aes(x = x, y = y, fill = temp)) +
+ERA_state_anom <- sa + geom_raster(data = ERA_temp_anom2, aes(x = x, y = y, fill = temp)) +
   geom_polygon(data = southern_africa_coast, aes(x = lon, y = lat, group = group),
-               fill = "grey70", colour = "black", size = 0.1, show.legend = FALSE) +
-  geom_segment(data = ERA_wind_anom2, aes(x = x, y = y, xend = x + u * 0.5, yend = y + v * 0.5),
+               fill = NA, colour = "black", size = 0.1, show.legend = FALSE) +
+  geom_segment(data = ERA_uv_anom2, aes(x = x, y = y, xend = x + u * 0.5, yend = y + v * 0.5),
                arrow = arrow(angle = 15, length = unit(0.02, "inches"), type = "closed"), alpha = 0.2) +
   geom_label(data = ERA_plot_anom_data, aes(x = x, y = y, label = txt)) +
   geom_segment(data = ERA_plot_anom_seg, aes(x = x, y = y, xend = xend, yend = yend)) +
@@ -444,7 +478,7 @@ all_rank_text
 
 # 9. Combine figures and save ---------------------------------------------
 
-pdf("~/Desktop/fourth_concept.pdf", width = 17, height = 12, pointsize = 10) # Set PDF dimensions
+pdf("~/Desktop/fifth_concept.pdf", width = 17, height = 12, pointsize = 10) # Set PDF dimensions
 vp1 <- viewport(x = 0.02, y = 1.3, w = 0.60, h = 1.0, just = c("left", "top"))  # Sea
 vp2 <- viewport(x = 0.02, y = 1.05, w = 0.60, h = 1.0, just = c("left", "top"))  # Sea anomaly
 vp3 <- viewport(x = 0.98, y = 1.15, w = 0.35, h = 0.7, just = c("right", "top"))  # Air
