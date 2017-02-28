@@ -22,7 +22,9 @@ source("func/load.reanalyses.R")
 ## USED BY:
 # "graph/figures3.R"
 ## CREATES:
-# 
+# "data/BRAN/BRAN_temp_daily.Rdata"
+# "data/BRAN/BRAN_u_daily.Rdata"
+# "data/BRAN/BRAN_v_daily.Rdata"
 #############################################################################
 
 
@@ -300,6 +302,23 @@ muiz1 <- detect(muiz1, climatology_start = start, climatology_end = end, clim_on
 
 # 2. Combine and save sea state files -------------------------------------
 
+# Function for smoothing daily values
+# df <- test
+BRAN.smooth <- function(df) {
+  # BRAN_var <- BRAN.Rdata()
+  df$date <- seq(as.Date("2016-01-01"), as.Date("2016-12-31"), by = "day")
+  start <- min(df$date, na.rm = T) 
+  end <- max(df$date, na.rm = T)
+  colnames(df) <- c("x","y","t", "temp")
+  whole <- make_whole(df)
+  res <- RmarineHeatWaves::detect(whole, climatology_start = start, climatology_end = end, clim_only = T)
+  res$date <- format(res$date, "%m-%d")
+  # events <- mhw$event
+  return(res)
+}
+test <- BRAN_temp_daily[BRAN_temp_daily$x == BRAN_temp_daily$x[1] & BRAN_temp_daily$y == BRAN_temp_daily$y[1],]
+test <- BRAN.smooth(test)
+
 # Temperature
 load("data/BRAN/BRAN_temp_jan.Rdata")
 load("data/BRAN/BRAN_temp_feb.Rdata")
@@ -316,7 +335,10 @@ load("data/BRAN/BRAN_temp_dec.Rdata")
 BRAN_temp_daily <- rbind(BRAN_temp_jan, BRAN_temp_feb, BRAN_temp_mar, BRAN_temp_apr,
                          BRAN_temp_may, BRAN_temp_jun, BRAN_temp_jul, BRAN_temp_aug,
                          BRAN_temp_sep, BRAN_temp_oct, BRAN_temp_nov, BRAN_temp_dec)
-
+BRAN_temp_daily <- BRAN_temp_daily[complete.cases(BRAN_temp_daily$var),]
+system.time(BRAN_temp_daily <- ddply(BRAN_temp_daily, .(x,y), BRAN.smooth, .progress = "text")) # 3638 seconds
+# break_point <- BRAN_temp_daily # For safety...
+BRAN_temp_daily <- BRAN_temp_daily[,c(1,2,4,6)]
 colnames(BRAN_temp_daily)[4] <- "temp"
 save(BRAN_temp_daily, file = "data/BRAN/BRAN_temp_daily.Rdata")
 
@@ -336,6 +358,7 @@ load("data/BRAN/BRAN_u_dec.Rdata")
 BRAN_u_daily <- rbind(BRAN_u_jan, BRAN_u_feb, BRAN_u_mar, BRAN_u_apr,
                          BRAN_u_may, BRAN_u_jun, BRAN_u_jul, BRAN_u_aug,
                          BRAN_u_sep, BRAN_u_oct, BRAN_u_nov, BRAN_u_dec)
+BRAN_u_daily <- BRAN_u_daily[complete.cases(BRAN_u_daily$var),]
 colnames(BRAN_u_daily)[4] <- "u"
 save(BRAN_u_daily, file = "data/BRAN/BRAN_u_daily.Rdata")
 
@@ -355,6 +378,7 @@ load("data/BRAN/BRAN_v_dec.Rdata")
 BRAN_v_daily <- rbind(BRAN_v_jan, BRAN_v_feb, BRAN_v_mar, BRAN_v_apr,
                       BRAN_v_may, BRAN_v_jun, BRAN_v_jul, BRAN_v_aug,
                       BRAN_v_sep, BRAN_v_oct, BRAN_v_nov, BRAN_v_dec)
+BRAN_v_daily <- BRAN_v_daily[complete.cases(BRAN_v_daily$var),]
 colnames(BRAN_v_daily)[4] <- "v"
 save(BRAN_v_daily, file = "data/BRAN/BRAN_v_daily.Rdata")
 
@@ -399,6 +423,21 @@ save(ERA4, file = "data/ERA/ERA4.Rdata")
 
 # 4. Combine and save air state files -------------------------------------
 
+# Function for smoothing daily values
+# df <- test
+ERA.smooth <- function(df) {
+  # BRAN_var <- BRAN.Rdata()
+  df$date <- seq(as.Date("2016-01-01"), as.Date("2016-12-31"), by = "day")
+  start <- min(df$date, na.rm = T) 
+  end <- max(df$date, na.rm = T)
+  colnames(df) <- c("x","y","t", "temp")
+  whole <- make_whole(df)
+  res <- RmarineHeatWaves::detect(whole, climatology_start = start, climatology_end = end, clim_only = T)
+  res$date <- format(res$date, "%m-%d")
+  # events <- mhw$event
+  return(res)
+}
+
 load("data/ERA/ERA1.Rdata")
 load("data/ERA/ERA2.Rdata")
 load("data/ERA/ERA3.Rdata")
@@ -409,6 +448,16 @@ ERA_all_daily <- data.table(ERA_all_daily)
 system.time(ERA_all_daily <- ERA_all_daily[, .(temp = mean(temp, na.rm = TRUE),
                                                u = mean(u, na.rm = TRUE),
                                                v = mean(v, na.rm = TRUE)), by = .(x,y,date)]) # 1 seconds
+ERA_all_daily <- ERA_all_daily[complete.cases(ERA_all_daily$temp),]
 
+# Extract temperature and smooth
+ERA_temp_daily <- ERA_all_daily[,c(1:4)]
+system.time(ERA_temp_daily <- ddply(ERA_temp_daily, .(x,y), ERA.smooth, .parallel = T)) # 100 seconds
+
+# re-merge and save
+ERA_all_daily <- merge(ERA_all_daily, ERA_temp_daily[,c(1,2,4,6)], by = c("x","y","date"))
+ERA_all_daily <- ERA_all_daily[,c(1:3,7,5:6)]
+colnames(ERA_all_daily)[4] <- "temp"
+ERA_all_daily <- data.table(ERA_all_daily)
 save(ERA_all_daily, file = "data/ERA/ERA_all_daily.Rdata")
 

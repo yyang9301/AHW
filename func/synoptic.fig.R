@@ -110,9 +110,11 @@ BRAN.event <- function(event, var){
   BRAN_var <- ddply(var_idx, .(files), BRAN.Rdata, .parallel = T)
   BRAN_var <- filter(BRAN_var, date %in% date_idx)
   BRAN_var$files <- NULL
+  BRAN_var <- BRAN_var[complete.cases(BRAN_var$var),]
   BRAN_var <- data.table(BRAN_var)
   BRAN_var <- BRAN_var[, .(var = mean(var, na.rm = TRUE)), by = .(x,y)]
   colnames(BRAN_var)[3] <- var
+  BRAN_var <- BRAN_var[order(BRAN_var$x),]
   return(BRAN_var)
 }
 
@@ -139,7 +141,8 @@ round.metrics <- function(df){
 # event$lat <- SACTN_site_list$lat[SACTN_site_list$site == event$site]
 # event$lon <- SACTN_site_list$lon[SACTN_site_list$site == event$site]
 
-# event <- SACTN_events[SACTN_events$duration == min(SACTN_events$duration),][1,] # tester...
+# event <- SACTN_events[SACTN_events$duration == min(SACTN_events$duration),][1,] # shortest...
+# event <- SACTN_events[SACTN_events$duration == max(SACTN_events$duration),] # longest...
 
 synoptic.fig <- function(event){
   
@@ -282,7 +285,7 @@ synoptic.fig <- function(event){
     geom_label(data = BRAN_plot_anom_data, aes(x = x, y = y, label = txt)) +
     geom_segment(data = BRAN_plot_anom_seg, aes(x = x, y = y, xend = xend, yend = yend)) +
     geom_point(data = event2, aes(x = lon, y = lat), size = 3, alpha = 0.7) +
-    scale_fill_viridis(expression(paste("Temp. (",degree,"C)"))) +
+    scale_fill_viridis(expression(paste("Anom. (",degree,"C)"))) +
     facet_grid(.~type) +
     theme(legend.position = "right",
           legend.direction = "vertical",
@@ -335,7 +338,7 @@ synoptic.fig <- function(event){
     geom_label(data = ERA_plot_anom_data, aes(x = x, y = y, label = txt)) +
     geom_segment(data = ERA_plot_anom_seg, aes(x = x, y = y, xend = xend, yend = yend)) +
     geom_point(data = event2, aes(x = lon, y = lat), size = 3, alpha = 0.7) +
-    scale_fill_viridis(expression(paste("Temp. (",degree,"C)"))) +
+    scale_fill_viridis(expression(paste("Anom. (",degree,"C)"))) +
     theme(legend.position = "right",
           legend.direction = "vertical",
           strip.text = element_blank(),
