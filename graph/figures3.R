@@ -102,14 +102,14 @@ sa <- ggplot() + bw_update +
 # 2. Load data for sea/ air state during event ----------------------------
 
 # Extract longest event
-event <- SACTN_events[SACTN_events$duration == max(SACTN_events$duration),]
-event$lat <- SACTN_site_list$lat[SACTN_site_list$site == event$site]
-event$lon <- SACTN_site_list$lon[SACTN_site_list$site == event$site]
-
-# Extract smallest event
-# event <- SACTN_events[SACTN_events$duration == min(SACTN_events$duration),][1,]
+# event <- SACTN_events[SACTN_events$duration == max(SACTN_events$duration),]
 # event$lat <- SACTN_site_list$lat[SACTN_site_list$site == event$site]
 # event$lon <- SACTN_site_list$lon[SACTN_site_list$site == event$site]
+
+# Extract smallest event
+event <- SACTN_events[SACTN_events$duration == min(SACTN_events$duration),][1,]
+event$lat <- SACTN_site_list$lat[SACTN_site_list$site == event$site]
+event$lon <- SACTN_site_list$lon[SACTN_site_list$site == event$site]
 
 ### Extract BRAN data during this event
 ## The index of months to load
@@ -244,6 +244,9 @@ BRAN_plot_seg <- data.frame(x = 24, y = -31.5, xend = 26, yend = -31.5, type = "
 sa_bathy$type = "BRAN"
 # bathy$type = "BRAN"
 
+# Site location
+event$type = "BRAN"
+
 # The figure
 BRAN_state <- sa + geom_raster(data = BRAN_temp2, aes(x = x, y = y, fill = temp)) +
   stat_contour(data = sa_bathy[sa_bathy$depth < -200,], aes(x = lon, y = lat, z = depth, alpha = ..level..),
@@ -254,6 +257,7 @@ BRAN_state <- sa + geom_raster(data = BRAN_temp2, aes(x = x, y = y, fill = temp)
                arrow = arrow(angle = 15, length = unit(0.02, "inches"), type = "closed"), alpha = 0.2) +
   geom_label(data = BRAN_plot_data, aes(x = x, y = y, label = txt)) +
   geom_segment(data = BRAN_plot_seg, aes(x = x, y = y, xend = xend, yend = yend)) +
+  geom_point(data = event, aes(x = lon, y = lat), size = 2, alpha = 0.6) +
   scale_fill_viridis(expression(paste("Temp. (",degree,"C)"))) +
   facet_grid(.~type) +
   guides(fill = guide_legend(keyheight = 4)) +
@@ -295,6 +299,9 @@ BRAN_plot_anom_seg <- data.frame(x = 24, y = -31.5, xend = 26, yend = -31.5, typ
 sa_bathy$type = "BRAN"
 # bathy$type = "BRAN"
 
+# Site location
+event$type = "BRAN"
+
 # The figure
 BRAN_state_anom <- sa + geom_raster(data = BRAN_temp_anom2, aes(x = x, y = y, fill = temp)) +
   stat_contour(data = sa_bathy[sa_bathy$depth < -200,], aes(x = lon, y = lat, z = depth, alpha = ..level..),
@@ -305,6 +312,7 @@ BRAN_state_anom <- sa + geom_raster(data = BRAN_temp_anom2, aes(x = x, y = y, fi
                arrow = arrow(angle = 15, length = unit(0.02, "inches"), type = "closed"), alpha = 0.2) +
   geom_label(data = BRAN_plot_anom_data, aes(x = x, y = y, label = txt)) +
   geom_segment(data = BRAN_plot_anom_seg, aes(x = x, y = y, xend = xend, yend = yend)) +
+  geom_point(data = event, aes(x = lon, y = lat), size = 2, alpha = 0.6) +
   scale_fill_viridis(expression(paste("Temp. (",degree,"C)"))) +
   facet_grid(.~type) +
   guides(fill = guide_legend(keyheight = 4)) +

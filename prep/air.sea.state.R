@@ -7,6 +7,7 @@
 # 4. Combine and save air state files
 ## DEPENDS ON:
 library(doMC); registerDoMC(cores = 4)
+library(raster)
 library(plyr)
 library(dplyr)
 library(reshape2)
@@ -16,6 +17,7 @@ library(zoo)
 library(tidyr)
 library(purrr)
 library(broom)
+library(RmarineHeatWaves)
 source("func/load.reanalyses.R")
 ## USED BY:
 # "graph/figures3.R"
@@ -47,7 +49,7 @@ BRAN.monthly <- function(idx){
 }
 
 # Load all temp, create total mean, and save monthly and total
-system.time(BRAN_temp <- ddply(temp_idx, .(files), BRAN.monthly, .parallel = T)) ## 3606 seconds
+system.time(BRAN_temp <- ddply(temp_idx, .(files), BRAN.monthly, .parallel = T)) # 3606 seconds
 BRAN_temp_monthly <- BRAN_temp
 save(BRAN_temp_monthly, file = "data/BRAN/BRAN_temp_monthly.Rdata")
 BRAN_temp2 <- data.table(BRAN_temp)
@@ -185,7 +187,117 @@ save(BRAN_v_nov, file = "data/BRAN/BRAN_v_nov.Rdata")
 system.time(BRAN_v_dec <- BRAN.daily("v", "12")) # 5400seconds
 save(BRAN_v_dec, file = "data/BRAN/BRAN_v_dec.Rdata")
 
-  
+### Create daily running mean climatologies by year to save processing power
+## The following code is intentionally repetitive in order to allow it to be run piecemeal
+## Flushing the RAM between steps as required
+source("~/RmarineHeatWaves/R/RmarineHeatWaves.R") # Manually load until changes reloaded to CRAN
+# var1 <- "temp"; yr <- "1994" # testing...
+BRAN.daily.run <- function(var1, yr){
+  idx_yr <- data.frame(files = dir("~/data/BRAN", pattern = paste0("ocean_",var1,"_*.*_", yr), full.names = TRUE), 
+                        x = 1:length(dir("~/data/BRAN", pattern = paste0("ocean_",var1,"_*.*_", yr))))
+  system.time(BRAN_var <- ddply(idx_yr, .(files), BRAN.Rdata, .parallel = T)) # ~5 seconds for one file
+  BRAN_var$files <- NULL
+  colnames(BRAN_var) <- c("x","y","temp","t")
+  BRAN_var <- make_whole(BRAN_var)
+  BRAN_var <- detect(BRAN_var)
+  system.time(BRAN_var$date <- format(BRAN_var$date, "%m-%d")) # 34 seconds
+  BRAN_var <- data.table(BRAN_var)
+  system.time(BRAN_var <- BRAN_var[, .(var = mean(var, na.rm = TRUE)), by = .(x,y,date)]) # 1 seconds
+  return(BRAN_var)
+}
+
+BRAN.smooth <- function(df) {
+  # BRAN_var <- BRAN.Rdata()
+  start <- min(df$date, na.rm = T) 
+  end <- max(df$date, na.rm = T)
+  colnames(df) <- c("x","y","temp","t")
+  whole <- make_whole(df)
+  res <- detect(whole, climatology_start = start, climatology_end = end, clim_only = T)
+  # events <- mhw$event
+  return(res)
+}
+
+# Subsetting extent
+sub_lon <- seq(10,11,0.1)
+sub_lat <- seq(-26,-25,0.1)
+# Load years of data
+BRAN_temp1 <- ddply(temp_idx[1:12,], .(files), BRAN.Rdata, .parallel = T)
+BRAN_temp1$files <- NULL
+BRAN_temp1_sub <- BRAN_temp1[round(BRAN_temp1$x,1) %in% sub_lon & round(BRAN_temp1$y) %in% sub_lat,]
+BRAN_temp2 <- ddply(temp_idx[13:24,], .(files), BRAN.Rdata, .parallel = T)
+BRAN_temp2$files <- NULL
+BRAN_temp2_sub <- BRAN_temp2[round(BRAN_temp2$x,1) %in% sub_lon & round(BRAN_temp2$y) %in% sub_lat,]
+# BRAN_temp3 <- ddply(temp_idx[25:36,], .(files), BRAN.Rdata, .parallel = T)
+BRAN_temp12 <- rbind(BRAN_temp1, BRAN_temp2)
+BRAN_temp12$files <- NULL
+BRAN_temp12_sub <- BRAN_temp12[round(BRAN_temp12$x,1) %in% sub_lon & round(BRAN_temp12$y) %in% sub_lat,]
+
+# Smooth
+system.time(BRAN_temp1_smooth <- ddply(BRAN_temp1_sub, .(x,y), BRAN.smooth, .parallel = T))
+system.time(BRAN_temp2_smooth <- ddply(BRAN_temp2_sub, .(x,y), BRAN.smooth, .parallel = T))
+system.time(BRAN_temp12_smooth <- ddply(BRAN_temp12_sub, .(x,y), BRAN.smooth, .parallel = T))
+BRAN_temp12_smooth <- BRAN_temp12_smooth[1:(109800/2),]
+
+# Compare different smoothing
+BRAN_temp1_2 <- (BRAN_temp1_smooth$seas_clim_year + BRAN_temp2_smooth$seas_clim_year)/2
+BRAN_res <- merge(BRAN_temp1_smooth[,c(1,2,3,6)], BRAN_temp2_smooth[,c(1,2,3,6)], by = c("x", "y", "doy"))
+BRAN_res$res1 <- (BRAN_res$seas_clim_year.x + BRAN_res$seas_clim_year.y)/2
+
+BRAN_res2 <- merge(BRAN_res, BRAN_temp12_smooth[,c(1,2,3,6)], by = c("x","y","doy"))
+BRAN_res2$coord_idx <- paste(round(BRAN_res2$x,2), round(BRAN_res2$y,2), sep = "/ ")
+
+res_all <- mean(BRAN_res2$res1 - BRAN_res2$seas_clim_year, na.rm = T)
+# Mean difference = 9.898108e-18
+
+# Create ggplot showing results
+BRAN_res2_long <- melt(BRAN_res2, id.vars = c("coord_idx", "doy"), measure.vars = c("res1", "seas_clim_year"))
+ggplot(data = BRAN_res2_long, aes(x = doy, y = value, colour = value)) +
+  geom_line(alpha = 0.5) +
+  facet_wrap(~variable) +
+  ylab("Smooth climatology")
+
+ggplot(data = BRAN_res2, aes(x = doy, y = res2, group = coord_idx)) +
+  geom_line() +
+  scale_y_continuous(limits = c(-1,1)) +
+  ylab("Difference")
+
+BRAN_res3 <- ddply(BRAN_res2, .(x,y), summarise,
+                   "1994" = mean(seas_clim_year.x, na.rm = T),
+                   "1995" = mean(seas_clim_year.y, na.rm = T),
+                   both = mean(seas_clim_year, na.rm = T))
+BRAN_res3_long <- melt(BRAN_res3, id.vars = c("x","y"), variable.name = "seas", value.name = "clim")
+
+
+BRAN_res3_long$coord_idx <- paste(round(BRAN_res3_long$x,2), round(BRAN_res3_long$y,2), sep = "/ ")
+
+library(ggplot2)
+ggplot(data = BRAN_res3_long, aes(x = x, y = y, fill = clim)) +
+  geom_raster() +
+  facet_wrap(~seas)
+
+ggplot(data = BRAN_res3_long, aes(x = x, y = y, fill = clim)) +
+  geom_raster()
+
+BRAN_res2$res2 <- BRAN_res2$res1-BRAN_res2$seas_clim_year
+
+ggplot(data = BRAN_res2, aes(x = x, y = y, fill = res2)) +
+  geom_raster()
+
+# Now test this on SACTN time series
+load("~/SACTNraw/data/SACTNdaily_v4.1.Rdata")
+
+# Subset Muizenberg
+muiz <- filter(SACTNdaily_v4.1, site == "Muizenberg")
+muiz$year <- year(muiz$date)
+
+# Create smaller chunks for comparison
+muiz1 <- muiz[muiz$year %in% seq(1975, 1984,1),4:5]
+colnames(muiz1) <- c("t","temp")
+muiz1 <- make_whole(muiz1)
+start = year(min(muiz1$date))
+end = year(max(muiz1$date))
+muiz1 <- detect(muiz1, climatology_start = start, climatology_end = end, clim_only = T)
+
 # 2. Combine and save sea state files -------------------------------------
 
 # Temperature
@@ -204,6 +316,7 @@ load("data/BRAN/BRAN_temp_dec.Rdata")
 BRAN_temp_daily <- rbind(BRAN_temp_jan, BRAN_temp_feb, BRAN_temp_mar, BRAN_temp_apr,
                          BRAN_temp_may, BRAN_temp_jun, BRAN_temp_jul, BRAN_temp_aug,
                          BRAN_temp_sep, BRAN_temp_oct, BRAN_temp_nov, BRAN_temp_dec)
+
 colnames(BRAN_temp_daily)[4] <- "temp"
 save(BRAN_temp_daily, file = "data/BRAN/BRAN_temp_daily.Rdata")
 
