@@ -3,21 +3,12 @@
 ## This script does:
 # 1. Load required data
 # 2. The complete function for creating synoptic figures
-
-# 2. Load data for air-sea state during event
-# 3. Create sea state figure
-# 4. Create sea state anomaly figure
-# 5. Create air state figure
-# 6. Create air state anomaly figure
-# 7. The event figure
-# 8. The info boxes
-# 9. Combine figures and save
-
 ## DEPENDS ON:
 library(PBSmapping)
 library(marmap)
 library(grid)
 library(ggplot2)
+library(scales)
 library(viridis)
 library(stringr)
 library(plyr)
@@ -238,8 +229,70 @@ synoptic.fig <- function(event){
                                type = c("BRAN", "BRAN_c", "BRAN_c"))
   BRAN_plot_seg <- data.frame(x = 24.5, y = -31.5, xend = 25.5, yend = -31.5, type = "BRAN_c")
   # Site location
-  event2 <- rbind(event, event)
-  event2$type <- c("BRAN", "BRAN_c")
+  BRAN_event <- event
+  BRAN_event$type <- NULL
+  
+  # The synoptic panel figure
+  temperature_dat <- BRAN_temp2
+  temperature_dat <- ERA_temp
+  vector_dat <- BRAN_uv2
+  vector_dat <- ERA_uv
+  label_dat <- BRAN_plot_data
+  label_dat <- ERA_plot_data
+  segment_dat <- BRAN_plot_seg
+  segment_dat <- ERA_plot_seg
+  bathy_dat <- sa_bathy
+  bathy_dat <- NA
+  legend_title <- "Temp. (°C)"
+  legend_title <- "Anom. (°C)"
+  uv_scalar <- 1
+  uv_scalar <- 0.5
+  BRAN <- T
+  BRAN <- F
+  viridis_colour <- "D"
+  viridis_colour <- "C"
+  event_dat <- BRAN_event
+  event_dat <- ERA_event
+  
+  synoptic.panel <- function(temperature_dat, vector_dat, label_dat, segment_dat, 
+                             point_dat, legend_title, uv_scalar, viridis_colour = "D", BRAN = T){
+    sa1 <- ggplot() + coord_equal() +
+      geom_raster(data = temperature_dat, aes(x = x, y = y, fill = temp)) +
+      geom_segment(data = vector_dat, aes(x = x, y = y, xend = x + u * uv_scalar, yend = y + v * uv_scalar),
+                   arrow = arrow(angle = 15, length = unit(0.02, "inches"), type = "closed"), alpha = 0.2) +
+      geom_polygon(data = southern_africa_coast, aes(x = lon, y = lat, group = group),
+                   fill = NA, colour = "black", size = 0.5, show.legend = FALSE) +
+      geom_label(data = label_dat, aes(x = x, y = y, label = txt)) +
+      geom_segment(data = segment_dat, aes(x = x, y = y, xend = xend, yend = yend)) +
+      geom_point(data = point_dat, aes(x = lon, y = lat), size = 3, alpha = 0.7) +
+      scale_x_continuous(limits = sa_lons, expand = c(0, 0), breaks = seq(15, 35, 5), 
+                         labels = scales::unit_format("°E", sep = "")) +
+      scale_y_continuous(limits = sa_lats, expand = c(0, 0), breaks = seq(-35, -30, 5), 
+                         labels = c("30°S", "35°S")) +
+      coord_cartesian(xlim = c(10.5, 39.5), ylim = c(-39.5, -25.5)) +
+      xlab("") + ylab("") +
+      scale_fill_viridis(legend_title, option = viridis_colour) +
+      facet_wrap("type", scales = "free_y") +
+      theme(panel.background = element_rect(fill = "grey70"),
+            panel.grid.major = element_blank(),
+            legend.position = "right",
+            legend.direction = "vertical",
+            strip.text = element_blank(),
+            legend.key.height = unit(1.2, "cm"))
+    if(BRAN){
+      sa1 <- sa1 + stat_contour(data = sa_bathy[sa_bathy$depth < -200,], aes(x = lon, y = lat, z = depth, alpha = ..level..),
+                                colour = "white", size = 0.5, binwidth = 1000, na.rm = TRUE, show.legend = FALSE)
+    }
+    sa1
+    return(sa1)
+  }
+  
+  BRAN_state <- synoptic.panel(temperature_dat = BRAN_temp2, vector_dat = BRAN_uv2, label_dat = BRAN_plot_data, 
+                               segment_dat =  BRAN_plot_seg, point_dat =  BRAN_event, 
+                               legend_title = "Temp. (°C)", uv_scalar = 1, viridis_colour = "D", BRAN = T)
+  
+  BRAN_state
+  
   # The figure
   BRAN_state <- sa + geom_raster(data = BRAN_temp2, aes(x = x, y = y, fill = temp)) +
     stat_contour(data = sa_bathy[sa_bathy$depth < -200,], aes(x = lon, y = lat, z = depth, alpha = ..level..),
@@ -250,15 +303,14 @@ synoptic.fig <- function(event){
                  arrow = arrow(angle = 15, length = unit(0.02, "inches"), type = "closed"), alpha = 0.2) +
     geom_label(data = BRAN_plot_data, aes(x = x, y = y, label = txt)) +
     geom_segment(data = BRAN_plot_seg, aes(x = x, y = y, xend = xend, yend = yend)) +
-    geom_point(data = event2, aes(x = lon, y = lat), size = 3, alpha = 0.7) +
+    geom_point(data = BRAN_event, aes(x = lon, y = lat), size = 3, alpha = 0.7) +
     scale_fill_viridis(expression(paste("Temp. (",degree,"C)"))) +
-    facet_grid(.~type) +
+    facet_grid(.~type, scales = "free_y") +
     theme(legend.position = "right",
           legend.direction = "vertical",
           strip.text = element_blank(),
           legend.key.height = unit(1.3, "cm"))
-  # BRAN_state
-  
+  BRAN_state
   
   ## Create sea state anomaly figure ##
   # Double up temperatures for plotting
@@ -280,7 +332,7 @@ synoptic.fig <- function(event){
                  colour = "white", size = 0.5, binwidth = 1000, na.rm = TRUE, show.legend = FALSE) +
     geom_polygon(data = southern_africa_coast, aes(x = lon, y = lat, group = group),
                  fill = "grey70", colour = "black", size = 0.1, show.legend = FALSE) +
-    geom_segment(data = BRAN_uv_anom2, aes(x = x, y = y, xend = x + u * 2, yend = y + v * 2),
+    geom_segment(data = BRAN_uv_anom2, aes(x = x, y = y, xend = x + u * 1, yend = y + v * 1),
                  arrow = arrow(angle = 15, length = unit(0.02, "inches"), type = "closed"), alpha = 0.2) +
     geom_label(data = BRAN_plot_anom_data, aes(x = x, y = y, label = txt)) +
     geom_segment(data = BRAN_plot_anom_seg, aes(x = x, y = y, xend = xend, yend = yend)) +
@@ -291,7 +343,7 @@ synoptic.fig <- function(event){
           legend.direction = "vertical",
           strip.text = element_blank(),
           legend.key.height = unit(1.3, "cm"))
-  # BRAN_state_anom
+  BRAN_state_anom
   
   ## Create air state figure ##
   # ERA_temp2 <- ERA_temp
@@ -303,6 +355,8 @@ synoptic.fig <- function(event){
   ERA_plot_data <- data_frame(txt = c("Air temp + Winds", "4.0 m/s\n"),
                               x = c(25,25), y = c(-28,-31))
   ERA_plot_seg <- data.frame(x = 24, y = -31.5, xend = 26, yend = -31.5)
+  # Site location
+  ERA_event <- event
   # The figure
   ERA_state <- sa + geom_raster(data = ERA_temp, aes(x = x, y = y, fill = temp)) +
     geom_polygon(data = southern_africa_coast, aes(x = lon, y = lat, group = group),

@@ -120,3 +120,6 @@ The scripts and raw data used to compare atmospheric and marine heat waves and c
 ## 2017/02/28
 * Daily climatologies for grided reanalysis temperatures have now all been smoothed
 * This allows for smoother temperature anomaly values to be calculated
+
+## 2017/03/01
+* Cosmetic adjustments to synoptic figure

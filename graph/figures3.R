@@ -37,6 +37,12 @@ source("func/load.reanalyses.R")
 #############################################################################
 
 
+source("func/synoptic.fig.R")
+
+event <- SACTN_events[SACTN_events$duration == min(SACTN_events$duration),][1,] # shortest...
+synoptic.fig(event)
+
+
 # 1. Load required data  --------------------------------------------------
 
 load("data/events/SACTN_events.Rdata")
