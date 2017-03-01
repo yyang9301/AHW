@@ -13,7 +13,8 @@ source("func/synoptic.fig.R")
 
 # 1. Mass produce the synoptic figures ------------------------------------
 
-source("func/synoptic.fig.R")
-
 event <- SACTN_events[SACTN_events$duration == min(SACTN_events$duration),][1,] # shortest...
+system.time(synoptic.fig(event))
+
+event <- SACTN_events[SACTN_events$duration == max(SACTN_events$duration),] # longest...
 system.time(synoptic.fig(event))
