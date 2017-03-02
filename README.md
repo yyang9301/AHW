@@ -118,8 +118,11 @@ The scripts and raw data used to compare atmospheric and marine heat waves and c
 * Current and wind anomalies added
 
 ## 2017/02/28
-* Daily climatologies for grided reanalysis temperatures have now all been smoothed
+* Daily climatologies for girded reanalysis temperatures have now all been smoothed
 * This allows for smoother temperature anomaly values to be calculated
 
 ## 2017/03/01
 * Cosmetic adjustments to synoptic figure
+
+## 2017/03/01
+* Synoptic figure output now also saves the temp and uv values in a separate list for SOMs

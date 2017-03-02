@@ -333,6 +333,12 @@ synoptic.fig <- function(event){
   # ERA_state_anom
   
   
+  ## Save all of the map data frames in a list for SOM ##
+  SOM_name <- paste0("data/SOM/",event2$site[1],"_",event2$event_no[1],".Rdata")
+  SOM_packet <- list(BRAN_temp = BRAN_temp2, BRAN_uv = BRAN_uv2, BRAN_temp_anom = BRAN_temp_anom2, BRAN_uv_anom = BRAN_uv_anom2,
+                     ERA_temp = ERA_temp, ERA_uv = ERA_uv2, ERA_temp_anom = ERA_temp_anom, ERA_uv_anom = ERA_uv_anom2)
+  save(SOM_packet, file = SOM_name)
+  
   ## The event figure ##
   # Determine spread and subset days
   spread <- 31
@@ -450,7 +456,7 @@ synoptic.fig <- function(event){
   
   ## Combine figures and save ##
   # Generate file name
-  file_name <- paste0("graph/synoptic/",event$site[1],"_",event$event_no[1],".pdf")
+  file_name <- paste0("graph/synoptic/",event2$site[1],"_",event2$event_no[1],".pdf")
   # The figure
   pdf(file_name, width = 17, height = 10, pointsize = 10) # Set PDF dimensions
   grid.newpage()
