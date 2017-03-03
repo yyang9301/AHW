@@ -58,10 +58,10 @@ if(!(exists("ERA_all_daily"))){
 }
 
 # ERA Interim file indices
-file_1_dates <- seq(as.Date("1979-01-01"), as.Date("1989-01-01"), by = "day")
-file_2_dates <- seq(as.Date("1990-01-01"), as.Date("1998-01-01"), by = "day")
-file_3_dates <- seq(as.Date("1999-01-01"), as.Date("2007-01-01"), by = "day")
-file_4_dates <- seq(as.Date("2008-01-01"), as.Date("2016-01-01"), by = "day")
+file_1_dates <- seq(as.Date("1979-01-01"), as.Date("1989-12-31"), by = "day")
+file_2_dates <- seq(as.Date("1990-01-01"), as.Date("1998-12-31"), by = "day")
+file_3_dates <- seq(as.Date("1999-01-01"), as.Date("2007-12-31"), by = "day")
+file_4_dates <- seq(as.Date("2008-01-01"), as.Date("2016-12-31"), by = "day")
 
 # The lon/ lat ranges
 wlon <- 10
@@ -225,6 +225,7 @@ synoptic.fig <- function(event){
   if(exists("ERA3")) ERA_all <- rbind(ERA_all, ERA3)
   if(exists("ERA4")) ERA_all <- rbind(ERA_all, ERA4)
   # Prep for plotting
+  # ERA_all <- data.table(ERA_all)
   ERA_all <- ERA_all[, .(temp = mean(temp, na.rm = TRUE),
                          u = mean(u, na.rm = TRUE),
                          v = mean(v, na.rm = TRUE)), by = .(x,y)]
@@ -376,68 +377,41 @@ synoptic.fig <- function(event){
   site_round <- round.metrics(site_events)
   all_round <- round.metrics(SACTN_events)
   # The properties of the event
-  properties <- data.frame(Properties = c(paste0("Event count --->"),
-                                   paste0("Duration: ", event_round$duration, " days"),
-                                   paste0("Max. intens.: ", event_round$int_max[1], "°C"),
-                                   paste0("Mean intens.: ", event_round$int_mean[1], "°C"),
-                                   paste0("Cum. intens.: ", event_round$int_cum[1], "°C·days"),
-                                   paste0("Onset rate: ", event_round$rate_onset[1], "°C/day"),
-                                   paste0("Decl. rate: ", event_round$rate_decline[1], "°C/day")),
-                           y = rev(c(1,2,3,4,5,6,7)),
-                           x = 0)
-  # prop_text <- ggplot(data = properties, aes(x = x, y = y)) + theme_void() +
-  #   geom_text(aes(x = x, y = y, label = txt), hjust = "left", size = 3) +
-  #   scale_x_continuous(expand = c(0,0), limits = c(-0.01, 0.10)) +
-  #   theme(axis.ticks = element_blank(),
-  #         panel.grid.major = element_blank())
-  # prop_text
-  # The event ranked against other events from the same site
-  site_ranks <- data.frame(Site = c(paste0(nrow(site_events)),
-                                   paste0(which(event_round$duration == unique(site_round$duration[order(site_round$duration, decreasing = T)])),
-                                          "/", length(unique(site_round$duration))),
-                                   paste0(which(event_round$int_max == unique(site_round$int_max[order(site_round$int_max, decreasing = T)])),
-                                          "/", length(unique(site_round$int_max))),
-                                   paste0(which(event_round$int_mean == unique(site_round$int_mean[order(site_round$int_mean, decreasing = T)])),
-                                          "/", length(unique(site_round$int_mean))),
-                                   paste0(which(event_round$int_cum == unique(site_round$int_cum[order(site_round$int_cum, decreasing = T)])),
-                                          "/", length(unique(site_round$int_cum))),
-                                   paste0(which(event_round$rate_onset == unique(site_round$rate_onset[order(site_round$rate_onset, decreasing = T)])),
-                                          "/", length(unique(site_round$rate_onset))),
-                                   paste0(which(event_round$rate_decline == unique(site_round$rate_decline[order(site_round$rate_decline, decreasing = T)])),
-                                          "/", length(unique(site_round$rate_decline)))),
-                           y = rev(c(1,2,3,4,5,6,7)),
-                           x = 0)
-  # site_rank_text <- ggplot(data = site_ranks, aes(x = x, y = y)) + theme_void() +
-  #   geom_text(aes(x = x, y = y, label = txt), hjust = "left", size = 3) +
-  #   scale_x_continuous(expand = c(0,0), limits = c(-0.01, 0.10)) +
-  #   theme(axis.ticks = element_blank(),
-  #         panel.grid.major = element_blank())
-  # site_rank_text
-  # The event ranked against other events from the same site
-  all_ranks <- data.frame(All = c(paste0(nrow(SACTN_events)),
-                                  paste0(which(event_round$duration == unique(all_round$duration[order(all_round$duration, decreasing = T)])),
-                                         "/", length(unique(all_round$duration))),
-                                  paste0(which(event_round$int_max == unique(all_round$int_max[order(all_round$int_max, decreasing = T)])),
-                                         "/", length(unique(all_round$int_max))),
-                                  paste0(which(event_round$int_mean == unique(all_round$int_mean[order(all_round$int_mean, decreasing = T)])),
-                                         "/", length(unique(all_round$int_mean))),
-                                  paste0(which(event_round$int_cum == unique(all_round$int_cum[order(all_round$int_cum, decreasing = T)])),
-                                         "/", length(unique(all_round$int_cum))),
-                                  paste0(which(event_round$rate_onset == unique(all_round$rate_onset[order(all_round$rate_onset, decreasing = T)])),
-                                         "/", length(unique(all_round$rate_onset))),
-                                  paste0(which(event_round$rate_decline == unique(all_round$rate_decline[order(all_round$rate_decline, decreasing = T)])),
-                                         "/", length(unique(all_round$rate_decline)))),
-                          y = rev(c(1,2,3,4,5,6,7)),
-                          x = 0)
-  # all_rank_text <- ggplot(data = all_ranks, aes(x = x, y = y)) + theme_void() +
-  #   geom_text(aes(x = x, y = y, label = txt), hjust = "left", size = 3) +
-  #   scale_x_continuous(expand = c(0,0), limits = c(-0.01, 0.10)) +
-  #   theme(axis.ticks = element_blank(),
-  #         panel.grid.major = element_blank())
-  # all_rank_text
-  
+  all_text <- data.frame(Properties = c(paste0("Event count --->"),
+                                        paste0("Duration: ", event_round$duration, " days"),
+                                        paste0("Max. intens.: ", event_round$int_max[1], "°C"),
+                                        paste0("Mean intens.: ", event_round$int_mean[1], "°C"),
+                                        paste0("Cum. intens.: ", event_round$int_cum[1], "°C·days"),
+                                        paste0("Onset rate: ", event_round$rate_onset[1], "°C/day"),
+                                        paste0("Decl. rate: ", event_round$rate_decline[1], "°C/day")),
+                         Site = c(paste0(nrow(site_events)),
+                                  paste0(which(event_round$duration == unique(site_round$duration[order(site_round$duration, decreasing = T)])),
+                                         "/", length(unique(site_round$duration))),
+                                  paste0(which(event_round$int_max == unique(site_round$int_max[order(site_round$int_max, decreasing = T)])),
+                                         "/", length(unique(site_round$int_max))),
+                                  paste0(which(event_round$int_mean == unique(site_round$int_mean[order(site_round$int_mean, decreasing = T)])),
+                                         "/", length(unique(site_round$int_mean))),
+                                  paste0(which(event_round$int_cum == unique(site_round$int_cum[order(site_round$int_cum, decreasing = T)])),
+                                         "/", length(unique(site_round$int_cum))),
+                                  paste0(which(event_round$rate_onset == unique(site_round$rate_onset[order(site_round$rate_onset, decreasing = T)])),
+                                         "/", length(unique(site_round$rate_onset))),
+                                  paste0(which(event_round$rate_decline == unique(site_round$rate_decline[order(site_round$rate_decline, decreasing = T)])),
+                                         "/", length(unique(site_round$rate_decline)))),
+                         All = c(paste0(nrow(SACTN_events)),
+                                 paste0(which(event_round$duration == unique(all_round$duration[order(all_round$duration, decreasing = T)])),
+                                        "/", length(unique(all_round$duration))),
+                                 paste0(which(event_round$int_max == unique(all_round$int_max[order(all_round$int_max, decreasing = T)])),
+                                        "/", length(unique(all_round$int_max))),
+                                 paste0(which(event_round$int_mean == unique(all_round$int_mean[order(all_round$int_mean, decreasing = T)])),
+                                        "/", length(unique(all_round$int_mean))),
+                                 paste0(which(event_round$int_cum == unique(all_round$int_cum[order(all_round$int_cum, decreasing = T)])),
+                                        "/", length(unique(all_round$int_cum))),
+                                 paste0(which(event_round$rate_onset == unique(all_round$rate_onset[order(all_round$rate_onset, decreasing = T)])),
+                                        "/", length(unique(all_round$rate_onset))),
+                                 paste0(which(event_round$rate_decline == unique(all_round$rate_decline[order(all_round$rate_decline, decreasing = T)])),
+                                               "/", length(unique(all_round$rate_decline)))))
   # Combine data frames
-  all_text <- cbind(properties[1], site_ranks[1], all_ranks[1])
+  # all_text <- cbind(properties[1], site_ranks[1], all_ranks[1])
   text_anchor <- data.frame(x = 1, y = 1)
   tt1 <- ttheme_default(core = list(fg_params = list(hjust = 0, x = 0.05)),
                         rowhead = list(fg_params = list(hjust = 0, x = 0)))
@@ -446,13 +420,8 @@ synoptic.fig <- function(event){
     geom_point() +
     annotation_custom(tableGrob(all_text, rows = NULL, theme = tt1)) +
     scale_x_continuous(expand = F) + scale_y_continuous(expand = F)
-    # theme(plot.margin = element_rect(colour = NA))
-    # theme(plot.background = element_blank(),
-          # plot.margin = element_blank())
-  text_table
-  ggsave("~/Desktop/test.pdf")
+  # text_table
   
-  # text_table <- ggplot()
   
   ## Combine figures and save ##
   # Generate file name
@@ -469,26 +438,6 @@ synoptic.fig <- function(event){
   print(event_flame, vp = vplayout(3,1:2))
   print(text_table, vp = vplayout(3,3))
   dev.off()
-  # dev.off()
-  
-  # Compile final figure
-  # pdf(file_name, width = 17, height = 12, pointsize = 10) # Set PDF dimensions
-  # vp1 <- viewport(x = 0.02, y = 0.95, w = 0.61, h = 0.25, just = c("left", "top"))  # Sea
-  # vp2 <- viewport(x = 0.02, y = 0.70, w = 0.61, h = 0.25, just = c("left", "top"))  # Sea anomaly
-  # vp3 <- viewport(x = 0.98, y = 0.95, w = 0.35, h = 0.25, just = c("right", "top"))  # Air
-  # vp4 <- viewport(x = 0.98, y = 0.70, w = 0.35, h = 0.25, just = c("right", "top"))  # Air anomaly
-  # vp5 <- viewport(x = 0.05, y = 0.05, w = 0.60, h = 0.35, just = c("left", "bottom")) # Flame
-  # vp6 <- viewport(x = 0.77, y = 0.09, w = 0.12, h = 0.25, just = c("right", "bottom"))  # Event metrics
-  # vp7 <- viewport(x = 0.82, y = 0.09, w = 0.05, h = 0.25, just = c("right", "bottom"))  # Site rank
-  # vp8 <- viewport(x = 0.87, y = 0.09, w = 0.05, h = 0.25, just = c("right", "bottom"))  # All rank
-  # print(BRAN_state, vp = vp1)
-  # print(BRAN_state_anom, vp = vp2)
-  # print(ERA_state, vp = vp3)
-  # print(ERA_state_anom, vp = vp4)
-  # print(event_flame, vp = vp5)
-  # print(prop_text, vp = vp6)
-  # print(site_rank_text, vp = vp7)
-  # print(all_rank_text, vp = vp8)
   # dev.off()
   
 }

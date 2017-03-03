@@ -1,7 +1,8 @@
 #############################################################################
 ###"graph/figures3.R"
 ## This script does:
-# 1. Mass produce the synoptic figures
+# 1. Create list of events to be calculated
+# 2. Mass produce the synoptic figures
 ## DEPENDS ON:
 source("func/synoptic.fig.R")
 ## USED BY:
@@ -11,16 +12,26 @@ source("func/synoptic.fig.R")
 #############################################################################
 
 
-# 1. Mass produce the synoptic figures ------------------------------------
+# 1. Create list of events to be calculated -------------------------------
 
-event <- SACTN_events[SACTN_events$duration == min(SACTN_events$duration),][1,] # shortest...
-system.time(synoptic.fig(event))
+# length(SACTN_events$event_no) #946
 
-load("data/SOM/Betty's Bay_1.Rdata")
-BRAN_temp <- SOM_packet$BRAN_temp
+# Screen out those under 15 days in length
+event_list <- filter(SACTN_events, duration >= 15) # 126
 
-ggplot(data = BRAN_temp, aes(x = x, y = y, fill = temp)) +
-  geom_raster()
+# Screen out those occurring before or after reanalysis period
+event_list <- filter(event_list, date_start > as.Date("1994-01-01")) # 95
+event_list <- filter(event_list, date_stop < as.Date("2016-08-31")) # 95
 
-event <- SACTN_events[SACTN_events$duration == max(SACTN_events$duration),] # longest...
-system.time(synoptic.fig(event))
+
+# 2. Mass produce the synoptic figures ------------------------------------
+
+for(i in 1:nrow(event_list)){
+  event <- event_list[i,]
+  file_check <- paste0("graph/synoptic/",event$site[1],"_",event$event_no[1],".pdf")
+  if(!(file.exists(file_check))){
+    system.time(synoptic.fig(event))
+  }
+}
+
+

@@ -126,3 +126,6 @@ The scripts and raw data used to compare atmospheric and marine heat waves and c
 
 ## 2017/03/01
 * Synoptic figure output now also saves the temp and uv values in a separate list for SOMs
+
+## 2017/03/02
+* All synoptic figures created
