@@ -1,22 +1,16 @@
 #############################################################################
 ###"proc/SOM.R"
 ## This script does:
-
 # 1. Load required data
 # 2. Run SOM and have a peak
 # 3. Unscale SOM results for plotting
-
 ## DEPENDS ON:
-
 library(kohonen)
 library(ggplot2)
 library(plyr)
 library(dplyr)
 library(data.table)
 library(doMC); registerDoMC(cores = 4)
-
-
-
 ## USED BY:
 # 
 ## CREATES:
@@ -69,8 +63,8 @@ load.data.packet <- function(df){
   return(res_wide)
 }
 
-# Load the synoptic data for only the first ten events for now
-system.time(data_packet <- ddply(file_idx[1:10,], .(file), load.data.packet, .parallel = T)) # 25 seconds
+# Load the synoptic data for all events
+system.time(data_packet <- ddply(file_idx, .(file), load.data.packet, .parallel = T)) # 205 seconds
 row.names(data_packet) <- sapply(strsplit(basename(as.character(data_packet$file)), ".Rdata"),  "[[", 1)
 data_packet$file <- NULL
 
@@ -78,10 +72,10 @@ data_packet$file <- NULL
 # 2. Run SOM and have a peak ----------------------------------------------
 
 # Create a scaled matrix for the SOM
-system.time(data_packet_matrix <- as.matrix(scale(data_packet))) # 6 seconds
+system.time(data_packet_matrix <- as.matrix(scale(data_packet))) # 10 seconds
 
 # Create the grid that the SOM will use to determine the number of nodes
-som_grid <- somgrid(xdim = 2, ydim = 2, topo="hexagonal") # This grid looks for the best 4 nodes
+som_grid <- somgrid(xdim = 9, ydim = 9, topo="hexagonal") # This grid looks for the best 9 nodes
 
 # Run the SOM
 system.time(som_model <- som(data_packet_matrix, # 17 seconds
