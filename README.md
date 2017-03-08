@@ -129,3 +129,6 @@ The scripts and raw data used to compare atmospheric and marine heat waves and c
 
 ## 2017/03/02
 * All synoptic figures created
+
+## 2017/03/08
+* Proof of concept for SOMs

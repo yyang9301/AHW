@@ -14,7 +14,7 @@ source("func/synoptic.fig.R")
 
 # 1. Create list of events to be calculated -------------------------------
 
-# length(SACTN_events$event_no) #946
+# length(SACTN_events$event_no) # 946
 
 # Screen out those under 15 days in length
 event_list <- filter(SACTN_events, duration >= 15) # 126

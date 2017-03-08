@@ -260,11 +260,6 @@ synoptic.fig <- function(event){
   # The bathy
   sa_bathy$type <- "SST + Bathy"
   # The label dataframes
-  # BRAN_title_data <- data_frame(txt = c("SST + Bathy", "SST + Current"),
-                               # type = c("BRAN", "BRAN_c"))
-  # BRAN_plot_data <- data_frame(txt = c("SST + Bathy", "SST + Current", "1.0 m/s\n"),
-                               # x = c(25,25,25), y = c(-28,-28,-31),
-                               # type = c("BRAN", "BRAN_c", "BRAN_c"))
   BRAN_plot_data <- data_frame(txt = "1.0 m/s\n",
                                x = 36, y = -37, type = "SST + Current")
   BRAN_plot_seg <- data.frame(x = 35.5, y = -37.5, xend = 36.5, yend = -37.5, type = "SST + Current")
@@ -286,9 +281,6 @@ synoptic.fig <- function(event){
   # The bathy
   sa_bathy$type <- "SST Anomaly + Bathy"
   # The label dataframes
-  # BRAN_plot_anom_data <- data_frame(txt = c("SST Anomaly\n+ Bathy", "SST + Current\nAnomaly", "1.0 m/s\n"),
-                                    # x = c(25,25,25), y = c(-28,-28,-31),
-                                    # type = c("BRAN", "BRAN_c", "BRAN_c"))
   BRAN_plot_anom_data <- data_frame(txt = "1.0 m/s\n",
                                x = 36, y = -37, type = "SST Anomaly + Current Anomaly")
   BRAN_plot_anom_seg <- data.frame(x = 35.5, y = -37.5, xend = 36.5, yend = -37.5, type = "SST Anomaly + Current Anomaly")
@@ -305,8 +297,6 @@ synoptic.fig <- function(event){
   ERA_uv2 <- ERA_uv[(ERA_uv$x %in% lon_sub & ERA_uv$y %in% lat_sub),]
   ERA_uv2$type <- "Air Temp + Wind"
   # The label dataframes
-  # ERA_plot_data <- data_frame(txt = c("Air temp + Wind", "4.0 m/s\n"),
-                              # x = c(25,25), y = c(-28,-31))
   ERA_plot_data <- data_frame(txt = "4.0 m/s\n",
                               x = 36, y = -37)
   ERA_plot_seg <- data.frame(x = 35, y = -37.5, xend = 37, yend = -37.5)
@@ -336,8 +326,8 @@ synoptic.fig <- function(event){
   
   ## Save all of the map data frames in a list for SOM ##
   SOM_name <- paste0("data/SOM/",event2$site[1],"_",event2$event_no[1],".Rdata")
-  SOM_packet <- list(BRAN_temp = BRAN_temp2, BRAN_uv = BRAN_uv2, BRAN_temp_anom = BRAN_temp_anom2, BRAN_uv_anom = BRAN_uv_anom2,
-                     ERA_temp = ERA_temp, ERA_uv = ERA_uv2, ERA_temp_anom = ERA_temp_anom, ERA_uv_anom = ERA_uv_anom2)
+  SOM_packet <- list(BRAN_temp = BRAN_temp, BRAN_uv = BRAN_uv, BRAN_temp_anom = BRAN_temp_anom, BRAN_uv_anom = BRAN_uv_anom,
+                     ERA_temp = ERA_temp, ERA_uv = ERA_uv, ERA_temp_anom = ERA_temp_anom, ERA_uv_anom = ERA_uv_anom)
   save(SOM_packet, file = SOM_name)
   
   ## The event figure ##
@@ -438,7 +428,6 @@ synoptic.fig <- function(event){
   print(event_flame, vp = vplayout(3,1:2))
   print(text_table, vp = vplayout(3,3))
   dev.off()
-  # dev.off()
   
 }
 
