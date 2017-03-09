@@ -132,3 +132,7 @@ The scripts and raw data used to compare atmospheric and marine heat waves and c
 
 ## 2017/03/08
 * Proof of concept for SOMs
+
+## 2017/03/09
+* SOM code automated
+* Initial results visualised

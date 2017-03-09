@@ -89,7 +89,7 @@ synoptic.panel <- function(temperature_dat, vector_dat, label_dat, segment_dat, 
                  fill = NA, colour = "black", size = 0.5, show.legend = FALSE) +
     geom_label(data = label_dat, aes(x = x, y = y, label = txt), size = 5, label.padding = unit(0.5, "lines")) +
     geom_segment(data = segment_dat, aes(x = x, y = y, xend = xend, yend = yend)) +
-    geom_point(data = site_dat, aes(x = lon, y = lat), shape =21,  size = 3, alpha = 0.7, colour = "red", fill = "white") +
+    geom_point(data = site_dat, aes(x = lon, y = lat), shape = 21,  size = 3, alpha = 0.7, colour = "red", fill = "white") +
     scale_x_continuous(limits = sa_lons, expand = c(0, 0), breaks = seq(15, 35, 5),
                        labels = scales::unit_format("°E", sep = "")) +
     scale_y_continuous(limits = sa_lats, expand = c(0, 0), breaks = seq(-35, -30, 5),
@@ -152,16 +152,6 @@ round.metrics <- function(df){
 }
 
 # 2. The complete function for creating synoptic figures ------------------
-
-# Extract longest event
-# event <- SACTN_events[SACTN_events$duration == max(SACTN_events$duration),]
-# event$lat <- SACTN_site_list$lat[SACTN_site_list$site == event$site]
-# event$lon <- SACTN_site_list$lon[SACTN_site_list$site == event$site]
-
-# Extract smallest event
-# event <- SACTN_events[SACTN_events$duration == min(SACTN_events$duration),][1,]
-# event$lat <- SACTN_site_list$lat[SACTN_site_list$site == event$site]
-# event$lon <- SACTN_site_list$lon[SACTN_site_list$site == event$site]
 
 # event <- SACTN_events[SACTN_events$duration == min(SACTN_events$duration),][1,] # shortest...
 # event <- SACTN_events[SACTN_events$duration == max(SACTN_events$duration),] # longest...
