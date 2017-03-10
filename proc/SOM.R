@@ -29,7 +29,41 @@ library(doMC); registerDoMC(cores = 4)
 # The site list info
 load("setupParams/SACTN_site_list.Rdata")
 
-# The files
+# Event data
+load("data/events/SACTN_events.Rdata")
+SACTN_events <- filter(SACTN_events, type == "MHW")
+
+# Screen out those under 15 days in length
+event_list <- filter(SACTN_events, duration >= 15) # 126
+rm(SACTN_events)
+
+# Screen out those occurring before or after reanalysis period
+event_list <- filter(event_list, date_start > as.Date("1994-01-01")) # 95
+event_list <- filter(event_list, date_stop < as.Date("2016-08-31")) # 95
+
+# Season index
+summer <- format(seq(as.Date("2015-12-01"), as.Date("2016-02-29"), by = "day"),"%m-%d")
+autumn <- format(seq(as.Date("2016-03-01"), as.Date("2016-05-31"), by = "day"),"%m-%d")
+winter <- format(seq(as.Date("2016-06-01"), as.Date("2016-08-31"), by = "day"),"%m-%d")
+spring <- format(seq(as.Date("2016-09-01"), as.Date("2016-11-30"), by = "day"),"%m-%d")
+
+# Add coastal clusters
+event_list$coast <- NA
+event_list$coast[event_list$site %in% SACTN_site_list$site[SACTN_site_list$coast == "wc"]] <- "wc"
+event_list$coast[event_list$site %in% SACTN_site_list$site[SACTN_site_list$coast == "sc"]] <- "sc"
+event_list$coast[event_list$site %in% SACTN_site_list$site[SACTN_site_list$coast == "ec"]] <- "ec"
+
+# Add season
+event_list$season <- NA
+event_list$season[format(event_list$date_start,"%m-%d") %in% summer] <- "summer"
+event_list$season[format(event_list$date_start,"%m-%d") %in% autumn] <- "autumn"
+event_list$season[format(event_list$date_start,"%m-%d") %in% winter] <- "winter"
+event_list$season[format(event_list$date_start,"%m-%d") %in% spring] <- "spring"
+
+# Add event indexing column for later
+event_list$event <- paste0(event_list$site,"_",event_list$event_no)
+
+# The files for loading
 event_idx <- data.frame(event = dir("data/SOM", full.names = TRUE),
                        x = length(dir("data/SOM")))
 
@@ -85,11 +119,9 @@ system.time(ERA_norm <- ddply(event_idx, .(event), load.data.packet, var = c("ER
 system.time(BRAN_anom <- ddply(event_idx, .(event), load.data.packet, var = c("BRAN/temp-anom", "BRAN/u-anom", "BRAN/v-anom"), .parallel = T)) # 86 seconds
 # All ERA anomaly data
 system.time(ERA_anom <- ddply(event_idx, .(event), load.data.packet, var = c("ERA/temp-anom", "ERA/u-anom", "ERA/v-anom"), .parallel = T)) # 7 seconds
-
 # Combine data frames for modeling
 all_norm <- cbind(BRAN_norm, ERA_norm[,-1])
 all_anom <- cbind(BRAN_anom, ERA_anom[,-1])
-
 
 # 2. Run SOMs -------------------------------------------------------------
 
@@ -115,21 +147,21 @@ som.var <- function(data_packet, xdim = 3, ydim = 3){
 ### Run the SOMs
 ## 3x3
 # Normal data
-system.time(som_all_norm <- som.var(all_norm)) # 274 seconds
+system.time(som_all_norm <- som.var(all_norm)) # 121 seconds
 # Anomalies
-system.time(som_all_anom <- som.var(all_anom)) # 270 seconds
+system.time(som_all_anom <- som.var(all_anom)) # 118 seconds
 
 ## 2x1
 # Normal data
-system.time(som_all_norm <- som.var(all_norm, xdim = 2, ydim = 1)) # 55 seconds
+system.time(som_all_norm <- som.var(all_norm, xdim = 2, ydim = 1)) # 23 seconds
 # Anomalies
-system.time(som_all_anom <- som.var(all_anom, xdim = 2, ydim = 1)) # 65 seconds
+system.time(som_all_anom <- som.var(all_anom, xdim = 2, ydim = 1)) # 23 seconds
 
 ## 3x1
 # Normal data
-system.time(som_all_norm <- som.var(all_norm, xdim = 3, ydim = 1)) # 85 seconds
+system.time(som_all_norm <- som.var(all_norm, xdim = 3, ydim = 1)) # 32 seconds
 # Anomalies
-system.time(som_all_anom <- som.var(all_anom, xdim = 3, ydim = 1)) #  seconds
+system.time(som_all_anom <- som.var(all_anom, xdim = 3, ydim = 1)) # 32 seconds
 
 ## 2x2
 # Normal data
@@ -142,6 +174,45 @@ system.time(som_all_anom <- som.var(all_anom, xdim = 2, ydim = 2)) # 106 seconds
 system.time(som_all_norm <- som.var(all_norm, xdim = 3, ydim = 2)) # 170 seconds
 # Anomalies
 system.time(som_all_anom <- som.var(all_anom, xdim = 3, ydim = 2)) # 169 seconds
+
+
+### Run the SOMs with only one coastal section of events
+event_idx$site <- sapply(strsplit(basename(as.character(event_idx$event)), ".Rdata"),  "[[", 1)
+event_idx$site <- sapply(strsplit(basename(as.character(event_idx$site)), "_"),  "[[", 1)
+event_idx_wc <- event_idx[event_idx$site %in% event_list$site[event_list$coast == "wc"],] # 22
+event_idx_sc <- event_idx[event_idx$site %in% event_list$site[event_list$coast == "sc"],] # 69
+event_idx_ec <- event_idx[event_idx$site %in% event_list$site[event_list$coast == "ec"],] # 4
+
+## WC - 2x2
+all_norm <- cbind(BRAN_norm, ERA_norm[,-1])
+all_anom <- cbind(BRAN_anom, ERA_anom[,-1])
+all_norm <- all_norm[all_norm$event %in% event_idx_wc$event,]
+all_anom <- all_anom[all_anom$event %in% event_idx_wc$event,]
+# Normal data
+system.time(som_all_norm <- som.var(all_norm, xdim = 2, ydim = 2)) # 12 seconds
+# Anomalies
+system.time(som_all_anom <- som.var(all_anom, xdim = 2, ydim = 2)) # 12 seconds
+
+## SC - 3x2
+all_norm <- cbind(BRAN_norm, ERA_norm[,-1])
+all_anom <- cbind(BRAN_anom, ERA_anom[,-1])
+all_norm <- all_norm[all_norm$event %in% event_idx_sc$event,]
+all_anom <- all_anom[all_anom$event %in% event_idx_sc$event,]
+# Normal data
+system.time(som_all_norm <- som.var(all_norm, xdim = 3, ydim = 2)) # 51 seconds
+# Anomalies
+system.time(som_all_anom <- som.var(all_anom, xdim = 3, ydim = 2)) # 54 seconds
+
+## EC - 2x1
+all_norm <- cbind(BRAN_norm, ERA_norm[,-1])
+all_anom <- cbind(BRAN_anom, ERA_anom[,-1])
+all_norm <- all_norm[all_norm$event %in% event_idx_ec$event,]
+all_anom <- all_anom[all_anom$event %in% event_idx_ec$event,]
+# Normal data
+system.time(som_all_norm <- som.var(all_norm, xdim = 2, ydim = 1)) # 1 seconds
+# Anomalies
+system.time(som_all_anom <- som.var(all_anom, xdim = 2, ydim = 1)) # 1 seconds
+
 
 # 3. Have a peak at the models --------------------------------------------
 
@@ -192,7 +263,7 @@ system.time(som_all_anom <- som.var(all_anom, xdim = 3, ydim = 2)) # 169 seconds
 # 4. Unscale SOM results for plotting -------------------------------------
 
 # The unpacking function
-# data_packet <- BRAN_temp; som_output <- som_BRAN_temp # tester...
+# data_packet <- all_norm; som_output <- som_all_norm # tester...
 som.unpack <- function(data_packet, som_output){
   # Melt data_packet
   data_packet$event <- sapply(strsplit(basename(as.character(data_packet$event)), ".Rdata"),  "[[", 1)
@@ -218,26 +289,23 @@ som.unpack <- function(data_packet, som_output){
 system.time(res_all_norm <- som.unpack(all_norm, som_all_norm)) # 43 seconds
 system.time(res_all_anom <- som.unpack(all_anom, som_all_anom)) # 43 seconds
 
-# Season index
-# summer <- seq()
-
 # Recalculate site clustering ... for now
-# data_packet <- BRAN_temp; som_output <- som_BRAN_temp # tester...
+# data_packet <- all_norm; som_output <- som_all_norm # tester...
 event.node <- function(data_packet, som_output){
   event_node <- data.frame(event = sapply(strsplit(basename(as.character(data_packet$event)), ".Rdata"),  "[[", 1),
                            node = som_output$unit.classif)
   node_count <- as.data.frame(table(event_node$node))
-  
-  ## Insert season finding bit here ##
-  
-  # event_node$site <- sapply(strsplit(as.character(event_node$event), "_"), "[[", 1)
   event_node <- event_node %>%
     group_by(node) %>% 
     mutate(count = node_count$Freq[as.integer(node_count$Var1) == node][1]) %>% 
     mutate(site = sapply(strsplit(as.character(event), "_"), "[[", 1)) %>% 
+    mutate(event_no = as.integer(sapply(strsplit(as.character(event), "_"), "[[", 2))) %>% 
     group_by(site) %>% 
     mutate(lon = SACTN_site_list$lon[as.character(SACTN_site_list$site) == site][1]) %>% 
-    mutate(lat = SACTN_site_list$lat[as.character(SACTN_site_list$site) == site][1])
+    mutate(lat = SACTN_site_list$lat[as.character(SACTN_site_list$site) == site][1]) %>%
+    group_by(event) %>% 
+    mutate(season = as.factor(event_list$season[event_list$event == event][1]))
+  event_node <- as.data.frame(event_node)
   return(event_node)
 }
 
@@ -287,12 +355,20 @@ node.panels <- function(data_temp, data_uv, data_node, plot_title, legend_title,
     geom_polygon(data = southern_africa_coast, aes(x = lon, y = lat, group = group),
                  fill = NA, colour = "black", size = 0.5, show.legend = FALSE) +
     
-    ## Need to fix the UV vector label...
+    ### Need to fix the UV vector label...
     # geom_label(data = label_dat, aes(x = x, y = y, label = txt), size = 5, label.padding = unit(0.5, "lines")) +
     # geom_segment(data = segment_dat, aes(x = x, y = y, xend = xend, yend = yend)) +
     geom_label(data = data_node, aes(x = 25, y = -28, label = paste0("n = ", count,"/",length(node))), size = 3, label.padding = unit(0.5, "lines")) +
+    ###
     
-    geom_point(data = data_node, aes(x = lon, y = lat), shape = 21,  size = 3, alpha = 0.7, colour = "red", fill = "white") +
+    ### Different point options
+    ## White points
+    # geom_point(data = data_node, aes(x = lon, y = lat), shape = 21,  size = 3, alpha = 0.7, colour = "red", fill = "white") +
+    ## Seasonal coloured points
+    geom_point(data = data_node, aes(x = lon, y = lat, colour = season), shape = 19,  size = 3, alpha = 0.6) +
+    scale_color_discrete("Season") +
+    ###
+    
     scale_x_continuous(limits = sa_lons, expand = c(0, 0), breaks = seq(15, 35, 5),
                        labels = scales::unit_format("°E", sep = "")) +
     scale_y_continuous(limits = sa_lats, expand = c(0, 0), breaks = seq(-35, -30, 5),
@@ -371,7 +447,7 @@ all.panels <- function(data_res){
   
   ## Combine figures and save
   # Generate file name
-  file_name <- paste0("graph/som/",data_type,"_",length(unique(res_BRAN_temp$node)), ".pdf")
+  file_name <- paste0("graph/som/",data_type,"_",length(unique(res_BRAN_temp$node)),".pdf")
   # The figure
   pdf(file_name, width = 10, height = 12, pointsize = 10) # Set PDF dimensions
   grid.newpage()
