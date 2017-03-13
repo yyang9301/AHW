@@ -1,30 +1,29 @@
 #############################################################################
-###"proc/SOM.R"
+###"func/som.func.R"
 ## This script does:
-# 1. Load required data
-# 2. Run SOMs
-# 3. Have a peak at the models
-# 4. Unscale SOM results for plotting
-# 5. Create figures
-# 6. Additional analyses
+# 1. A load function for reanalysis data by variable
+# 2. Function for calculating soms
+# 3. Functions for unpacking som results
+# 4. Function for determining node indexes
+# 5. Functions for creating figures
 ## DEPENDS ON:
+library(scales)
 library(kohonen)
-library(grid)
-library(ggplot2)
-library(gridExtra)
-library(viridis)
 library(plyr)
 library(dplyr)
 library(data.table)
+library(reshape2)
+library(lubridate)
+library(zoo)
 library(doMC); registerDoMC(cores = 4)
 ## USED BY:
-# 
+# "graph/figures3.R"
 ## CREATES:
-# 
+# Figures similar to Eric's figures in the MHW atlas
 #############################################################################
 
 
-# 1. Load required data ---------------------------------------------------
+# 1. A load function for reanalysis data by variable ----------------------
 
 # The site list info
 load("setupParams/SACTN_site_list.Rdata")
@@ -65,7 +64,7 @@ event_list$event <- paste0(event_list$site,"_",event_list$event_no)
 
 # The files for loading
 event_idx <- data.frame(event = dir("data/SOM", full.names = TRUE),
-                       x = length(dir("data/SOM")))
+                        x = length(dir("data/SOM")))
 
 # A helper function for the following function
 col.shimmy <- function(df, var = "blank"){
@@ -101,170 +100,38 @@ load.data.packet <- function(df, var){
   res$y <- round(res$y,2)
   # Remove any possible duplicates. Should be none.
   # res <- res[, .(value = mean(value, na.rm = TRUE)),
-               # by = .(x,y, var)]
+  # by = .(x,y, var)]
   res$coords <- paste0(res$x, "_" , res$y, "_", res$var)
   res_wide <- t(res$value)
   colnames(res_wide) <- res$coords
   return(res_wide)
 }
 
-# Load the synoptic data for all events
-# BRAN SST only
-# system.time(BRAN_temp <- ddply(event_idx, .(event), load.data.packet, var = "BRAN/temp", .parallel = T)) # 27 seconds
-# All BRAN normal data
-system.time(BRAN_norm <- ddply(event_idx, .(event), load.data.packet, var = c("BRAN/temp", "BRAN/u", "BRAN/v"), .parallel = T)) # 91 seconds
-# All ERA normal data
-system.time(ERA_norm <- ddply(event_idx, .(event), load.data.packet, var = c("ERA/temp", "ERA/u", "ERA/v"), .parallel = T)) # 7 seconds
-# All BRAN anomaly data
-system.time(BRAN_anom <- ddply(event_idx, .(event), load.data.packet, var = c("BRAN/temp-anom", "BRAN/u-anom", "BRAN/v-anom"), .parallel = T)) # 86 seconds
-# All ERA anomaly data
-system.time(ERA_anom <- ddply(event_idx, .(event), load.data.packet, var = c("ERA/temp-anom", "ERA/u-anom", "ERA/v-anom"), .parallel = T)) # 7 seconds
-# Combine data frames for modeling
-all_norm <- cbind(BRAN_norm, ERA_norm[,-1])
-all_anom <- cbind(BRAN_anom, ERA_anom[,-1])
 
-# 2. Run SOMs -------------------------------------------------------------
+# 2. Function for calculating soms ----------------------------------------
 
-# Function for running SOMs
-  # Currently choosing to run SOM on only one variable at once
-# data_packet <- BRAN_temp # tester...
-som.var <- function(data_packet, xdim = 3, ydim = 3){
+som.model <- function(data_packet, xdim = 3, ydim = 3){
   # Create a scaled matrix for the SOM
-    # Cancel out first column as this is the file name of the data packet
+  # Cancel out first column as this is the file name of the data packet
   data_packet_matrix <- as.matrix(scale(data_packet[,-1]))
   # Create the grid that the SOM will use to determine the number of nodes
-  som_grid <- somgrid(xdim = xdim, ydim = ydim, topo = "hexagonal") # This grid looks for the best 9 nodes
+  som_grid <- somgrid(xdim = xdim, ydim = ydim, topo = "hexagonal")
   # Run the SOM
   som_model <- som(data_packet_matrix,
-                               grid = som_grid, 
-                               rlen = 100, # It appears that rlen = 40 may be sufficient
-                               alpha = c(0.05,0.01), 
-                               n.hood = "circular",
-                               keep.data = TRUE )
+                   grid = som_grid, 
+                   rlen = 100, # It appears that rlen = 40 may be sufficient
+                   alpha = c(0.05,0.01), 
+                   n.hood = "circular",
+                   keep.data = TRUE )
   return(som_model)
 }
 
-### Run the SOMs
-## 3x3
-# Normal data
-system.time(som_all_norm <- som.var(all_norm)) # 121 seconds
-# Anomalies
-system.time(som_all_anom <- som.var(all_anom)) # 118 seconds
-
-## 2x1
-# Normal data
-system.time(som_all_norm <- som.var(all_norm, xdim = 2, ydim = 1)) # 23 seconds
-# Anomalies
-system.time(som_all_anom <- som.var(all_anom, xdim = 2, ydim = 1)) # 23 seconds
-
-## 3x1
-# Normal data
-system.time(som_all_norm <- som.var(all_norm, xdim = 3, ydim = 1)) # 32 seconds
-# Anomalies
-system.time(som_all_anom <- som.var(all_anom, xdim = 3, ydim = 1)) # 32 seconds
-
-## 2x2
-# Normal data
-system.time(som_all_norm <- som.var(all_norm, xdim = 2, ydim = 2)) # 117 seconds
-# Anomalies
-system.time(som_all_anom <- som.var(all_anom, xdim = 2, ydim = 2)) # 106 seconds
-
-## 3x2
-# Normal data
-system.time(som_all_norm <- som.var(all_norm, xdim = 3, ydim = 2)) # 170 seconds
-# Anomalies
-system.time(som_all_anom <- som.var(all_anom, xdim = 3, ydim = 2)) # 169 seconds
 
 
-### Run the SOMs with only one coastal section of events
-event_idx$site <- sapply(strsplit(basename(as.character(event_idx$event)), ".Rdata"),  "[[", 1)
-event_idx$site <- sapply(strsplit(basename(as.character(event_idx$site)), "_"),  "[[", 1)
-event_idx_wc <- event_idx[event_idx$site %in% event_list$site[event_list$coast == "wc"],] # 22
-event_idx_sc <- event_idx[event_idx$site %in% event_list$site[event_list$coast == "sc"],] # 69
-event_idx_ec <- event_idx[event_idx$site %in% event_list$site[event_list$coast == "ec"],] # 4
+# 3. Functions for unpacking som results ----------------------------------
 
-## WC - 2x2
-all_norm <- cbind(BRAN_norm, ERA_norm[,-1])
-all_anom <- cbind(BRAN_anom, ERA_anom[,-1])
-all_norm <- all_norm[all_norm$event %in% event_idx_wc$event,]
-all_anom <- all_anom[all_anom$event %in% event_idx_wc$event,]
-# Normal data
-system.time(som_all_norm <- som.var(all_norm, xdim = 2, ydim = 2)) # 12 seconds
-# Anomalies
-system.time(som_all_anom <- som.var(all_anom, xdim = 2, ydim = 2)) # 12 seconds
-
-## SC - 3x2
-all_norm <- cbind(BRAN_norm, ERA_norm[,-1])
-all_anom <- cbind(BRAN_anom, ERA_anom[,-1])
-all_norm <- all_norm[all_norm$event %in% event_idx_sc$event,]
-all_anom <- all_anom[all_anom$event %in% event_idx_sc$event,]
-# Normal data
-system.time(som_all_norm <- som.var(all_norm, xdim = 3, ydim = 2)) # 51 seconds
-# Anomalies
-system.time(som_all_anom <- som.var(all_anom, xdim = 3, ydim = 2)) # 54 seconds
-
-## EC - 2x1
-all_norm <- cbind(BRAN_norm, ERA_norm[,-1])
-all_anom <- cbind(BRAN_anom, ERA_anom[,-1])
-all_norm <- all_norm[all_norm$event %in% event_idx_ec$event,]
-all_anom <- all_anom[all_anom$event %in% event_idx_ec$event,]
-# Normal data
-system.time(som_all_norm <- som.var(all_norm, xdim = 2, ydim = 1)) # 1 seconds
-# Anomalies
-system.time(som_all_anom <- som.var(all_anom, xdim = 2, ydim = 1)) # 1 seconds
-
-
-# 3. Have a peak at the models --------------------------------------------
-
-# Pick which data frame to visualise
-# som_model <- som_BRAN_temp
-# som_model <- som_all_norm
-# som_model <- som_all_anom
-
-# The different visualisations for quality control
-# Training progress. How many iterations the model needs to git gud
-# plot(som_model, type = "changes")
-# Counts within nodes. How many synoptic states fall within each node
-# plot(som_model, type = "counts", main = "Node Counts")
-# Map quality
-# plot(som_model, type = "quality", main = "Node Quality/Distance")
-# Neighbour distances
-# plot(som_model, type = "dist.neighbours", main = "SOM neighbour distances", palette.name = grey.colors)
-# Code spread. This shows the values for each pixel as a line graph, so it doesn't look like much
-  # NB: With massive vectors this may take a minute or so to render
-# plot(som_model, type = "codes")
-
-# The WCSS metric for different kmeans clustering
-# codes <- som_model$codes
-# wss <- (nrow(codes)-1)*sum(apply(codes,2,var))
-# for (i in 2:nrow(codes)-1) wss[i] <- sum(kmeans(codes,
-                                     # centers=i)$withinss)
-# par(mar = c(5.1,4.1,4.1,2.1))
-# plot(1:(nrow(codes)-1), wss, type = "b", xlab = "Kmeans Clusters",
-     # ylab = "Within groups sum of squares", main = "Within cluster sum of squares (WCSS)")
-# rm(codes) # Save on RAM...
-# It appears that as few as three clusters are needed
-# That is surprising...
-
-# Form clusters on grid
-# use hierarchical clustering to cluster the synoptic vectors
-# som_cluster <- cutree(hclust(dist(som_model$codes)), 3)
-
-# Show the map with different colours for every cluster						  
-# plot(som_model, type = "mapping", bgcol = som_cluster, main = "Clusters")
-# add.cluster.boundaries(som_model, som_cluster)
-
-# Show the same plot with the synoptic vectors as well
-  # NB: With massive vectors this may take a minute or so to render
-# plot(som_model, type = "codes", bgcol = som_cluster, main = "Clusters")
-# add.cluster.boundaries(som_model, som_cluster)
-
-
-# 4. Unscale SOM results for plotting -------------------------------------
-
-# The unpacking function
-# data_packet <- all_norm; som_output <- som_all_norm # tester...
-som.unpack <- function(data_packet, som_output){
+# Create mean results from initial data frame based on node clustering
+som.unpack.mean <- function(data_packet, som_output){
   # Melt data_packet
   data_packet$event <- sapply(strsplit(basename(as.character(data_packet$event)), ".Rdata"),  "[[", 1)
   data_packet_long <- melt(data_packet, id = "event")
@@ -284,13 +151,36 @@ som.unpack <- function(data_packet, som_output){
   return(var_unscaled)
 }
 
-# Unpack the results for plotting
-# system.time(res_BRAN_temp <- som.unpack(BRAN_temp, som_BRAN_temp)) # 13 seconds
-system.time(res_all_norm <- som.unpack(all_norm, som_all_norm)) # 43 seconds
-system.time(res_all_anom <- som.unpack(all_anom, som_all_anom)) # 43 seconds
+# Rescale the actual som results
+som.unpack.rescale <- function(data_packet, som_output){
+  # Create matrices for rescaling som results
+  matrix1 <- data_packet[,-1]
+  matrix2 <- as.data.frame(som_output$codes)
+  # Calculate range for rescale
+  min_max <- t(data.frame(min_col = apply(matrix1, 2, min), max_col = apply(matrix1, 2, max)))
+  # center <- attributes(som_output$data)
+  # center <- t(data.frame(center = center$`scaled:center`))
+  matrix3 <- rbind(min_max, center, matrix2)
+  # A little wrapper function
+  # x <- matrix3[,1]
+  rescale.som <- function(x){
+    rescale(x[3:length(x)], to = c(x[1], x[2]))
+  }
+  # Run it
+  df1 <- as.data.frame(apply(matrix3, 2, rescale.som))
+  df1$node <- rownames(df1)
+  # Melt and separate out necessary columns
+  var_unscaled <- melt(df1, id = "node")
+  var_unscaled$x <- as.numeric(sapply(strsplit(as.character(var_unscaled$variable), "_"), "[[", 1))
+  var_unscaled$y <- as.numeric(sapply(strsplit(as.character(var_unscaled$variable), "_"), "[[", 2))
+  var_unscaled$var <- sapply(strsplit(as.character(var_unscaled$variable), "_"), "[[", 3)
+  var_unscaled$variable <- NULL
+  return(var_unscaled)
+}
 
-# Recalculate site clustering ... for now
-# data_packet <- all_norm; som_output <- som_all_norm # tester...
+
+# 4. Function for determining node indexes --------------------------------
+
 event.node <- function(data_packet, som_output){
   event_node <- data.frame(event = sapply(strsplit(basename(as.character(data_packet$event)), ".Rdata"),  "[[", 1),
                            node = som_output$unit.classif)
@@ -309,13 +199,8 @@ event.node <- function(data_packet, som_output){
   return(event_node)
 }
 
-# Plot of site clustering
-# node_BRAN_temp <- event.node(BRAN_temp, som_BRAN_temp)
-node_all_norm <- event.node(all_norm, som_all_norm)
-node_all_anom <- event.node(all_anom, som_all_anom)
 
-
-# 5. Create figures -------------------------------------------------------
+# 5. Functions for creating figures ---------------------------------------
 
 # ## Create wind vector labels
 # # Normal
@@ -345,7 +230,7 @@ slat <- -40
 sa_lons <- c(10, 40); sa_lats <- c(-40, -25)
 
 # The plotting function
-  # NB: This function requires input generated from 'all.panels()'
+# NB: This function requires input generated from 'all.panels()'
 # data_temp <- res_BRAN_temp; data_uv <- res_BRAN_uv; data_node <- node_all_norm; vector_label <-  "1.0 m/s\n"; plot_title <- "SST + Current"; legend_title <- "SST"; viridis_col <- "D" # tester...
 node.panels <- function(data_temp, data_uv, data_node, plot_title, legend_title, vector_label, viridis_col){
   np <- ggplot(data = data_temp, aes(x = x, y = y)) +
@@ -396,7 +281,7 @@ node.panels <- function(data_temp, data_uv, data_node, plot_title, legend_title,
 
 # The function that puts it all together
 # data_res <- res_all_norm # tester...
-all.panels <- function(data_res){
+all.panels <- function(data_res, data_node){
   data_res$var <- as.factor(data_res$var)
   ## Separate BRAN from ERA and temp from uv
   # BRAN
@@ -419,16 +304,16 @@ all.panels <- function(data_res){
   lat_sub <- seq(-40, -15, by = 1)
   res_ERA_uv <- res_ERA_uv[(res_ERA_uv$x %in% lon_sub & res_ERA_uv$y %in% lat_sub),]
   
-  # Determine node to use
+  # Determine titles to use
   if(sum(res_BRAN_temp$value) >= 500000){
-    node_data <- node_all_norm
+    # node_data <- node_all_norm
     plot_title_BRAN = "SST + Current"
     plot_title_ERA = "Air Temp + Wind"
     legend_title = "Temp.\n(°C)"
     data_type = "norm"
   } 
   if(sum(res_BRAN_temp$value) < 500000){
-    node_data <- node_all_anom
+    # node_data <- node_all_anom
     plot_title_BRAN = "SST Anomaly + Current Anomaly"
     plot_title_ERA = "Air Temp Anomaly + Wind Anomaly"
     legend_title = "Anom.\n(°C)"
@@ -437,12 +322,12 @@ all.panels <- function(data_res){
   
   ## The  panel figures
   # BRAN
-  panels_BRAN <- node.panels(data_temp = res_BRAN_temp, data_uv = res_BRAN_uv, data_node = node_data,
+  panels_BRAN <- node.panels(data_temp = res_BRAN_temp, data_uv = res_BRAN_uv, data_node = data_node,
                              plot_title = plot_title_BRAN, legend_title = legend_title, vector_label = "1.0 m/s\n", viridis_col = "D")
   # panels_BRAN
   # ERA
-  panels_ERA <- node.panels(data_temp = res_ERA_temp, data_uv = res_ERA_uv, data_node = node_data,
-                             plot_title = plot_title_ERA, legend_title = legend_title, vector_label = "4.0 m/s\n", viridis_col = "A")
+  panels_ERA <- node.panels(data_temp = res_ERA_temp, data_uv = res_ERA_uv, data_node = data_node,
+                            plot_title = plot_title_ERA, legend_title = legend_title, vector_label = "4.0 m/s\n", viridis_col = "A")
   # panels_ERA
   
   ## Combine figures and save
@@ -456,18 +341,4 @@ all.panels <- function(data_res){
   print(panels_BRAN, vp = vplayout(1,1))
   print(panels_ERA, vp = vplayout(2,1))
   dev.off()
-
 }
-
-# Run it
-system.time(all.panels(res_all_norm)) # 14 seconds
-system.time(all.panels(res_all_anom)) # 15 seconds
-
-
-# 6. Additional analyses --------------------------------------------------
-
-# Seasonality of events
-
-
-
-

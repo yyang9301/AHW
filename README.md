@@ -140,3 +140,7 @@ The scripts and raw data used to compare atmospheric and marine heat waves and c
 ## 2017/03/10
 * Seasonality added to output
 * Individual SOMs run for each coastal section
+
+## 2017/03/13
+* All functions created for SOM work flow moved to a separate script
+* Alternative rescaling function for SOM results added
