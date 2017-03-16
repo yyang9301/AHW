@@ -144,3 +144,7 @@ The scripts and raw data used to compare atmospheric and marine heat waves and c
 ## 2017/03/13
 * All functions created for SOM work flow moved to a separate script
 * Alternative rescaling function for SOM results added
+
+## 2017/03/16
+* Ran hierarchical cluster analysis for air-sea states during MHWs
+* Began investigation into clustering of air-sea states for daily climatologies

@@ -11,6 +11,10 @@
 library(plyr)
 library(dplyr)
 library(data.table)
+library(ggplot2)
+library(grid)
+library(gridExtra)
+library(viridis)
 library(doMC); registerDoMC(cores = 4)
 source("func/som.func.R")
 ## USED BY:
@@ -128,46 +132,46 @@ system.time(som_all_anom <- som.model(all_anom, xdim = 2, ydim = 1)) # 1 seconds
 
 # Pick which data frame to visualise
 # som_model <- som_BRAN_temp
-# som_model <- som_all_norm
-# som_model <- som_all_anom
+som_model <- som_all_norm
+som_model <- som_all_anom
 
 # The different visualisations for quality control
 # Training progress. How many iterations the model needs to git gud
-# plot(som_model, type = "changes")
+plot(som_model, type = "changes")
 # Counts within nodes. How many synoptic states fall within each node
-# plot(som_model, type = "counts", main = "Node Counts")
+plot(som_model, type = "counts", main = "Node Counts")
 # Map quality
-# plot(som_model, type = "quality", main = "Node Quality/Distance")
+plot(som_model, type = "quality", main = "Node Quality/Distance")
 # Neighbour distances
-# plot(som_model, type = "dist.neighbours", main = "SOM neighbour distances", palette.name = grey.colors)
+plot(som_model, type = "dist.neighbours", main = "SOM neighbour distances", palette.name = grey.colors)
 # Code spread. This shows the values for each pixel as a line graph, so it doesn't look like much
   # NB: With massive vectors this may take a minute or so to render
-# plot(som_model, type = "codes")
+plot(som_model, type = "codes")
 
 # The WCSS metric for different kmeans clustering
-# codes <- som_model$codes
-# wss <- (nrow(codes)-1)*sum(apply(codes,2,var))
-# for (i in 2:nrow(codes)-1) wss[i] <- sum(kmeans(codes,
-                                     # centers=i)$withinss)
-# par(mar = c(5.1,4.1,4.1,2.1))
-# plot(1:(nrow(codes)-1), wss, type = "b", xlab = "Kmeans Clusters",
-     # ylab = "Within groups sum of squares", main = "Within cluster sum of squares (WCSS)")
-# rm(codes) # Save on RAM...
+codes <- som_model$codes
+wss <- (nrow(codes)-1)*sum(apply(codes,2,var))
+for (i in 2:nrow(codes)-1) wss[i] <- sum(kmeans(codes,
+                                     centers=i)$withinss)
+par(mar = c(5.1,4.1,4.1,2.1))
+plot(1:(nrow(codes)-1), wss, type = "b", xlab = "Kmeans Clusters",
+     ylab = "Within groups sum of squares", main = "Within cluster sum of squares (WCSS)")
+rm(codes) # Save on RAM...
 # It appears that as few as three clusters are needed
 # That is surprising...
 
 # Form clusters on grid
 # use hierarchical clustering to cluster the synoptic vectors
-# som_cluster <- cutree(hclust(dist(som_model$codes)), 3)
+som_cluster <- cutree(hclust(dist(som_model$codes)), 3)
 
 # Show the map with different colours for every cluster						  
-# plot(som_model, type = "mapping", bgcol = som_cluster, main = "Clusters")
-# add.cluster.boundaries(som_model, som_cluster)
+plot(som_model, type = "mapping", bgcol = som_cluster, main = "Clusters")
+add.cluster.boundaries(som_model, som_cluster)
 
 # Show the same plot with the synoptic vectors as well
   # NB: With massive vectors this may take a minute or so to render
-# plot(som_model, type = "codes", bgcol = som_cluster, main = "Clusters")
-# add.cluster.boundaries(som_model, som_cluster)
+plot(som_model, type = "codes", bgcol = som_cluster, main = "Clusters")
+add.cluster.boundaries(som_model, som_cluster)
 
 
 # 4. Unscale SOM results for plotting -------------------------------------
@@ -187,7 +191,11 @@ node_all_anom <- event.node(all_anom, som_all_anom)
 
 # 5. Create figures -------------------------------------------------------
 
-# Create figures
+## Create figures
+# Mean
+system.time(all.panels(res_all_norm_mean, node_all_norm)) # 14 seconds
+system.time(all.panels(res_all_anom_mean, node_all_anom)) # 15 seconds
+# Rescale
 system.time(all.panels(res_all_norm_rescale, node_all_norm)) # 14 seconds
 system.time(all.panels(res_all_anom_rescale, node_all_anom)) # 15 seconds
 
