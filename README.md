@@ -151,3 +151,6 @@ The scripts and raw data used to compare atmospheric and marine heat waves and c
 
 ## 2017/03/16
 * Hierarchical cluster analysis for air-sea state during daily climatologies
+
+## 2017/03/30
+* First step towards running the three agreed upon cluster analyses on all data
