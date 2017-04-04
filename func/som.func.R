@@ -6,6 +6,8 @@
 # 3. Functions for unpacking som results
 # 4. Function for determining node indexes
 # 5. Functions for creating figures
+# 6. Function for creating event metrics table
+# 7. Function for melting rounding and re-casting data
 ## DEPENDS ON:
 library(scales)
 library(kohonen)
@@ -26,10 +28,10 @@ library(doMC); registerDoMC(cores = 4)
 # 1. A load function for reanalysis data by variable ----------------------
 
 # The site list info
-load("setupParams/SACTN_site_list.Rdata")
+load("~/AHW/setupParams/SACTN_site_list.Rdata")
 
 # Event data
-load("data/events/SACTN_events.Rdata")
+load("~/AHW/data/events/SACTN_events.Rdata")
 SACTN_events <- filter(SACTN_events, type == "MHW")
 
 # Screen out those under 15 days in length
@@ -63,8 +65,8 @@ event_list$season[format(event_list$date_start,"%m-%d") %in% spring] <- "spring"
 event_list$event <- paste0(event_list$site,"_",event_list$event_no)
 
 # The files for loading
-event_idx <- data.frame(event = dir("data/SOM", full.names = TRUE),
-                        x = length(dir("data/SOM")))
+event_idx <- data.frame(event = dir("~/AHW/data/SOM", full.names = TRUE),
+                        x = length(dir("~/AHW/data/SOM")))
 
 # A helper function for the following function
 col.shimmy <- function(df, var = "blank"){
@@ -218,7 +220,7 @@ event.node <- function(data_packet, som_output){
 ## Create plots
 
 # Load SA map data
-load("graph/southern_africa_coast.RData") # Lowres
+load("~/AHW/graph/southern_africa_coast.RData") # Lowres
 names(southern_africa_coast)[1] <- "lon"
 
 # The lon/ lat ranges
@@ -332,7 +334,7 @@ all.panels <- function(data_res, data_node){
   
   ## Combine figures and save
   # Generate file name
-  file_name <- paste0("graph/som/",data_type,"_",length(unique(res_BRAN_temp$node)),".pdf")
+  file_name <- paste0("~/AHW/graph/som/",data_type,"_",length(unique(res_BRAN_temp$node)),".pdf")
   # The figure
   pdf(file_name, width = 10, height = 12, pointsize = 10) # Set PDF dimensions
   grid.newpage()
@@ -341,4 +343,77 @@ all.panels <- function(data_res, data_node){
   print(panels_BRAN, vp = vplayout(1,1))
   print(panels_ERA, vp = vplayout(2,1))
   dev.off()
+}
+
+
+# 6. Function for creating event metrics table ----------------------------
+
+# df <- node_all_anom
+node.summary.metrics <- function(df){
+  df_1 <- merge(df, event_list, by = c("event", "site", "season", "event_no"))
+  df_2 <- df_1 %>% 
+    group_by(node) %>% 
+    summarise(count = count[1],
+              summer = length(season[as.character(season) == "summer"]),
+              autumn = length(season[as.character(season) == "autumn"]),
+              winter = length(season[as.character(season) == "winter"]),
+              spring = length(season[as.character(season) == "spring"]),
+              west = length(season[as.character(coast) == "wc"]),
+              south = length(season[as.character(coast) == "sc"]),
+              east = length(season[as.character(coast) == "ec"]),
+              duration_min = min(duration, na.rm = T),
+              duration_mean = round(mean(duration, na.rm = T),1),
+              duration_max = max(duration, na.rm = T),
+              int_cum_min = round(min(int_cum, na.rm = T),2),
+              int_cum_mean = round(mean(int_cum, na.rm = T),3),
+              int_cum_max = round(max(int_cum, na.rm = T),2),
+              int_max_min = round(min(int_max, na.rm = T),2),
+              int_max_mean = round(mean(int_max, na.rm = T),3),
+              int_max_max = round(max(int_max, na.rm = T),2))
+  df_3 <- df_1 %>% 
+    summarise(count = length(count),
+              summer = length(season[as.character(season) == "summer"]),
+              autumn = length(season[as.character(season) == "autumn"]),
+              winter = length(season[as.character(season) == "winter"]),
+              spring = length(season[as.character(season) == "spring"]),
+              west = length(season[as.character(coast) == "wc"]),
+              south = length(season[as.character(coast) == "sc"]),
+              east = length(season[as.character(coast) == "ec"]),
+              duration_min = min(duration, na.rm = T),
+              duration_mean = round(mean(duration, na.rm = T),1),
+              duration_max = max(duration, na.rm = T),
+              int_cum_min = round(min(int_cum, na.rm = T),2),
+              int_cum_mean = round(mean(int_cum, na.rm = T),3),
+              int_cum_max = round(max(int_cum, na.rm = T),2),
+              int_max_min = round(min(int_max, na.rm = T),2),
+              int_max_mean = round(mean(int_max, na.rm = T),3),
+              int_max_max = round(max(int_max, na.rm = T),2))
+  df_4 <- data.frame(node = NA)
+  df_3 <- cbind(df_4, df_3)
+  df_5 <- rbind(df_2, df_3)
+  return(df_5)
+}
+
+
+# 7. Function for melting rounding and re-casting data --------------------
+
+# df <- all_anom
+# resolution <- 0.5
+synoptic.round <- function(df, resolution = 0.5){
+  # Melt ans separate out columns
+  df_1 <- melt(df, id.vars = "event")
+  df_1$x <- as.numeric(sapply(strsplit(as.character(df_1$variable), "_"), "[[", 1))
+  df_1$y <- as.numeric(sapply(strsplit(as.character(df_1$variable), "_"), "[[", 2))
+  df_1$variable <- sapply(strsplit(as.character(df_1$variable), "_"), "[[", 3)
+  # Reduce resolution
+  df_resolution <- df_1 %>% 
+    mutate(x = round_any(x, resolution)) %>% 
+    mutate(y = round_any(y, resolution))
+  df_resolution <- data.table(df_resolution)
+  df_resolution <- df_resolution[, .(value = mean(value, na.rm = TRUE)),
+                     by = .(x, y, variable, event)]
+  df_resolution$index <- paste0(df_resolution$x,"_",df_resolution$y,"_",df_resolution$variable)
+  # Recast to wide format for clustering
+  df_resolution_wide <- dcast(df_resolution, event~index, value.var = "value")
+  return(df_resolution_wide)
 }

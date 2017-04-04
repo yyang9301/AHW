@@ -90,42 +90,44 @@ system.time(som_all_norm <- som.model(all_norm, xdim = 3, ydim = 2)) # 170 secon
 system.time(som_all_anom <- som.model(all_anom, xdim = 3, ydim = 2)) # 169 seconds
 
 
-### Run the SOMs with only one coastal section of events
-event_idx$site <- sapply(strsplit(basename(as.character(event_idx$event)), ".Rdata"),  "[[", 1)
-event_idx$site <- sapply(strsplit(basename(as.character(event_idx$site)), "_"),  "[[", 1)
-event_idx_wc <- event_idx[event_idx$site %in% event_list$site[event_list$coast == "wc"],] # 22
-event_idx_sc <- event_idx[event_idx$site %in% event_list$site[event_list$coast == "sc"],] # 69
-event_idx_ec <- event_idx[event_idx$site %in% event_list$site[event_list$coast == "ec"],] # 4
-
-## WC - 2x2
-all_norm <- cbind(BRAN_norm, ERA_norm[,-1])
-all_anom <- cbind(BRAN_anom, ERA_anom[,-1])
-all_norm <- all_norm[all_norm$event %in% event_idx_wc$event,]
-all_anom <- all_anom[all_anom$event %in% event_idx_wc$event,]
-# Normal data
-system.time(som_all_norm <- som.model(all_norm, xdim = 2, ydim = 2)) # 12 seconds
-# Anomalies
-system.time(som_all_anom <- som.model(all_anom, xdim = 2, ydim = 2)) # 12 seconds
-
-## SC - 3x2
-all_norm <- cbind(BRAN_norm, ERA_norm[,-1])
-all_anom <- cbind(BRAN_anom, ERA_anom[,-1])
-all_norm <- all_norm[all_norm$event %in% event_idx_sc$event,]
-all_anom <- all_anom[all_anom$event %in% event_idx_sc$event,]
-# Normal data
-system.time(som_all_norm <- som.model(all_norm, xdim = 3, ydim = 2)) # 51 seconds
-# Anomalies
-system.time(som_all_anom <- som.model(all_anom, xdim = 3, ydim = 2)) # 54 seconds
-
-## EC - 2x1
-all_norm <- cbind(BRAN_norm, ERA_norm[,-1])
-all_anom <- cbind(BRAN_anom, ERA_anom[,-1])
-all_norm <- all_norm[all_norm$event %in% event_idx_ec$event,]
-all_anom <- all_anom[all_anom$event %in% event_idx_ec$event,]
-# Normal data
-system.time(som_all_norm <- som.model(all_norm, xdim = 2, ydim = 1)) # 1 seconds
-# Anomalies
-system.time(som_all_anom <- som.model(all_anom, xdim = 2, ydim = 1)) # 1 seconds
+### This section is no longer used as it has been decided not to run the events by coast
+  ### But rather to allow the clustering of all the data to separate out the coasts, or not
+# ### Run the SOMs with only one coastal section of events
+# event_idx$site <- sapply(strsplit(basename(as.character(event_idx$event)), ".Rdata"),  "[[", 1)
+# event_idx$site <- sapply(strsplit(basename(as.character(event_idx$site)), "_"),  "[[", 1)
+# event_idx_wc <- event_idx[event_idx$site %in% event_list$site[event_list$coast == "wc"],] # 22
+# event_idx_sc <- event_idx[event_idx$site %in% event_list$site[event_list$coast == "sc"],] # 69
+# event_idx_ec <- event_idx[event_idx$site %in% event_list$site[event_list$coast == "ec"],] # 4
+# 
+# ## WC - 2x2
+# all_norm <- cbind(BRAN_norm, ERA_norm[,-1])
+# all_anom <- cbind(BRAN_anom, ERA_anom[,-1])
+# all_norm <- all_norm[all_norm$event %in% event_idx_wc$event,]
+# all_anom <- all_anom[all_anom$event %in% event_idx_wc$event,]
+# # Normal data
+# system.time(som_all_norm <- som.model(all_norm, xdim = 2, ydim = 2)) # 12 seconds
+# # Anomalies
+# system.time(som_all_anom <- som.model(all_anom, xdim = 2, ydim = 2)) # 12 seconds
+# 
+# ## SC - 3x2
+# all_norm <- cbind(BRAN_norm, ERA_norm[,-1])
+# all_anom <- cbind(BRAN_anom, ERA_anom[,-1])
+# all_norm <- all_norm[all_norm$event %in% event_idx_sc$event,]
+# all_anom <- all_anom[all_anom$event %in% event_idx_sc$event,]
+# # Normal data
+# system.time(som_all_norm <- som.model(all_norm, xdim = 3, ydim = 2)) # 51 seconds
+# # Anomalies
+# system.time(som_all_anom <- som.model(all_anom, xdim = 3, ydim = 2)) # 54 seconds
+# 
+# ## EC - 2x1
+# all_norm <- cbind(BRAN_norm, ERA_norm[,-1])
+# all_anom <- cbind(BRAN_anom, ERA_anom[,-1])
+# all_norm <- all_norm[all_norm$event %in% event_idx_ec$event,]
+# all_anom <- all_anom[all_anom$event %in% event_idx_ec$event,]
+# # Normal data
+# system.time(som_all_norm <- som.model(all_norm, xdim = 2, ydim = 1)) # 1 seconds
+# # Anomalies
+# system.time(som_all_anom <- som.model(all_anom, xdim = 2, ydim = 1)) # 1 seconds
 
 
 # 3. Have a peak at the models --------------------------------------------
@@ -178,8 +180,8 @@ add.cluster.boundaries(som_model, som_cluster)
 
 ## Unpack the results for plotting
 # mean
-system.time(res_all_norm_mean <- som.unpack.mean(all_norm, som_all_norm)) # 43 seconds
-system.time(res_all_anom_mean <- som.unpack.mean(all_anom, som_all_anom)) # 43 seconds
+system.time(res_all_norm_mean <- som.unpack.mean(all_norm, som_all_norm)) # 14 seconds
+system.time(res_all_anom_mean <- som.unpack.mean(all_anom, som_all_anom)) # 14 seconds
 # rescale
 system.time(res_all_norm_rescale <- som.unpack.rescale(all_norm, som_all_norm)) # 71 seconds
 system.time(res_all_anom_rescale <- som.unpack.rescale(all_anom, som_all_anom)) # 74 seconds

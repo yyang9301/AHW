@@ -1,7 +1,7 @@
 ---
 title: "Cluster Results"
-author: "Robert Schlegel"
-date: "30 March 2017"
+# author: "Robert Schlegel"
+# date: "30 March 2017"
 output: pdf_document
 bibliography: AHW.bib
 csl: elsevier-harvard.csl
@@ -11,30 +11,159 @@ csl: elsevier-harvard.csl
 Much has been done thus far in regards to the research, and a clear picture of what is further required now exists. The work with SOMs is likely sound, but does require that a few more variables be tested. Furthermore, it is not yet certain that SOMs will be the best clustering technique. To that end, K-means clustering and hierarchical clustering have also been identified as alternative techniques. This now gives rise to the possibility that two papers could emerge from this work. One on the resultant clustering of synoptic air-sea states during coastal MHWs, and another paper that discusses the strengths of these various clustering techniques.
 
 ## The metrics for each MHW in each cluster
-This requires that once the different events have been clustered, regardless of the techniquer used, or the variables controlled for within (see below), a summary of the event metrics must also be provided. These then will allow for the second more meaningful round of the interprewtation of the results.
+This requires that once the different events have been clustered, regardless of the technique used, or the variables controlled for within (see below), a summary of the event metrics must also be provided. These then will allow for the second more meaningful round of the interpretation of the results.
+
+![The results of a SOM clustering of the syoptic air-sea anaomaly data during coastal MHWs. The clusters shown here correspond to the following table and figure.](~/AHW/graph/som/anom_9.pdf)
+
+```{r, warning=FALSE, message=FALSE, echo=FALSE, results='asis'}
+# Load SOM results from anomaly data prepared by "proc/results.som.R"
+load("results/node_all_anom.Rdata")
+# Run the metric summary function on these data
+source("~/AHW/func/som.func.R")
+node_all_anom_table <- node.summary.metrics(node_all_anom)
+## This produces text that LaTeX likes
+# library(xtable)
+# xtable(node_all_anom_table, caption = "The possible metrics that may be of interest for summarising the events clustered into each node.")
+## This produces a better default for RMarkdown, but doesn't produce captions without a bit of faffing about
+## See: http://stackoverflow.com/questions/19997242/simple-manual-rmarkdown-tables-that-look-good-in-html-pdf-and-docx
+library(pander)
+pander(node_all_anom_table, caption = "The possible metrics that may be of interest for summarising the events clustered into each node. Node numbers given here correspond to Figure 1 and 2.")
+```
+```{r, echo=FALSE, warning=FALSE, message=FALSE, fig.cap="Lolliplots showing start date and cummulative intensity of each event by each node, as seen in Figure 1."}
+# Visualise the start dates and int_cum of the events via lolliplots
+library(RmarineHeatWaves)
+library(ggplot2)
+node_all_anom_2 <- merge(node_all_anom, event_list, by = c("event", "site", "season", "event_no"))
+ggplot(data = node_all_anom_2, aes(x = date_start, y = int_cum)) +
+  geom_lolli() +
+  facet_wrap(~node) +
+  labs(x = "date", y = "cummulative intensity (Cxdays)")
+```
+
+Figure 2 most clearly demonstrates that the SOM nodes in Figure 1 generally consist of either several events that occurred at the same time, or a blend of many disparate events. The nodes that contain more events are therefore much more 'neutral', meaning there is very little visible by way of air-sea anomalies. This is as I had feared and is currently my largest criticism of this technique. If one were to add more SOM nodes (a bad idea given that there are only 95 data vectors to be clustered), the new nodes will only allow some of the events within the larger clusters to break away and form their own node. The complexity of the air-sea states is such that any consistent patterns that may occur are obfuscated by everything else happening in the study area. Therefore it is necessary to reduce the dimensions of the input data by drawing a more narrow box around the study area to investigate the effect this may have. But first, the BRAN data need to be appropriately rounded down to a resolution of 0.5 degrees in order to match the ERA-Interim data.
 
 ## Effect of pixel resolution on clustering
-The more dimensions/ variables one introduces to a cluster analysis, the more stress will exist in the results. As large stress values are generally considered to be a negative aspect of clustering, it is best to attempt to reduce it where possible. For this research that means reducing the pixel resolution of the reanalysis products. There are two reasons that this cannot simply be done out of hand. The first is that the reduction in resolution may affect the clustering of the events. So this must be documented. THe other problem this faces is that the reduction of pixel resolution would require that any results produced be shown at this same reduced resolution. And because the goal is to show meso-scale forcing on the coast, higher pixel resolutions would be preferable. Regardless, the ERA-Interim data are at a resolution of 0.5 degrees, which requires that the BRAN data be reduced to this same resolution for appropriate cluster comparison.
+The more dimensions/ variables one introduces to a cluster analysis, the more stress will exist in the results. As large stress values are generally considered to be a negative result in a clustering, it is best to attempt to reduce it where possible. For this research that means reducing the pixel resolution of the reanalysis products. There are two reasons that this cannot simply be done out of hand. The first is that the reduction in resolution may affect the clustering of the events. So this must be documented. The other problem this faces is that the reduction of pixel resolution would require that any results produced be shown at this same reduced resolution. And because the goal is to show meso-scale forcing on the coast, higher pixel resolutions would be preferable. Regardless, the ERA-Interim data are at a resolution of 0.5 degrees, which requires that the BRAN data be reduced to this same resolution for appropriate cluster comparison. Beyond this initial required reduction in resolution, the question then is what effect does the further rounding of the data produce? Here we look at three resolutions: 0.5, 1.0 and 2.0 degree lon/ lat.
+
+```{r, warning=FALSE, message=FALSE, echo=FALSE}
+## Here the data are transformed and saved and re-loaded for convenience
+# "all_anom.Rdata" was prepared by "proc/results.som.R"
+# load("results/all_anom.Rdata")
+# system.time(all_anom_0.5 <- synoptic.round(all_anom, 0.5)) # 115 seconds
+# save(all_anom_0.5, file = "results/all_anom_0.5.Rdata")
+# load("results/all_anom_0.5.Rdata")
+# system.time(all_anom_1.0 <- synoptic.round(all_anom, 1.0)) # 134 seconds
+# save(all_anom_1.0, file = "results/all_anom_1.0.Rdata")
+# load("results/all_anom_1.0.Rdata")
+# system.time(all_anom_2.0 <- synoptic.round(all_anom, 2.0)) # 126 seconds
+# save(all_anom_2.0, file = "results/all_anom_2.0.Rdata")
+# load("results/all_anom_2.0.Rdata")
+
+## After loading the clustering is performed
+## Here SOMs are used
+# system.time(som_all_anom <- som.model(all_anom)) # 123 seconds
+# system.time(som_all_anom_0.5 <- som.model(all_anom_0.5)) # 4 seconds
+# system.time(som_all_anom_1.0 <- som.model(all_anom_1.0)) # 1 seconds
+# system.time(som_all_anom_2.0 <- som.model(all_anom_2.0)) # 1 seconds
+
+## Create node indeces and save
+# node_all_anom <- event.node(all_anom, som_all_anom)
+# save(node_all_anom, file = "results/node_all_anom.Rdata")
+# node_all_anom_0.5 <- event.node(all_anom_0.5, som_all_anom_0.5)
+# save(node_all_anom_0.5, file = "results/node_all_anom_0.5.Rdata")
+# node_all_anom_1.0 <- event.node(all_anom_1.0, som_all_anom_1.0)
+# save(node_all_anom_1.0, file = "results/node_all_anom_1.0.Rdata")
+# node_all_anom_2.0 <- event.node(all_anom_2.0, som_all_anom_2.0)
+# save(node_all_anom_2.0, file = "results/node_all_anom_2.0.Rdata")
+
+## Load node indeces and calculate differences
+load("results/node_all_anom.Rdata")
+load("results/node_all_anom_0.5.Rdata")
+load("results/node_all_anom_1.0.Rdata")
+load("results/node_all_anom_2.0.Rdata")
+
+# node_res <- node_all_anom
+node.count <- function(node_res, resolution){
+  df_1 <- unique(node_res[,2:3])
+  df_1 <- df_1[order(df_1$node),]
+  rownames(df_1) <- df_1$node
+  df_1 <- data.frame(df_1[,2])
+  colnames(df_1) <- resolution
+  return(df_1)
+}
+
+node_diff <- data.frame(node_all = node.count(node_all_anom, "all"),
+                       node_0.5 = node.count(node_all_anom_0.5, "0.5"),
+                       node_1.0 = node.count(node_all_anom_1.0, "1.0"),
+                       node_2.0 = node.count(node_all_anom_2.0, "2.0"))
+colnames(node_diff) <- c("res_all", "res_0.5", "res_1.0", "res_2.0")
+pander(node_diff, caption = "Table showing the number of events clustered into which of the 9 SOM nodes. The different columns show the effect that reducing the resolution of the data has on the clustering.")
+```
+
+The results table generated from the clustering of events into different nodes shown above is not very informative because it is known that the SOM algorithm always reshuffles these data into different nodes. Due to the very high dimensions of the data, the algorithm is not able to find a single best answer. Therefore, it is more informative to further order each column from highest to lowest so as to see if the general clustering of events is similar.
+```{r, warning=FALSE, message=FALSE, echo=FALSE}
+node_diff_idx <- apply(node_diff, 2, order)
+node_diff_2 <- data.frame(res_all = node_diff[node_diff_idx[,1],1], res_0.5 = node_diff[node_diff_idx[,2],2],
+                     res_1.0 = node_diff[node_diff_idx[,3],3], res_2.0 = node_diff[node_diff_idx[,4],4])
+pander(node_diff_2, caption = "Table showing the number of events within a node scored by descending order. The different columns show the effect that reducing the resolution of the data has on the clustering.")
+```
+
+When the data are reshuffled into descending order based on the number of events clustered into each node we see that the results are much more similar than they first appeared. This analysis could of course be much more rigorous, but this would require the creation of several sets of figures and so it is left as is for now. The next step in this portion of the analysis then would not be the creation of figures, but rather thinking of a clever way of comparing specifically which events have been clustered together and to then create a dissimilarity index of some sort based on these results. This then would allow for the comparison to be scaled up so it could be replicated 1,000 times to be more thorough.
 
 ## Effect of lat/ lon extent on clustering
 With more traditional cluster analyses, the values being compared would have far fewer dimensions. In this regard one would endeavour to only include variables that seem relevant to the question being asked. For example, if clustering different rock pools by the species found within them, one would likely create better results by not including any anomalous species finds in the results. In regards to this work, it is best to include only the pixels that are likely relevant to the meso-scale features that may be impacting the coast. More specifically, cutting out the Agulhas retroflection above the Southern Ocean will prevent any behaviour there from affecting the clustering of events that are occurring along the coastline of South Africa.
 
+```{r}
+
+```
+
+
 ## Effect of running air and sea variables separately
 It may be that air and sea values work in tandem with one another to force MHWs, but it is more likely that they do not. Therefore it is necessary to run all clustering techniques on air-sea values combined, as well as separately.
+
+```{r}
+
+```
+
 
 ## Do normal days cluster
 The idea here is to include the 366 daily synoptic climatology values in with the synoptic MHW values to see if they cluster differently.
 
+```{r}
+
+```
+
+# Clustering techniques that need to be investigated
+
 # Hierarchical clustering
+HCA differs from the other two techniques outlined below in that it does not cluster the data simultaneously, based on the least stress that can be found between data vectors. Rather it iteratively divides (or combines) data vectors as the algorithm moves down (or up) a classification tree. Always looking for the point at which clusters of data may be split (or combined). This method may benefit this research 
 
 ## Dendrograms
+```{r}
+
+```
+
 
 # K-means clustering
+The simplest method of clustering, and for that reason still one of the best. This is a basic algorithm that takes all data vectors and positions them in a 2D space. It then picks K points and sees, given the best possible fit of all dimensions being used, which data vectors are closest to which of the K points. This process is then repeated x number of times until a best fit is found. The data vectors are classified into the cluster centroid to which they are closest.
 
 ## Ordiplots
+```{r}
+
+```
+
 
 # SOMs
+The originally proposed technique and perhaps, once this dust settles, the reigning champion. The SOM technique is apart from the previous two methods in that it accounts for the gradient that exists between the nodes it clusters the given data into. Meaning that the positions of the nodes in 2D space is relevant, unlike HCA and K-means.
 
 ## SOM nodes
+```{r}
+
+```
+
+<!-- # MDS -->
+<!-- Multi-dimensional scaling provides another possible layer of interpretation of these data. By highlighting which pixels on the map belong to which meso-scale properties (e.g. Agulhas, Benguela, Agulhas retroflection) it is then possible to overlay the effect of these pixels, and therefore meso-scale features, on top of the ordiplots generated by MDS. -->
+
+<!-- ## Ordiplots -->
 
 # References
