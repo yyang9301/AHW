@@ -157,3 +157,6 @@ The scripts and raw data used to compare atmospheric and marine heat waves and c
 
 ## 2017/04/03
 * More work towards the cluster analyses
+
+## 2017/04/08
+* More work towards the cluster analyses

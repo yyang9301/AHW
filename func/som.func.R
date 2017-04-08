@@ -8,6 +8,7 @@
 # 5. Functions for creating figures
 # 6. Function for creating event metrics table
 # 7. Function for melting rounding and re-casting data
+# 8. Function for melting trimming and re-casting data 
 ## DEPENDS ON:
 library(scales)
 library(kohonen)
@@ -189,14 +190,14 @@ event.node <- function(data_packet, som_output){
   node_count <- as.data.frame(table(event_node$node))
   event_node <- event_node %>%
     group_by(node) %>% 
-    mutate(count = node_count$Freq[as.integer(node_count$Var1) == node][1]) %>% 
+    mutate(count = node_count$Freq[as.integer(node_count$Var1) == node[1]]) %>% 
     mutate(site = sapply(strsplit(as.character(event), "_"), "[[", 1)) %>% 
     mutate(event_no = as.integer(sapply(strsplit(as.character(event), "_"), "[[", 2))) %>% 
     group_by(site) %>% 
-    mutate(lon = SACTN_site_list$lon[as.character(SACTN_site_list$site) == site][1]) %>% 
-    mutate(lat = SACTN_site_list$lat[as.character(SACTN_site_list$site) == site][1]) %>%
+    mutate(lon = SACTN_site_list$lon[as.character(SACTN_site_list$site) == site[1]]) %>% 
+    mutate(lat = SACTN_site_list$lat[as.character(SACTN_site_list$site) == site[1]]) %>%
     group_by(event) %>% 
-    mutate(season = as.factor(event_list$season[event_list$event == event][1]))
+    mutate(season = as.factor(event_list$season[event_list$event == event[1]]))
   event_node <- as.data.frame(event_node)
   return(event_node)
 }
@@ -416,4 +417,25 @@ synoptic.round <- function(df, resolution = 0.5){
   # Recast to wide format for clustering
   df_resolution_wide <- dcast(df_resolution, event~index, value.var = "value")
   return(df_resolution_wide)
+}
+
+
+
+# 8. Function for melting trimming and re-casting data --------------------
+# df <- all_anom_0.5
+# trim <- 1
+synoptic.trim <- function(df, trim = 1){
+  # Melt ans separate out columns
+  df_1 <- melt(df, id.vars = "event")
+  df_1$x <- as.numeric(sapply(strsplit(as.character(df_1$variable), "_"), "[[", 1))
+  df_1$y <- as.numeric(sapply(strsplit(as.character(df_1$variable), "_"), "[[", 2))
+  df_1$variable <- sapply(strsplit(as.character(df_1$variable), "_"), "[[", 3)
+  # Reduce area extent
+  lon <- range(df_1$x)
+  lat <- range(df_1$y)
+  df_trim <- filter(df_1, x >= lon[1]+trim, x <= lon[2]-trim, y >= lat[1]+trim)
+  df_trim$index <- paste0(df_trim$x,"_",df_trim$y,"_",df_trim$variable)
+  # Recast to wide format for clustering
+  df_trim_wide <- dcast(df_trim, event~index, value.var = "value")
+  return(df_trim_wide)
 }

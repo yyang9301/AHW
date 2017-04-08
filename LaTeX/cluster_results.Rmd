@@ -43,7 +43,7 @@ ggplot(data = node_all_anom_2, aes(x = date_start, y = int_cum)) +
 Figure 2 most clearly demonstrates that the SOM nodes in Figure 1 generally consist of either several events that occurred at the same time, or a blend of many disparate events. The nodes that contain more events are therefore much more 'neutral', meaning there is very little visible by way of air-sea anomalies. This is as I had feared and is currently my largest criticism of this technique. If one were to add more SOM nodes (a bad idea given that there are only 95 data vectors to be clustered), the new nodes will only allow some of the events within the larger clusters to break away and form their own node. The complexity of the air-sea states is such that any consistent patterns that may occur are obfuscated by everything else happening in the study area. Therefore it is necessary to reduce the dimensions of the input data by drawing a more narrow box around the study area to investigate the effect this may have. But first, the BRAN data need to be appropriately rounded down to a resolution of 0.5 degrees in order to match the ERA-Interim data.
 
 ## Effect of pixel resolution on clustering
-The more dimensions/ variables one introduces to a cluster analysis, the more stress will exist in the results. As large stress values are generally considered to be a negative result in a clustering, it is best to attempt to reduce it where possible. For this research that means reducing the pixel resolution of the reanalysis products. There are two reasons that this cannot simply be done out of hand. The first is that the reduction in resolution may affect the clustering of the events. So this must be documented. The other problem this faces is that the reduction of pixel resolution would require that any results produced be shown at this same reduced resolution. And because the goal is to show meso-scale forcing on the coast, higher pixel resolutions would be preferable. Regardless, the ERA-Interim data are at a resolution of 0.5 degrees, which requires that the BRAN data be reduced to this same resolution for appropriate cluster comparison. Beyond this initial required reduction in resolution, the question then is what effect does the further rounding of the data produce? Here we look at three resolutions: 0.5, 1.0 and 2.0 degree lon/ lat.
+The more dimensions/ variables one introduces to a cluster analysis, the more stress will exist in the results. As large stress values are generally considered to be a negative result in clustering, it is best to attempt to reduce it where possible. One way of doing that for this research is by reducing the pixel resolution of the reanalysis products. There are two reasons that this cannot simply be done out of hand. The first is that the reduction in resolution may affect the clustering of the events. So this must be documented. The other problem this presents is that the reduction of pixel resolution would require that any results produced be shown at this same reduced resolution. And because the goal is to show meso-scale forcing on the coast, higher pixel resolutions would be preferable. Regardless, the ERA-Interim data are at a resolution of 0.5 degrees, which requires that the BRAN data be reduced to this same resolution for appropriate cluster comparison. Beyond this initial required reduction in resolution, the question then is what effect does the further rounding of the data produce? Here we look at three resolutions: 0.5, 1.0 and 2.0 degree lon/ lat.
 
 ```{r, warning=FALSE, message=FALSE, echo=FALSE}
 ## Here the data are transformed and saved and re-loaded for convenience
@@ -102,24 +102,165 @@ pander(node_diff, caption = "Table showing the number of events clustered into w
 
 The results table generated from the clustering of events into different nodes shown above is not very informative because it is known that the SOM algorithm always reshuffles these data into different nodes. Due to the very high dimensions of the data, the algorithm is not able to find a single best answer. Therefore, it is more informative to further order each column from highest to lowest so as to see if the general clustering of events is similar.
 ```{r, warning=FALSE, message=FALSE, echo=FALSE}
-node_diff_idx <- apply(node_diff, 2, order)
-node_diff_2 <- data.frame(res_all = node_diff[node_diff_idx[,1],1], res_0.5 = node_diff[node_diff_idx[,2],2],
-                     res_1.0 = node_diff[node_diff_idx[,3],3], res_2.0 = node_diff[node_diff_idx[,4],4])
-pander(node_diff_2, caption = "Table showing the number of events within a node scored by descending order. The different columns show the effect that reducing the resolution of the data has on the clustering.")
+node_diff_2 <- apply(node_diff, 2, sort)
+pander(node_diff_2, caption = "Table showing the number of events within a node scored in descending order. The different columns show the effect that reducing the resolution of the data has on the clustering.")
 ```
 
-When the data are reshuffled into descending order based on the number of events clustered into each node we see that the results are much more similar than they first appeared. This analysis could of course be much more rigorous, but this would require the creation of several sets of figures and so it is left as is for now. The next step in this portion of the analysis then would not be the creation of figures, but rather thinking of a clever way of comparing specifically which events have been clustered together and to then create a dissimilarity index of some sort based on these results. This then would allow for the comparison to be scaled up so it could be replicated 1,000 times to be more thorough.
+When the data are reshuffled into descending order based on the number of events clustered into each node we see that the results are much more similar than they first appeared. The next step in this portion of the analysis is not the creation of figures, but rather cclustering events that are generally clustered together. This then would allow for the comparison to be scaled up so it could be replicated 1,000 times to be more thorough.
+
+
+## Comparing large replication sets
+Because the SOM nodes are shuffled during each run, comparing the results directly becomes difficult. We can however iterate the SOM analysis many times and save a vector of results for each event showing into which node it wa cast for each run. This then creates a unique information vector for each event that can then be used to further cluster the events into 'mean' clusters. This helps to address the issue of SOM node 'drift'. The following two tables show the results of a SOM run on the data 10 times.
+```{r, warning=FALSE, message=FALSE, echo=FALSE}
+# Load 0.5 res data
+load("results/all_anom_0.5.Rdata")
+
+## Run the analysis once
+# system.time(som_all_anom_1r <- som.model(all_anom_0.5)) # 4 seconds
+# node_all_anom_1r <- event.node(all_anom_0.5, som_all_anom_1r)
+# save(node_all_anom_1r, file = "results/node_all_anom_1r.Rdata")
+load("results/node_all_anom_1r.Rdata")
+node_all_anom_1r <- node_all_anom_1r[,1:3]
+# colnames(node_all_anom_1r) <- c("event", "node_1", "count_1")
+
+## Run the analysis 10 times
+# node_all_anom_10r <- node_all_anom_1r
+# for(i in 2:10){
+#   som_all_anom_10r <- som.model(all_anom_0.5)
+#   df <- event.node(all_anom_0.5, som_all_anom_10r)
+#   node_all_anom_10r <- cbind(node_all_anom_10r, df[,2:3])
+# }
+# save(node_all_anom_10r, file = "results/node_all_anom_10r.Rdata")
+load("results/node_all_anom_10r.Rdata")
+
+node_diff_10 <- node.count(node_all_anom_10r, "1r")
+for(i in 2:10){
+  j <- i*2
+  res <- node.count(node_all_anom_10r[,c(1,j,j+1)], paste0(i,"r"))
+  node_diff_10 <- cbind(node_diff_10, res)
+}
+pander(node_diff_10, caption = "Table showing the number of events within the same node over 10 runs on the same data. Note how variable the node assignments may be.")
+```
+```{r, warning=FALSE, message=FALSE, echo=FALSE}
+# Order the 10 SOM run in descending order
+node_diff_10_2 <- apply(node_diff_10, 2, sort)
+pander(node_diff_10_2, caption = "Table showing the number of events within a node scored in descending order. The different columns show each run. Note that the results are generally consistent, but not completely.")
+```
+
+Now let's up the anti a bit and run the SOM 100 times. Because the resultant data frame will become unwieldly, we will create means across the number of clustered events as coerced into descending order. These then will be compared to the mean for the 1 run and 10 run data frames.
+```{r, warning=FALSE, message=FALSE, echo=FALSE}
+## Run the analysis 100 times
+# node_all_anom_100r <- node_all_anom_10r
+# for(i in 11:100){
+  # som_all_anom_100r <- som.model(all_anom_0.5)
+  # df <- event.node(all_anom_0.5, som_all_anom_100r)
+  # node_all_anom_100r <- cbind(node_all_anom_100r, df[,2:3])
+# }
+# save(node_all_anom_100r, file = "results/node_all_anom_100r.Rdata")
+load("results/node_all_anom_100r.Rdata")
+
+# Compute counts per node
+node_diff_100 <- node.count(node_all_anom_1r, "1r")
+for(i in 2:100){
+  j <- i*2
+  res <- node.count(node_all_anom_100r[,c(1,j,j+1)], paste0(i,"r"))
+  node_diff_100 <- cbind(node_diff_100, res)
+}
+
+# Order
+node_diff_100_2 <- apply(node_diff_100, 2, sort)
+
+# Create means from each dataframe
+node_diff_1_mean <- data.frame(node_diff_100_2[,1])
+colnames(node_diff_1_mean) <- "1r"
+node_diff_10_mean <- data.frame(round(apply(node_diff_100_2[,1:10], 1, mean),0))
+colnames(node_diff_10_mean) <- "10r"
+node_diff_100_mean <- data.frame(round(apply(node_diff_100_2, 1, mean),0))
+colnames(node_diff_100_mean) <- "100r"
+node_diff_mean <- cbind(node_diff_1_mean, node_diff_10_mean, node_diff_100_mean)
+
+# Table
+pander(node_diff_mean, caption = "Table showing the number of events within a node scored in descending order. The different columns show the mean of 1, 10, and 100 SOM runs. Note that the results are remarkably similar.")
+```
+
+As we may see from the table above, the 'wobble' present in the SOM analysis is not great. I considered running the analysis 1,000 times but this would take several hours on my computer and I think that the consistency shown between 1, 10, and 100 runs is sufficient to put this question to rest.
+
 
 ## Effect of lat/ lon extent on clustering
-With more traditional cluster analyses, the values being compared would have far fewer dimensions. In this regard one would endeavour to only include variables that seem relevant to the question being asked. For example, if clustering different rock pools by the species found within them, one would likely create better results by not including any anomalous species finds in the results. In regards to this work, it is best to include only the pixels that are likely relevant to the meso-scale features that may be impacting the coast. More specifically, cutting out the Agulhas retroflection above the Southern Ocean will prevent any behaviour there from affecting the clustering of events that are occurring along the coastline of South Africa.
+With more traditional cluster analyses, the values being compared would have far fewer dimensions. In this regard one would endeavour to only include variables that seem relevant to the question being asked. For example, if clustering different rock pools by the species found within them, one would likely create better results by not including any anomalous species found in the results (like a cow fish). In regards to this work, it is best to include only the pixels that are likely relevant to the meso-scale features that may be impacting the coast. More specifically, cutting out the Agulhas retroflection above the Southern Ocean will prevent any behaviour there from affecting the clustering of events that are occurring along the coastline of South Africa.
 
-```{r}
+That all being said, it may indeed be relavent, at least in the sense of potential teleconnections, to include the Agulhas retroflections over the Southern Ocean. Therefore, I have decided to trim the total study area by 1 degree on the East, South and West extents, rather than just the South extent. The North border of the study are is left unchanged as this would begin to remove some of the coastal stations. The effect of trimming the study area 1 degree at a time is presented below. A SOM is run on each trimmed data frame 10 times to produce smoother results. The inquiry into the SOM 'drift' above shows that 10 iterations return comparable results to 100 iterations, so 10 are used here in the interest of speed. A total of 5 degrees are iteratively trimmed.
 
+```{r, warning=FALSE, message=FALSE, echo=FALSE}
+## Trim the data
+# all_anom_0.5_trim_1 <- synoptic.trim(all_anom_0.5, 1)
+# save(all_anom_0.5_trim_1, file = "results/all_anom_0.5_trim_1.Rdata")
+load("results/all_anom_0.5_trim_1.Rdata")
+# all_anom_0.5_trim_2 <- synoptic.trim(all_anom_0.5, 2)
+# save(all_anom_0.5_trim_2, file = "results/all_anom_0.5_trim_2.Rdata")
+load("results/all_anom_0.5_trim_2.Rdata")
+# all_anom_0.5_trim_3 <- synoptic.trim(all_anom_0.5, 3)
+# save(all_anom_0.5_trim_3, file = "results/all_anom_0.5_trim_3.Rdata")
+load("results/all_anom_0.5_trim_3.Rdata")
+# all_anom_0.5_trim_4 <- synoptic.trim(all_anom_0.5, 4)
+# save(all_anom_0.5_trim_4, file = "results/all_anom_0.5_trim_4.Rdata")
+load("results/all_anom_0.5_trim_4.Rdata")
+# all_anom_0.5_trim_5 <- synoptic.trim(all_anom_0.5, 5)
+# save(all_anom_0.5_trim_5, file = "results/all_anom_0.5_trim_5.Rdata")
+load("results/all_anom_0.5_trim_5.Rdata")
 ```
+```{r, warning=FALSE, message=FALSE, echo=FALSE}
+# Create a function that runs 10 SOM analyses and produces mean results
+# df <- all_anom_0.5_trim_5
+som.10.mean <- function(df, trim){
+  # Run the analysis once to set the stage
+  som_res <- som.model(df)
+  node_res <- event.node(df, som_res)
+  node_res <- node_res[,1:3]
+for(i in 2:10){
+  som_res <- som.model(df)
+  df_1 <- event.node(df, som_res)
+  node_res <- cbind(node_res, df_1[,2:3])
+}
+# Compute counts per node
+node_res_10 <- node.count(node_res, "1r")
+for(i in 2:10){
+  j <- i*2
+  res <- node.count(node_res[,c(1,j,j+1)], paste0(i,"r"))
+  node_res_10 <- cbind(node_res_10, res)
+}
+# Order
+node_res_10 <- apply(node_res_10, 2, sort)
+# Create means from each dataframe
+node_res_10_mean <- data.frame(round(apply(node_res_10, 1, mean),0))
+colnames(node_res_10_mean) <- paste0("trim_",trim)
+return(node_res_10_mean)
+}
+```
+```{r, warning=FALSE, message=FALSE, echo=FALSE}
+# Compute the SOM results for the different trims
+# trim_0_nodes <- data.frame(node_diff_mean[,2])
+# colnames(trim_0_nodes) <- "trim_0"
+# trim_1_nodes <- som.10.mean(all_anom_0.5_trim_1, 1)
+# trim_2_nodes <- som.10.mean(all_anom_0.5_trim_2, 2)
+# trim_3_nodes <- som.10.mean(all_anom_0.5_trim_3, 3)
+# trim_4_nodes <- som.10.mean(all_anom_0.5_trim_4, 4)
+# trim_5_nodes <- som.10.mean(all_anom_0.5_trim_5, 5)
+
+# Combine and save
+# trim_all_nodes <- cbind(trim_0_nodes, trim_1_nodes, trim_2_nodes,
+#                         trim_3_nodes, trim_4_nodes, trim_5_nodes)
+# save(trim_all_nodes, file = "results/trim_all_nodes.Rdata")
+load("results/trim_all_nodes.Rdata")
+# Table
+pander(trim_all_nodes, caption = "Table showing the number of events within a node scored in descending order. The different columns show the mean of 10 SOM runs on differing amounts of spatial reduction in the extent of the study area. Note that the results remain similar, but there appears to be break in the results once 3 degrees of lon & lat have been removed from the East, South, and West edges of the study area.")
+```
+
+The table above shows that removing portions of the study area does have an effect on the SOM clustering of the data. Leaving the study area 'as is' is shown in the column labeled 'trim_0'. These are the results shown in the previous tables and figures. Removing one degree of lat/ lon appears to cluster the events more into the one large cluster, with fewer events in the smaller clusters. Removing 2 degrees of lat/ lon reverses this trend. Trimming 3 to 5 degrees of lat/ lon then all appears to produce very similar results. The difference between these different extents is not large, but I think it does show that the edges of the study area are having an effect on the clustering. And that reducing the area does allow for a more even clustering of the events into nodes. It may be best to use a study area with 3 degrees trimmed from the East, South, and West edges. But for now I shall continue to use the full study area.
 
 
 ## Effect of running air and sea variables separately
-It may be that air and sea values work in tandem with one another to force MHWs, but it is more likely that they do not. Therefore it is necessary to run all clustering techniques on air-sea values combined, as well as separately.
+It may be that air and sea values work in tandem with one another to force MHWs, but it is more likely that they do not. Except for perhaps VERY extreme situations (e.g. once per decade). Therefore it is necessary to run all clustering techniques on air-sea values combined, as well as separately, in order to quantify the potential effect they have on clustering.
 
 ```{r}
 
