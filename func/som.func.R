@@ -439,3 +439,21 @@ synoptic.trim <- function(df, trim = 1){
   df_trim_wide <- dcast(df_trim, event~index, value.var = "value")
   return(df_trim_wide)
 }
+
+
+# 9. Function for melting subsetting and re-casting data ------------------
+# df <- all_anom_0.5
+# subvar <- "BRAN"
+synoptic.sub <- function(df, subvar){
+  # Melt ans separate out columns
+  df_1 <- melt(df, id.vars = "event")
+  df_1$x <- as.numeric(sapply(strsplit(as.character(df_1$variable), "_"), "[[", 1))
+  df_1$y <- as.numeric(sapply(strsplit(as.character(df_1$variable), "_"), "[[", 2))
+  df_1$variable <- sapply(strsplit(as.character(df_1$variable), "_"), "[[", 3)
+  # Subset by the chosen variable
+  df_sub <- df_1[grepl(subvar, df_1$variable),]
+  df_sub$index <- paste0(df_sub$x,"_",df_sub$y,"_",df_sub$variable)
+  # Recast to wide format for clustering
+  df_sub_wide <- dcast(df_sub, event~index, value.var = "value")
+  return(df_sub_wide)
+}

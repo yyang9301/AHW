@@ -160,3 +160,6 @@ The scripts and raw data used to compare atmospheric and marine heat waves and c
 
 ## 2017/04/08
 * More work towards the cluster analyses
+
+## 2017/04/10
+* All variables that could affect the results of a clustering technique have been analysed
