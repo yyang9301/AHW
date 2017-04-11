@@ -1,6 +1,6 @@
 ---
 title: "Common Air-Sea States"
-output: html_notebook
+output: pdf_document
 ---
 
 # Rationale
