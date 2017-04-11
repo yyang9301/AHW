@@ -373,19 +373,22 @@ load("results/all_daily_anom_0.5.Rdata")
 # # Add a season column
 # all_event_daily_anom_0.5 <- data.frame(season = rep(NA, nrow(all_event_daily_anom_0.5)),
 #                                        all_event_daily_anom_0.5)
+# all_event_daily_anom_0.5 <- all_event_daily_anom_0.5 %>%
+#   group_by(event) %>%
+#   mutate(season = event_list$season[event_list$event == event[1]])
 # all_event_daily_anom_0.5$season[all_event_daily_anom_0.5$event %in% summer] <- "summer"
 # all_event_daily_anom_0.5$season[all_event_daily_anom_0.5$event %in% autumn] <- "autumn"
 # all_event_daily_anom_0.5$season[all_event_daily_anom_0.5$event %in% winter] <- "winter"
 # all_event_daily_anom_0.5$season[all_event_daily_anom_0.5$event %in% spring] <- "spring"
-# all_event_daily_anom_0.5$season[is.na(all_event_daily_anom_0.5$season)] <- "event"
+
 # # Save
 # save(all_event_daily_anom_0.5, file = "results/all_event_daily_anom_0.5.Rdata")
 load("results/all_event_daily_anom_0.5.Rdata")
 ```
 ```{r, warning=FALSE, message=FALSE, echo=FALSE, fig.cap="Plot showing the decrease in WGSS as more clusters are used for the results of an HCA on the anomaly values for synoptic air-sea states during events and daily climatologies."}
 # Check the stress of using differing clusters
-# wss <- (nrow(all_event_daily_anom_0.5[,-c(1:2)])-1)*sum(apply(all_event_daily_anom_0.5[,-c(1:2)],2,var))
-#   for (i in 2:15) wss[i] <- sum(kmeans(all_event_daily_anom_0.5[,-c(1:2)],
+# wss <- (nrow(all_event_daily_anom_0.5[,-c(1:3)])-1)*sum(apply(all_event_daily_anom_0.5[,-c(1:3)],2,var))
+#   for (i in 2:15) wss[i] <- sum(kmeans(all_event_daily_anom_0.5[,-c(1:3)],
 #                                        centers=i)$withinss)
 # save(wss, file = "results/wss.Rdata")
 load("results/wss.Rdata")
@@ -407,12 +410,12 @@ load("results/all_event_daily_anom_0.5_hclust.Rdata")
 ```{r, warning=FALSE, message=FALSE, echo=FALSE, fig.cap="Dendrogram showing the results of an HCA on the anomaly values for synoptic air-sea states during events and daily climatologies. The daily clims and event data are shown with different colours. The dates or event names are included but are not legible."}
 # Set the data types as factors
 all_event_daily_anom_0.5$index_2 <- factor(all_event_daily_anom_0.5$index_2, levels = c("daily", "event"))
-all_event_daily_anom_0.5$season <- factor(all_event_daily_anom_0.5$season, levels = c("summer", "autumn", "winter", "spring", "event"))
+all_event_daily_anom_0.5$season <- factor(all_event_daily_anom_0.5$season, levels = c("summer", "autumn", "winter", "spring"))
 
 # Vector of values for plotting
 label_colour <-  c("royalblue3", "springgreen4") # This shows data type
 label_font <- c("daily", "event")
-label_shape <- c(15, 16, 17, 18, 8) # This shows seasons
+label_shape <- c(15, 16, 17, 18) # This shows seasons
 
 # Cluster colours
 clust_colour <- c("orangered", "hotpink", "purple", "sienna")
@@ -437,9 +440,10 @@ point.lab <- function(n) {
         lab_shape <- label_shape[data_season_label[which(names(data_season_label) == a$label)]]
         # Index for shapes and labels
         attr(n, "nodePar") <- c(a$nodePar, list(lab.col = lab_col, col = lab_col,
-                                                pch = lab_shape, cex = 0.5, lab.cex = 0.3)) 
+                                                pch = 16, cex = 0.8, lab.cex = 0.3)) 
         # The line below changes the dendrogram labels from the pool number to the 'label_font' value
-        attr(n, "label") <- lab_font
+        # attr(n, "label") <- lab_font
+        attr(n, "label") <- NA
     }
     n
 }
@@ -455,13 +459,13 @@ plot(clust_full, ylab = "Height")
 rect.hclust(clust, k = 4, border = clust_colour)
 legend("topright", legend = c("daily", "event"),
        col = label_colour, pch = 7, title = "Data Type")
-legend("right", legend = c("summer", "autumn", "winter", "spring", "event"),
-       pch = label_shape, title = "Season")
+# legend("right", legend = c("summer", "autumn", "winter", "spring"),
+       # pch = label_shape, title = "Season")
 ```
 
 The dendrogram from the HCA very clearly shows that the event data separate out from the daily clim data almost perfectly. Besides the overlayed clusters, one may also see that the final branch on which each event sits is much longer than the daily clims. This means that not only are the events clustered apart from the daily clim data, but also that the individual events are also much more dissimilar from any of the other data points than the daily clims. But let's not stop there. The dendrogram makes a very convincing case for the dissimilarity between event and daily clim data, but let's add another dimension by creating an ordiplot via MDS.
 
-```{r, warning=FALSE, message=FALSE, echo=FALSE, fig.cap="Ordiplot showing the results of an MDS on the anomaly values for synoptic air-sea states during events and daily climatologies. The daily clims and event data are shown with different colours. The dates or event names have not been included but are available. The clusters from the dendrogram are shown here but the colours do not correspond."}
+```{r, warning=FALSE, message=FALSE, echo=FALSE, fig.cap="Ordiplot showing the results of an MDS on the anomaly values for synoptic air-sea states during events and daily climatologies. The daily clims and event data are shown with different colours. The dates or event names have not been included but are available. The clusters from the dendrogram are shown here with corresponding colours."}
 # all_event_daily_anom_0.5_MDS <- metaMDS(vegdist(decostand(all_event_daily_anom_0.5[,-c(1:2)], 
 #                                                             method = "standardize"),
 #                                                   method = "euclidean"), try = 100)
@@ -474,11 +478,11 @@ plot(anom_mds, type = "n")
 points(anom_mds, display = "sites", cex = 0.7, 
        pch = label_shape[as.numeric(all_event_daily_anom_0.5$season)], 
        col = label_colour[as.numeric(all_event_daily_anom_0.5$index_2)])
-ordiellipse(anom_mds, grp, col = clust_colour, kind = "ehull")
+ordiellipse(anom_mds, grp, col = clust_colour[c(1,4,2,3)], kind = "ehull")
 # text(anom_mds, display = "sites", cex = 0.5, col = "black", adj = c(0,1))
 legend("topright", legend = c("daily", "event"),
        col = label_colour, pch = 7, title = "Data Type")
-legend("right", legend = c("summer", "autumn", "winter", "spring", "event"),
+legend("right", legend = c("summer", "autumn", "winter", "spring"),
        pch = label_shape, title = "Season")
 ```
 
