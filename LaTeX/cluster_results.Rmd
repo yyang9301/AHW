@@ -17,14 +17,14 @@ This requires that once the different events have been clustered, regardless of 
 
 ```{r, warning=FALSE, message=FALSE, echo=FALSE, results='asis'}
 # Load SOM results from anomaly data prepared by "proc/results.som.R"
-load("results/node_all_anom.Rdata")
+load("results/node_all_anom_pci_1r.Rdata")
 # Run the metric summary function on these data
 source("~/AHW/func/som.func.R")
-node_all_anom_table <- node.summary.metrics(node_all_anom)
+node_all_anom_table <- node.summary.metrics(node_all_anom_pci_1r)
 ## This produces text that LaTeX likes
 # library(xtable)
 # xtable(node_all_anom_table, caption = "The possible metrics that may be of interest for summarising the events clustered into each node.")
-## This produces a better default for RMarkdown, but doesn't produce captions without a bit of faffing about
+## This produces a better default for RMarkdown, but doesn't produce acceptable legends without a bit of faffing about
 ## See: http://stackoverflow.com/questions/19997242/simple-manual-rmarkdown-tables-that-look-good-in-html-pdf-and-docx
 library(pander)
 pander(node_all_anom_table, caption = "The possible metrics that may be of interest for summarising the events clustered into each node. Node numbers given here correspond to Figure 1 and 2.")
@@ -33,7 +33,7 @@ pander(node_all_anom_table, caption = "The possible metrics that may be of inter
 # Visualise the start dates and int_cum of the events via lolliplots
 library(RmarineHeatWaves)
 library(ggplot2)
-node_all_anom_2 <- merge(node_all_anom, event_list, by = c("event", "site", "season", "event_no"))
+node_all_anom_2 <- merge(node_all_anom_pci_1r, event_list, by = c("event", "site", "season", "event_no"))
 ggplot(data = node_all_anom_2, aes(x = date_start, y = int_cum)) +
   geom_lolli() +
   facet_wrap(~node) +
@@ -42,48 +42,34 @@ ggplot(data = node_all_anom_2, aes(x = date_start, y = int_cum)) +
 
 Figure 2 most clearly demonstrates that the SOM nodes in Figure 1 generally consist of either several events that occurred at the same time, or a blend of many disparate events. The nodes that contain more events are therefore much more 'neutral', meaning there is very little visible by way of air-sea anomalies. This is as I had feared and is currently my largest criticism of this technique. If one were to add more SOM nodes (a bad idea given that there are only 95 data vectors to be clustered), the new nodes will only allow some of the events within the larger clusters to break away and form their own node. The complexity of the air-sea states is such that any consistent patterns that may occur are obfuscated by everything else happening in the study area. Therefore it is necessary to reduce the dimensions of the input data by drawing a more narrow box around the study area to investigate the effect this may have. But first, the BRAN data need to be appropriately rounded down to a resolution of 0.5 degrees in order to match the ERA-Interim data.
 
-## Effect of pixel resolution on clustering
-The more dimensions/ variables one introduces to a cluster analysis, the more stress will exist in the results. As large stress values are generally considered to be a negative result in clustering, it is best to attempt to reduce it where possible. One way of doing that for this research is by reducing the pixel resolution of the reanalysis products. There are two reasons that this cannot simply be done out of hand. The first is that the reduction in resolution may affect the clustering of the events. So this must be documented. The other problem this presents is that the reduction of pixel resolution would require that any results produced be shown at this same reduced resolution. And because the goal is to show meso-scale forcing on the coast, higher pixel resolutions would be preferable. Regardless, the ERA-Interim data are at a resolution of 0.5 degrees, which requires that the BRAN data be reduced to this same resolution for appropriate cluster comparison. Beyond this initial required reduction in resolution, the question then is what effect does the further rounding of the data produce? Here we look at three resolutions: 0.5, 1.0 and 2.0 degree lon/ lat.
 
+## Comparing large replication sets
+Because the SOM nodes are shuffled during each run, comparing the results directly becomes difficult. We can however iterate the SOM analysis many times and save a vector of results for each event showing into which node it was cast for each run. This then creates a unique information vector for each event that can then be used to further cluster the events into 'mean' clusters. This helps to address the issue of SOM node 'drift'. The following two tables show the results of a SOM run on the data 10 times.
 ```{r, warning=FALSE, message=FALSE, echo=FALSE}
-## Here the data are transformed and saved and re-loaded for convenience
-# "all_anom.Rdata" was prepared by "proc/results.som.R"
-# load("results/all_anom.Rdata")
-# system.time(all_anom_0.5 <- synoptic.round(all_anom, 0.5)) # 115 seconds
-# save(all_anom_0.5, file = "results/all_anom_0.5.Rdata")
-# load("results/all_anom_0.5.Rdata")
-# system.time(all_anom_1.0 <- synoptic.round(all_anom, 1.0)) # 134 seconds
-# save(all_anom_1.0, file = "results/all_anom_1.0.Rdata")
-# load("results/all_anom_1.0.Rdata")
-# system.time(all_anom_2.0 <- synoptic.round(all_anom, 2.0)) # 126 seconds
-# save(all_anom_2.0, file = "results/all_anom_2.0.Rdata")
-# load("results/all_anom_2.0.Rdata")
+# Load 0.5 res data
+load("results/all_anom_0.5.Rdata")
+load("results/node_all_anom_1r.Rdata")
 
-## After loading the clustering is performed
-## Here SOMs are used
-# system.time(som_all_anom <- som.model(all_anom)) # 123 seconds
-# system.time(som_all_anom_0.5 <- som.model(all_anom_0.5)) # 4 seconds
-# system.time(som_all_anom_1.0 <- som.model(all_anom_1.0)) # 1 seconds
-# system.time(som_all_anom_2.0 <- som.model(all_anom_2.0)) # 1 seconds
+## Run the analysis once
+# system.time(som_all_anom_1r <- som.model(all_anom_0.5)) # 4 seconds
+# node_all_anom_1r <- event.node(all_anom_0.5, som_all_anom_1r, kohonen = TRUE)
+# save(node_all_anom_1r, file = "results/node_all_anom_1r.Rdata")
+# load("results/node_all_anom_1r.Rdata")
+# node_all_anom_1r <- node_all_anom_1r[,1:3]
+# colnames(node_all_anom_1r) <- c("event", "node_1", "count_1")
 
-## Create node indeces and save
-# node_all_anom <- event.node(all_anom, som_all_anom)
-# save(node_all_anom, file = "results/node_all_anom.Rdata")
-# node_all_anom_0.5 <- event.node(all_anom_0.5, som_all_anom_0.5)
-# save(node_all_anom_0.5, file = "results/node_all_anom_0.5.Rdata")
-# node_all_anom_1.0 <- event.node(all_anom_1.0, som_all_anom_1.0)
-# save(node_all_anom_1.0, file = "results/node_all_anom_1.0.Rdata")
-# node_all_anom_2.0 <- event.node(all_anom_2.0, som_all_anom_2.0)
-# save(node_all_anom_2.0, file = "results/node_all_anom_2.0.Rdata")
-
-## Load node indeces and calculate differences
-load("results/node_all_anom.Rdata")
-load("results/node_all_anom_0.5.Rdata")
-load("results/node_all_anom_1.0.Rdata")
-load("results/node_all_anom_2.0.Rdata")
+## Run the analysis 10 times
+# node_all_anom_10r <- node_all_anom_1r
+# for(i in 2:10){
+#   som_all_anom_10r <- som.model(all_anom_0.5)
+#   df <- event.node(all_anom_0.5, som_all_anom_10r, kohonen = TRUE)
+#   node_all_anom_10r <- cbind(node_all_anom_10r, df[,2:3])
+# }
+# save(node_all_anom_10r, file = "results/node_all_anom_10r.Rdata")
+load("results/node_all_anom_10r.Rdata")
 
 # node_res <- node_all_anom
-node.count <- function(node_res, resolution){
+node.count.n <- function(node_res, resolution){
   df_1 <- unique(node_res[,2:3])
   df_1 <- df_1[order(df_1$node),]
   rownames(df_1) <- df_1$node
@@ -92,51 +78,10 @@ node.count <- function(node_res, resolution){
   return(df_1)
 }
 
-node_diff <- data.frame(node_all = node.count(node_all_anom, "all"),
-                       node_0.5 = node.count(node_all_anom_0.5, "0.5"),
-                       node_1.0 = node.count(node_all_anom_1.0, "1.0"),
-                       node_2.0 = node.count(node_all_anom_2.0, "2.0"))
-colnames(node_diff) <- c("res_all", "res_0.5", "res_1.0", "res_2.0")
-pander(node_diff, caption = "Table showing the number of events clustered into which of the 9 SOM nodes. The different columns show the effect that reducing the resolution of the data has on the clustering.")
-```
-
-The results table generated from the clustering of events into different nodes shown above is not very informative because it is known that the SOM algorithm always reshuffles these data into different nodes. Due to the very high dimensions of the data, the algorithm is not able to find a single best answer. Therefore, it is more informative to further order each column from highest to lowest so as to see if the general clustering of events is similar.
-```{r, warning=FALSE, message=FALSE, echo=FALSE}
-node_diff_2 <- apply(node_diff, 2, sort)
-pander(node_diff_2, caption = "Table showing the number of events within a node scored in descending order. The different columns show the effect that reducing the resolution of the data has on the clustering.")
-```
-
-When the data are reshuffled into descending order based on the number of events clustered into each node we see that the results are much more similar than they first appeared. The next step in this portion of the analysis is not the creation of figures, but rather clustering events that are generally clustered together. This then would allow for the comparison to be scaled up so it could be replicated 1,000 times to be more thorough.
-
-
-## Comparing large replication sets
-Because the SOM nodes are shuffled during each run, comparing the results directly becomes difficult. We can however iterate the SOM analysis many times and save a vector of results for each event showing into which node it was cast for each run. This then creates a unique information vector for each event that can then be used to further cluster the events into 'mean' clusters. This helps to address the issue of SOM node 'drift'. The following two tables show the results of a SOM run on the data 10 times.
-```{r, warning=FALSE, message=FALSE, echo=FALSE}
-# Load 0.5 res data
-load("results/all_anom_0.5.Rdata")
-
-## Run the analysis once
-# system.time(som_all_anom_1r <- som.model(all_anom_0.5)) # 4 seconds
-# node_all_anom_1r <- event.node(all_anom_0.5, som_all_anom_1r)
-# save(node_all_anom_1r, file = "results/node_all_anom_1r.Rdata")
-load("results/node_all_anom_1r.Rdata")
-node_all_anom_1r <- node_all_anom_1r[,1:3]
-# colnames(node_all_anom_1r) <- c("event", "node_1", "count_1")
-
-## Run the analysis 10 times
-# node_all_anom_10r <- node_all_anom_1r
-# for(i in 2:10){
-#   som_all_anom_10r <- som.model(all_anom_0.5)
-#   df <- event.node(all_anom_0.5, som_all_anom_10r)
-#   node_all_anom_10r <- cbind(node_all_anom_10r, df[,2:3])
-# }
-# save(node_all_anom_10r, file = "results/node_all_anom_10r.Rdata")
-load("results/node_all_anom_10r.Rdata")
-
-node_diff_10 <- node.count(node_all_anom_10r, "1r")
+node_diff_10 <- node.count.n(node_all_anom_10r, "1r")
 for(i in 2:10){
   j <- i*2
-  res <- node.count(node_all_anom_10r[,c(1,j,j+1)], paste0(i,"r"))
+  res <- node.count.n(node_all_anom_10r[,c(1,j,j+1)], paste0(i,"r"))
   node_diff_10 <- cbind(node_diff_10, res)
 }
 pander(node_diff_10, caption = "Table showing the number of events within the same node over 10 runs on the same data. Note how variable the node assignments may be.")
@@ -152,18 +97,18 @@ Now let's up the anti a bit and run the SOM 100 times. Because the resultant dat
 ## Run the analysis 100 times
 # node_all_anom_100r <- node_all_anom_10r
 # for(i in 11:100){
-  # som_all_anom_100r <- som.model(all_anom_0.5)
-  # df <- event.node(all_anom_0.5, som_all_anom_100r)
-  # node_all_anom_100r <- cbind(node_all_anom_100r, df[,2:3])
+#   som_all_anom_100r <- som.model(all_anom_0.5)
+#   df <- event.node(all_anom_0.5, som_all_anom_100r, kohonen = TRUE)
+#   node_all_anom_100r <- cbind(node_all_anom_100r, df[,2:3])
 # }
 # save(node_all_anom_100r, file = "results/node_all_anom_100r.Rdata")
 load("results/node_all_anom_100r.Rdata")
 
 # Compute counts per node
-node_diff_100 <- node.count(node_all_anom_1r, "1r")
+node_diff_100 <- node.count.n(node_all_anom_1r, "1r")
 for(i in 2:100){
   j <- i*2
-  res <- node.count(node_all_anom_100r[,c(1,j,j+1)], paste0(i,"r"))
+  res <- node.count.n(node_all_anom_100r[,c(1,j,j+1)], paste0(i,"r"))
   node_diff_100 <- cbind(node_diff_100, res)
 }
 
@@ -186,10 +131,91 @@ pander(node_diff_mean, caption = "Table showing the number of events within a no
 As we may see from the table above, the 'wobble' present in the SOM analysis is not great. I considered running the analysis 1,000 times but this would take several hours on my computer and I think that the consistency shown between 1, 10, and 100 runs is sufficient to put this question to rest.
 
 
+## RI vs PCI
+Even though the 'wobble' in the SOM algorithm has been shown to be small, it would be better if it was non-existent. This would allow for better comparison of the variables below as well as complete reproducibility by anyone interested in doing the work themselves. Previously with this work SOMs were being run with random initialisation (RI). In order to ensure consistent results it is necessary to use principal component initialisation (PCI). The `kohonnen` package that has been used thus far for SOMs does not have this capability so it is necessary to use a different package, `SOMbrero`. This package however uses `princomp` when calculating PCI, which doesn't work when one has more columns than rows. So yet another self-organising map implementation `yasomi` must be used as this allows one to chose `prcomp` for PCI, which works with our wide dataframe.
+
+```{r, warning=FALSE, message=FALSE, echo=FALSE}
+## Run the analysis with PCI once
+# system.time(som_mdel_pci <- som.model.PCI(all_anom_0.5)) # 5 seconds
+# node_all_anom_pci_1r <- event.node(all_anom_0.5, som_mdel_pci, kohonen = FALSE)
+# save(node_all_anom_pci_1r, file = "results/node_all_anom_pci_1r.Rdata")
+load("results/node_all_anom_pci_1r.Rdata") # This is the correct SOM node file to use for all future analyses #
+# node_all_anom_pci_1r <- node_all_anom_pci_1r[,1:3]
+# colnames(node_all_anom_1r) <- c("event", "node_1", "count_1")
+
+## Run the analysis 10 times
+# node_all_anom_pci_10r <- node_all_anom_pci_1r
+# for(i in 2:10){
+#   som_all_anom_pci_10r <- som.model.PCI(all_anom_0.5)
+#   df <- event.node(all_anom_0.5, som_all_anom_pci_10r, kohonen = FALSE)
+#   node_all_anom_pci_10r <- cbind(node_all_anom_pci_10r, df[,2:3])
+# }
+# save(node_all_anom_pci_10r, file = "results/node_all_anom_pci_10r.Rdata")
+load("results/node_all_anom_pci_10r.Rdata")
+
+node_diff_pci_10 <- node.count.n(node_all_anom_pci_10r, "1r")
+for(i in 2:10){
+  j <- i*2
+  res <- node.count.n(node_all_anom_pci_10r[,c(1,j,j+1)], paste0(i,"r"))
+  node_diff_pci_10 <- cbind(node_diff_pci_10, res)
+}
+pander(node_diff_pci_10, caption = "Table showing the number of events within the same node over 10 runs on the same data using PCI. Note how events are always placed in the same nodes.")
+```
+
+As we may see in the table above, using principal component initialisation, instead of random initialisation prevents any of the 'wobble' of events between nodes. For this reason it is preferable to use PCI instead of RI moving forward. Because all SOMs will now be initialised with PCI, it will not be included in the file names. Rather it will be assumed to be the standard.
+
+
+## Effect of pixel resolution on clustering
+The more dimensions/ variables one introduces to a cluster analysis, the more stress will exist in the results. As large stress values are generally considered to be a negative result in clustering, it is best to attempt to reduce it where possible. One way of doing that for this research is by reducing the pixel resolution of the reanalysis products. There are two reasons that this cannot simply be done out of hand. The first is that the reduction in resolution may affect the clustering of the events. So this must be documented. The other problem this presents is that the reduction of pixel resolution would require that any results produced be shown at this same reduced resolution. And because the goal is to show meso-scale forcing on the coast, higher pixel resolutions would be preferable. Regardless, the ERA-Interim data are at a resolution of 0.5 degrees, which requires that the BRAN data be reduced to this same resolution for appropriate cluster comparison. Beyond this initial required reduction in resolution, the question then is what effect does the further rounding of the data produce? Here we look at three resolutions: 0.5, 1.0 and 2.0 degree lon/ lat.
+
+```{r, warning=FALSE, message=FALSE, echo=FALSE}
+## Here the data are transformed and saved and re-loaded for convenience
+# "all_anom.Rdata" was prepared by "proc/results.som.R"
+# load("results/all_anom.Rdata")
+# system.time(all_anom_0.5 <- synoptic.round(all_anom, 0.5)) # 115 seconds
+# save(all_anom_0.5, file = "results/all_anom_0.5.Rdata")
+# load("results/all_anom_0.5.Rdata")
+# system.time(all_anom_1.0 <- synoptic.round(all_anom, 1.0)) # 134 seconds
+# save(all_anom_1.0, file = "results/all_anom_1.0.Rdata")
+# load("results/all_anom_1.0.Rdata")
+# system.time(all_anom_2.0 <- synoptic.round(all_anom, 2.0)) # 126 seconds
+# save(all_anom_2.0, file = "results/all_anom_2.0.Rdata")
+# load("results/all_anom_2.0.Rdata")
+
+## After loading the clustering of events is counted and saved
+# system.time(node_all_anom <- node.count(all_anom, "res_all")) # 66 seconds
+# save(node_all_anom, file = "results/node_all_anom.Rdata")
+# system.time(node_all_anom_0.5 <- node.count(all_anom_0.5, "res_0.5")) # 5 seconds
+# save(node_all_anom_0.5, file = "results/node_all_anom_0.5.Rdata")
+# system.time(node_all_anom_1.0 <- node.count(all_anom_1.0, "res_1.0")) # 1 seconds
+# save(node_all_anom_1.0, file = "results/node_all_anom_1.0.Rdata")
+# system.time(node_all_anom_2.0 <- node.count(all_anom_2.0, "res_2.0")) # 1 seconds
+# save(node_all_anom_2.0, file = "results/node_all_anom_2.0.Rdata")
+
+## Load node counts to appraise differences
+load("results/node_all_anom.Rdata")
+load("results/node_all_anom_0.5.Rdata")
+load("results/node_all_anom_1.0.Rdata")
+load("results/node_all_anom_2.0.Rdata")
+
+node_diff <- cbind(node_all_anom, node_all_anom_0.5, node_all_anom_1.0, node_all_anom_2.0)
+pander(node_diff, caption = "Table showing the number of events clustered into which of the 9 SOM nodes. The different columns show the effect that reducing the resolution of the data has on the clustering.")
+```
+
+The results table generated from the clustering of events into different nodes shown above shows that when the resolution of the BRAN data are not rounded down to that of the ERA-Interim data they have a pronounced effect on the clustering of the events. Specifically more events are lumped together in node 1, the "other" node. By reducing the resolution of BRAN to match ERA, the clustering of events becomes more even across the nodes. As we reduce the resolution further there is some shifting of a few events but the overall pattern remains. It is also helpful to see the nodes in descending order of the number of events in each nodes as seen below.
+
+```{r, warning=FALSE, message=FALSE, echo=FALSE}
+node_diff_2 <- apply(node_diff, 2, sort)
+pander(node_diff_2, caption = "Table showing the number of events within a node scored in descending order. The different columns show the effect that reducing the resolution of the data has on the clustering.")
+```
+
+When the data are reshuffled into descending order based on the number of events clustered into each node we see that the results are very similar for resolutions coarser than 0.5. This shows us that it is not necessary to consider the use of coarser resolutions as 0.5 is most appropriate.
+
+
 ## Effect of lat/ lon extent on clustering
 With more traditional cluster analyses, the values being compared would have far fewer dimensions. In this regard one would endeavour to only include variables that seem relevant to the question being asked. For example, if clustering different rock pools by the species found within them, one would likely create better results by not including any anomalous species found in the results (like a cow fish). In regards to this work, it is best to include only the pixels that are likely relevant to the meso-scale features that may be impacting the coast. More specifically, cutting out the Agulhas retroflection above the Southern Ocean will prevent any behaviour there from affecting the clustering of events that are occurring along the coastline of South Africa.
 
-That all being said, it may indeed be relevant, at least in the sense of potential teleconnections, to include the Agulhas retroflections over the Southern Ocean. Therefore, I have decided to trim the total study area by 1 degree on the East, South and West extents, rather than just the South extent. The North border of the study are is left unchanged as this would begin to remove some of the coastal stations. The effect of trimming the study area 1 degree at a time is presented below. A SOM is run on each trimmed data frame 10 times to produce smoother results. The inquiry into the SOM 'drift' above shows that 10 iterations return comparable results to 100 iterations, so 10 are used here in the interest of speed. A total of 5 degrees are iteratively trimmed.
+That all being said, it may indeed be relevant, at least in the sense of potential teleconnections, to include the Agulhas retroflections over the Southern Ocean. I have decided to trim the total study area by 1 degree on the East, South and West extents, rather than just the South extent. The northern border of the study area is left unchanged as this would begin to remove some of the coastal stations. The effect of trimming the study area 1 degree at a time is presented below. A SOM is run on each trimmed dataframe. A total of 5 degrees are iteratively trimmed.
 
 ```{r, warning=FALSE, message=FALSE, echo=FALSE}
 ## Trim the data
@@ -210,53 +236,26 @@ load("results/all_anom_0.5_trim_4.Rdata")
 load("results/all_anom_0.5_trim_5.Rdata")
 ```
 ```{r, warning=FALSE, message=FALSE, echo=FALSE}
-# Create a function that runs 10 SOM analyses and produces mean results
-# df <- all_anom_0.5_trim_5
-som.10.mean <- function(df, clnam){
-  # Run the analysis once to set the stage
-  som_res <- som.model(df)
-  node_res <- event.node(df, som_res)
-  node_res <- node_res[,1:3]
-  for(i in 2:10){
-    som_res <- som.model(df)
-    df_1 <- event.node(df, som_res)
-    node_res <- cbind(node_res, df_1[,2:3])
-  }
-  # Compute counts per node
-  node_res_10 <- node.count(node_res, "1r")
-  for(i in 2:10){
-    j <- i*2
-    res <- node.count(node_res[,c(1,j,j+1)], paste0(i,"r"))
-    node_res_10 <- cbind(node_res_10, res)
-  }
-  # Order
-  node_res_10 <- apply(node_res_10, 2, sort)
-  # Create means from each dataframe
-  node_res_10_mean <- data.frame(round(apply(node_res_10, 1, mean),0))
-  colnames(node_res_10_mean) <- clnam
-  return(node_res_10_mean)
-}
-```
-```{r, warning=FALSE, message=FALSE, echo=FALSE}
 # Compute the SOM results for the different trims
-# trim_0_nodes <- data.frame(node_diff_mean[,2])
+# trim_0_nodes <- data.frame(node_diff[,2])
 # colnames(trim_0_nodes) <- "trim_0"
-# trim_1_nodes <- som.10.mean(all_anom_0.5_trim_1, "trim_1")
-# trim_2_nodes <- som.10.mean(all_anom_0.5_trim_2, "trim_2")
-# trim_3_nodes <- som.10.mean(all_anom_0.5_trim_3, "trim_3")
-# trim_4_nodes <- som.10.mean(all_anom_0.5_trim_4, "trim_4")
-# trim_5_nodes <- som.10.mean(all_anom_0.5_trim_5, "trim_5")
+# trim_1_nodes <- node.count(all_anom_0.5_trim_1, "trim_1")
+# trim_2_nodes <- node.count(all_anom_0.5_trim_2, "trim_2")
+# trim_3_nodes <- node.count(all_anom_0.5_trim_3, "trim_3")
+# trim_4_nodes <- node.count(all_anom_0.5_trim_4, "trim_4")
+# trim_5_nodes <- node.count(all_anom_0.5_trim_5, "trim_5")
 
 # Combine and save
 # trim_all_nodes <- cbind(trim_0_nodes, trim_1_nodes, trim_2_nodes,
 #                         trim_3_nodes, trim_4_nodes, trim_5_nodes)
+# trim_all_nodes <- apply(trim_all_nodes, 2, sort)
 # save(trim_all_nodes, file = "results/trim_all_nodes.Rdata")
 load("results/trim_all_nodes.Rdata")
 # Table
-pander(trim_all_nodes, caption = "Table showing the number of events within a node scored in descending order. The different columns show the mean of 10 SOM runs on differing amounts of spatial reduction in the extent of the study area. Note that the results remain similar, but there appears to be break in the results once 3 degrees of lon & lat have been removed from the East, South, and West edges of the study area.")
+pander(trim_all_nodes, caption = "Table showing the number of events within each node scored in descending order. The different columns show the differing amounts of spatial reduction in the extent of the study area. Note that the results remain similar when 1 to 4 degrees of pixels are trimmed, but there appears to be a difference in the results when the full study range is used and when 5 degrees of lon & lat have been removed from the East, South, and West edges of the study area.")
 ```
 
-The table above shows that removing portions of the study area does have an effect on the SOM clustering of the data. Leaving the study area 'as is' is shown in the column labeled 'trim_0'. These are the results shown in the previous tables and figures. Removing one degree of lat/ lon appears to cluster the events more into the one large cluster, with fewer events in the smaller clusters. Removing 2 degrees of lat/ lon reverses this trend. Trimming 3 to 5 degrees of lat/ lon then all appears to produce very similar results. The difference between these different extents is not large, but I think it does show that the edges of the study area are having an effect on the clustering. And that reducing the area does allow for a more even clustering of the events into nodes. It may be best to use a study area with 3 degrees trimmed from the East, South, and West edges. But for now I shall continue to use the full study area.
+The table above shows that removing the first degree of lon/ lat around the study area does have an effect on the SOM clustering. Leaving the study area 'as is' is shown in the column labeled 'trim_0'. These are the results shown in the previous tables and figures. Removing 1 to 4 degrees of lat/ lon has all have similar effects and appear to spread the clustering of the events a bit more than using the full study area. Trimming  5 degrees of lat/ lon smooths the clustering noticeably more. The difference between these different extents is not large, but I think it does show that the edges of the study area are having an effect on the clustering. And that reducing the area does allow for a more even clustering of the events into nodes. It may be best to use a study area with 1 degrees trimmed from the East, South, and West edges. But for now I shall continue to use the full study area.
 
 
 ## Effect of running air and sea variables separately
@@ -294,25 +293,26 @@ load("results/all_anom_0.5_air_uv.Rdata")
 ```{r, warning=FALSE, message=FALSE, echo=FALSE}
 ## Run 10 SOMs based on the split air or sea data and sum the results
 # Sea
-# sea_all_nodes <- som.10.mean(all_anom_0.5_sea, "sea_all")
-# sea_temp_nodes <- som.10.mean(all_anom_0.5_sea_temp, "sea_temp")
-# sea_uv_nodes <- som.10.mean(all_anom_0.5_sea_uv, "sea_uv")
+# sea_all_nodes <- node.count(all_anom_0.5_sea, "sea_all")
+# sea_temp_nodes <- node.count(all_anom_0.5_sea_temp, "sea_temp")
+# sea_uv_nodes <- node.count(all_anom_0.5_sea_uv, "sea_uv")
 # Air
-# air_all_nodes <- som.10.mean(all_anom_0.5_air, "air_all")
-# air_temp_nodes <- som.10.mean(all_anom_0.5_air_temp, "air_temp")
-# air_uv_nodes <- som.10.mean(all_anom_0.5_air_uv, "air_uv")
+# air_all_nodes <- node.count(all_anom_0.5_air, "air_all")
+# air_temp_nodes <- node.count(all_anom_0.5_air_temp, "air_temp")
+# air_uv_nodes <- node.count(all_anom_0.5_air_uv, "air_uv")
 
 # Combine and save
-# sub_all_nodes <- cbind(trim_all_nodes[,1], air_all_nodes, air_temp_nodes, air_uv_nodes,
-                       # sea_all_nodes, sea_temp_nodes, sea_uv_nodes)
+# sub_all_nodes <- cbind(trim_all_nodes[,1], air_all_nodes, air_temp_nodes, air_uv_nodes, 
+#                        sea_all_nodes, sea_temp_nodes, sea_uv_nodes)
 # colnames(sub_all_nodes)[1] <- "all_all"
+# sub_all_nodes <- apply(sub_all_nodes, 2, sort)
 # save(sub_all_nodes, file = "results/sub_all_nodes.Rdata")
 load("results/sub_all_nodes.Rdata")
 # Table
-pander(sub_all_nodes, caption = "Table showing the number of events within a node scored in descending order. The different columns show the mean of 10 SOM runs on different subsets of the data. The first column 'all_all', shows the previous results of 10 SOM runs on the full, unsubsetted, untrimmed, etc. data. Note that the full air data (i.e. temp, U and V) appears the most similar to the normal results, and that the sea current data provides the most similar results.")
+pander(sub_all_nodes, caption = "Table showing the number of events within a node scored in descending order. The different columns show the SOM results based on subsets of the data. The first column 'all_all', shows the previous results on the full, unsubsetted, untrimmed, etc. data. Note that the full air data (i.e. temp, U and V) is the most similar to the un-subsetted results.")
 ```
 
-As we see in the table above, separating the variables from one another has a large effect on the clustering of the data. Unexpectedly, the air data appear to produce results the most similar to the results generated by running the SOM analysis on the full data set. This suggests that the air data (possibly the UV more than the temperature) are driving the SOM clusters, and not the sea data. My general perception of all of the tests and results thus far has been that it is the sea, and not the air, that is usually driving events. Which makes this result a bit trickier to deal with. The importance of air data on clustering the data must be acknowledged, but I also think that this provides a clear argument against clustering the data using all of the variables at once because we generally want to see what the effect the ocean temperature is having on the coastal MHWs. One reason why air temperature and winds may be having a stronger effect on the clustering is that they are much more even, allowing for easier clustering of the results. This issue may require further analysis but I will leave it as is for now.
+As we see in the table above, separating the variables from one another has a large effect on the clustering of the data. Unexpectedly, the air data appear to produce results the most similar to the results generated by running the SOM analysis on the full data set. This suggests that the air data (UV more than temperature) are driving the SOM clusters, and not the sea data. My general perception of all of the tests and results thus far has been that it is the sea, and not the air, that is usually driving events. Which makes this result a bit trickier to deal with. The importance of air data on clustering the data must be acknowledged, but I also think that this provides a clear argument against clustering the data using all of the variables at once because we generally want to see what the effect the ocean temperature is having on the coastal MHWs. One reason why air temperature and winds may be having a stronger effect on the clustering is that they are much more even, allowing for easier clustering of the results. This issue may require further analysis but I will leave it as is for now.
 
 
 ## Do normal days cluster apart from events?
@@ -342,7 +342,7 @@ The idea here is to include the 366 daily synoptic climatology values in with th
   # mutate(value = value-all_daily_mean_0.5$value)
 # mean(all_daily_anom_0.5$value)
 # save(all_daily_anom_0.5, file = "results/all_daily_anom_0.5.Rdata")
-load("results/all_daily_anom_0.5.Rdata")
+# load("results/all_daily_anom_0.5.Rdata") ## Daily Anomalies may be required to be loaded but are disabled for now... ##
 
 # Test the anomaly output visually
 # ggplot(data = all_daily_anom_0.5[all_daily_anom_0.5$event == "09-15" & all_daily_anom_0.5$variable == "BRAN/temp",], 
@@ -383,7 +383,7 @@ load("results/all_daily_anom_0.5.Rdata")
 
 # # Save
 # save(all_event_daily_anom_0.5, file = "results/all_event_daily_anom_0.5.Rdata")
-load("results/all_event_daily_anom_0.5.Rdata")
+load("results/all_event_daily_anom_0.5.Rdata") ## Daily Anomalies may be required to be loaded but are disabled for now... ##
 ```
 ```{r, warning=FALSE, message=FALSE, echo=FALSE, fig.cap="Plot showing the decrease in WGSS as more clusters are used for the results of an HCA on the anomaly values for synoptic air-sea states during events and daily climatologies."}
 # Check the stress of using differing clusters
@@ -466,7 +466,7 @@ legend("topright", legend = c("daily", "event"),
 The dendrogram from the HCA very clearly shows that the event data separate out from the daily clim data almost perfectly. Besides the overlayed clusters, one may also see that the final branch on which each event sits is much longer than the daily clims. This means that not only are the events clustered apart from the daily clim data, but also that the individual events are also much more dissimilar from any of the other data points than the daily clims. But let's not stop there. The dendrogram makes a very convincing case for the dissimilarity between event and daily clim data, but let's add another dimension by creating an ordiplot via MDS.
 
 ```{r, warning=FALSE, message=FALSE, echo=FALSE, fig.cap="Ordiplot showing the results of an MDS on the anomaly values for synoptic air-sea states during events and daily climatologies. The daily clims and event data are shown with different colours. The dates or event names have not been included but are available. The clusters from the dendrogram are shown here with corresponding colours."}
-# all_event_daily_anom_0.5_MDS <- metaMDS(vegdist(decostand(all_event_daily_anom_0.5[,-c(1:2)], 
+# all_event_daily_anom_0.5_MDS <- metaMDS(vegdist(decostand(all_event_daily_anom_0.5[,-c(1:3)],
 #                                                             method = "standardize"),
 #                                                   method = "euclidean"), try = 100)
 # save(all_event_daily_anom_0.5_MDS, file = "results/all_event_daily_anom_0.5_MDS.Rdata")
@@ -478,7 +478,8 @@ plot(anom_mds, type = "n")
 points(anom_mds, display = "sites", cex = 0.7, 
        pch = label_shape[as.numeric(all_event_daily_anom_0.5$season)], 
        col = label_colour[as.numeric(all_event_daily_anom_0.5$index_2)])
-ordiellipse(anom_mds, grp, col = clust_colour[c(1,4,2,3)], kind = "ehull")
+# ordiellipse(anom_mds, grp, col = clust_colour[c(1,4,2,3)], kind = "ehull") # Mysteriously stopped working
+ordihull(anom_mds, grp, col = clust_colour[c(1,4,2,3)], draw = "lines")
 # text(anom_mds, display = "sites", cex = 0.5, col = "black", adj = c(0,1))
 legend("topright", legend = c("daily", "event"),
        col = label_colour, pch = 7, title = "Data Type")
@@ -486,29 +487,27 @@ legend("right", legend = c("summer", "autumn", "winter", "spring"),
        pch = label_shape, title = "Season")
 ```
 
-I find these results very exciting. I think this ordiplot shows very clearly that the synoptic air sea states during the 366 daily climatologies are different from almost all of the synoptic air-sea states during coastal MHWs. As one may see from the flat ellipse of blue squares (the daily clim points), the variance represented in the x axis is seasonality. Indeed, if the dates are included in the figure above they are in a contiguous state. With January 1st in the top left edge of the ellipse of blue squares and the dates then move clockwise. So May is roughly in the middle of the top of the ellipse and October in the middle on the bottom. The synoptic states during events appear to be controlled by the variance represented by the y axis. This must be some sort of variance that is aseasonal. Likely the anomalous characteristics of air and or sea that occur during the events. This will require further investigation but I think it will prove to be a very strong result. Even if it isn't central to the question of what are the air-sea states during extreme events, it certainly helps to show that whatever those states may be, they are different from the common air-sea states.
+I find these results very exciting. I think this ordiplot shows very clearly that the synoptic air sea states during the 366 daily climatologies are different from almost all of the synoptic air-sea states during coastal MHWs. As one may see from the flat ellipse of blue squares (the daily clim points), the variance represented in the x axis is seasonality. Indeed, if the dates are included in the figure above they are in a contiguous state. With January 1st in the top left edge of the ellipse of blue squares and the dates then move clockwise. So May is roughly in the middle of the top of the ellipse and October in the middle on the bottom. The synoptic states during events appear to be controlled by the variance represented by the y axis. This must be some sort of variance that is aseasonal. Likely the anomalous characteristics of air and or sea that occur during the events. This will require further investigation but I think it will prove to be a very strong result. Even if it isn't central to the question of what are the air-sea states during extreme events, it certainly helps to show that whatever those states may be, they are different from the common air-sea states. Also worth noting is that the daily climatologies for summer and winter do not cluster at all with any of the events. They are almost all clustered with autumn, and a few with spring days.
 
 ```{r, warning=FALSE, message=FALSE, echo=FALSE, fig.cap="Dotplot showing the clustering of the anomaly values for synoptic air-sea states during events and daily climatologies as shown in the dendrogram and ordiplot. The daily clims and event data are shown with different colours. The dates or event names are shown on the x axis but are illegible."}
-ggplot(all_event_daily_anom_0.5, aes(x = event, y = grp, colour = index_2)) + theme_dark() +
+ggplot(all_event_daily_anom_0.5, aes(x = event, y = grp, shape = season, colour = index_2)) + theme_dark() +
   geom_point() +
   labs(x = "date/ event", y = "cluster") +
   scale_color_discrete("data type") +
+  # scale_y_continuous(labels = c("Summer", "Autumn", "Winter", "Spring")) +
   theme(axis.text.x = element_text(angle = 45, size = 3))
 ```
 
 This dot plots shows the seasonality of the clustering in a chronological order. The colours of the dots show if they are daily climatologies or event data. The x axis shows the date or event name, but there are to many to read. The take away message from this is to see how the clustering very clearly progresses throughout the year in a very even fashion. With cluster 1 representing summer, 2 shows Autumn, 3 winter, and 4 is the spring days. Beyond that, we see that almost all of the event data is clustered in with the Autumn data. This means that conditions during autumn most closely resemble the air-sea state during an extreme event. This could be taken to mean that ecosystems are naturally at more risk during this time of year. Or, perhaps, due to the consistency of the seasonality, that species would be more prepared for these conditions during this time of year and therefore less susceptible. One would need to do more research to say. But that isn't the focus of this work anyway. When this figure is taken in conjunction with the MDS plot above we are able to say that the event data is not most like the autumn daily clims, but rather they are the least dissimilar to these data. Because they are very different from the daily clims.
 
 I understand that this may not look as clear to the reader as it does to me, so please let me know in what ways I am failing to communicate the patterns I see in these data so I can better delve deeper into them in order to paint a clear picture for the publication.
-```{r}
-
-```
 
 
 # Clustering techniques that need to be investigated
 
 
 # Hierarchical clustering
-HCA differs from the other two techniques outlined below in that it does not cluster the data simultaneously, based on the least stress that can be found between data vectors. Rather it iteratively divides (or combines) data vectors as the algorithm moves down (or up) a classification tree. Always looking for the point at which clusters of data may be split (or combined). This method may benefit this research 
+HCA differs from the other two techniques outlined below in that it does not cluster the data simultaneously, based on the least stress that can be found between data vectors. Rather it iteratively divides (or combines) data vectors as the algorithm moves down (or up) a classification tree. Always looking for the point at which clusters of data may be split (or combined). This method may benefit this research due to this one dimensional approach to clustering. It will display the patterns in a more linear way. This was already run above and it did indeed provide a strong argument for how normal days and MHW days cluster out from one another. Below we will look at HCA applied only to event days.
 
 
 ## Dendrograms

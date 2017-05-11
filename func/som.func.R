@@ -9,9 +9,14 @@
 # 6. Function for creating event metrics table
 # 7. Function for melting rounding and re-casting data
 # 8. Function for melting trimming and re-casting data 
+# 9. Function for melting subsetting and re-casting data
+# 10. Function for calculating SOMs using PCI
+# 11. Function for extracting only count of events per node
 ## DEPENDS ON:
 library(scales)
 library(kohonen)
+library(SOMbrero)
+library(yasomi)
 library(plyr)
 library(dplyr)
 library(data.table)
@@ -118,13 +123,12 @@ som.model <- function(data_packet, xdim = 3, ydim = 3){
   # Cancel out first column as this is the file name of the data packet
   data_packet_matrix <- as.matrix(scale(data_packet[,-1]))
   # Create the grid that the SOM will use to determine the number of nodes
-  som_grid <- somgrid(xdim = xdim, ydim = ydim, topo = "hexagonal")
+  som_grid <- kohonen::somgrid(xdim = xdim, ydim = ydim, topo = "hexagonal")
   # Run the SOM
   som_model <- som(data_packet_matrix,
                    grid = som_grid, 
                    rlen = 100, # It appears that rlen = 40 may be sufficient
                    alpha = c(0.05,0.01), 
-                   n.hood = "circular",
                    keep.data = TRUE )
   return(som_model)
 }
@@ -134,12 +138,16 @@ som.model <- function(data_packet, xdim = 3, ydim = 3){
 # 3. Functions for unpacking som results ----------------------------------
 
 # Create mean results from initial data frame based on node clustering
-som.unpack.mean <- function(data_packet, som_output){
+som.unpack.mean <- function(data_packet, som_output, kohonen = FALSE){
   # Melt data_packet
   data_packet$event <- sapply(strsplit(basename(as.character(data_packet$event)), ".Rdata"),  "[[", 1)
   data_packet_long <- melt(data_packet, id = "event")
   # Determine which event goes in which node
-  event_node <- data.frame(event = data_packet$event, node = som_output$unit.classif)
+  if(kohonen){
+    event_node <- data.frame(event = data_packet$event, node = som_output$unit.classif)
+  } else {
+    event_node <- data.frame(event = data_packet$event, node = som_output$classif)
+  }
   data_packet_long <- data_packet_long %>%
     group_by(event) %>%
     mutate(node = event_node$node[event_node$event == event][1])
@@ -155,10 +163,14 @@ som.unpack.mean <- function(data_packet, som_output){
 }
 
 # Rescale the actual som results
-som.unpack.rescale <- function(data_packet, som_output){
+som.unpack.rescale <- function(data_packet, som_output, kohonen = FALSE){
   # Create matrices for rescaling som results
   matrix1 <- data_packet[,-1]
-  matrix2 <- as.data.frame(som_output$codes)
+  if(kohonen){
+    matrix2 <- as.data.frame(som_output$codes)
+  } else {
+    matrix2 <- as.data.frame(som_output$prototypes)
+  }
   # Calculate range for rescale
   min_max <- t(data.frame(min_col = apply(matrix1, 2, min), max_col = apply(matrix1, 2, max)))
   # center <- attributes(som_output$data)
@@ -184,9 +196,14 @@ som.unpack.rescale <- function(data_packet, som_output){
 
 # 4. Function for determining node indexes --------------------------------
 
-event.node <- function(data_packet, som_output){
-  event_node <- data.frame(event = sapply(strsplit(basename(as.character(data_packet$event)), ".Rdata"),  "[[", 1),
-                           node = som_output$unit.classif)
+event.node <- function(data_packet, som_output, kohonen = FALSE){
+  if(kohonen){
+    event_node <- data.frame(event = sapply(strsplit(basename(as.character(data_packet$event)), ".Rdata"),  "[[", 1),
+                             node = som_output$unit.classif)
+  } else {
+    event_node <- data.frame(event = sapply(strsplit(basename(as.character(data_packet$event)), ".Rdata"),  "[[", 1),
+                             node = som_output$classif)
+  }
   node_count <- as.data.frame(table(event_node$node))
   event_node <- event_node %>%
     group_by(node) %>% 
@@ -420,7 +437,6 @@ synoptic.round <- function(df, resolution = 0.5){
 }
 
 
-
 # 8. Function for melting trimming and re-casting data --------------------
 # df <- all_anom_0.5
 # trim <- 1
@@ -456,4 +472,36 @@ synoptic.sub <- function(df, subvar){
   # Recast to wide format for clustering
   df_sub_wide <- dcast(df_sub, event~index, value.var = "value")
   return(df_sub_wide)
+}
+
+
+# 10. Function for calculating SOMs using PCI -----------------------------
+
+som.model.PCI <- function(data_packet, xdim = 3, ydim = 3){
+  # Create a scaled matrix for the SOM
+  # Cancel out first column as this is the file name of the data packet
+  data_packet_matrix <- as.matrix(scale(data_packet[,-1]))
+  
+  # Create the grid that the SOM will use to determine the number of nodes
+  som_grid <- somgrid(xdim = xdim, ydim = ydim, topo = "hexagonal")
+  
+  # Run the SOM with PCI
+  som_model <- batchsom(data_packet_matrix, 
+                        somgrid = som_grid, 
+                        init = "pca",
+                        max.iter = 100)
+  return(som_model)
+}
+
+
+# 11. Function for extracting only count of events per node ---------------
+
+# This function runs a SOM with PCI and then counts the number of events in each node
+# It returns only one column of data
+# It is intended for use comparing variables within the dataset
+node.count <- function(data_packet, column_name, xdim = 3, ydim = 3, kohonen = FALSE){
+  som_model <- som.model.PCI(data_packet, xdim = xdim, ydim = ydim)
+  res <- as.data.frame(as.matrix(table(event.node(data_packet, som_model, kohonen)[2])))
+  colnames(res) <- column_name
+  return(res)
 }
