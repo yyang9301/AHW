@@ -503,42 +503,208 @@ This dot plots shows the seasonality of the clustering in a chronological order.
 I understand that this may not look as clear to the reader as it does to me, so please let me know in what ways I am failing to communicate the patterns I see in these data so I can better delve deeper into them in order to paint a clear picture for the publication.
 
 
-# Clustering techniques that need to be investigated
-
-
 # Hierarchical clustering
 HCA differs from the other two techniques outlined below in that it does not cluster the data simultaneously, based on the least stress that can be found between data vectors. Rather it iteratively divides (or combines) data vectors as the algorithm moves down (or up) a classification tree. Always looking for the point at which clusters of data may be split (or combined). This method may benefit this research due to this one dimensional approach to clustering. It will display the patterns in a more linear way. This was already run above and it did indeed provide a strong argument for how normal days and MHW days cluster out from one another. Below we will look at HCA applied only to event days.
 
+```{r, warning=FALSE, message=FALSE, echo=FALSE}
+# First calculate the HCA on the event data
+# all_anom_0.5_hclust <- hclust(vegdist(decostand(all_anom_0.5[,-1], method = "standardize"),
+#                                                   method = "euclidean"), method = "ward.D2")
+# save(all_anom_0.5_hclust, file = "results/all_anom_0.5_hclust.Rdata")
+load("results/all_anom_0.5_hclust.Rdata")
+```
+```{r, warning=FALSE, message=FALSE, echo=FALSE, fig.cap="Dendrogram showing the results of an HCA on the anomaly values for synoptic air-sea states during events. The SOM nodes as calculated previously are shown in colour."}
+# Set the data types as factors
+all_anom_0.5$node <- factor(node_all_anom_pci_1r$node)
 
-## Dendrograms
-```{r}
+# Vector of values for plotting
+label_colour <-  c("royalblue3", "springgreen4", "darkred", "gold", "lightcoral", 
+                   "tomato", "maroon", "tan1", "slategray1") # This shows data type
+label_font <- seq(1,9)
+# label_shape <- c(15, 16, 17, 18) # This shows seasons
 
+# Cluster colours
+# clust_colour <- c("orangered", "hotpink", "purple", "sienna")
+
+# Index for labeling the pools
+data_type_label <- as.numeric(all_anom_0.5$node)
+names(data_type_label) <- seq(1:length(all_anom_0.5$node))
+
+# data_season_label <- as.numeric(all_event_daily_anom_0.5$season)
+# names(data_season_label) <- seq(1:length(all_event_daily_anom_0.5$season))
+
+# Function to change label properties
+point.lab.a <- function(n) {
+    if (is.leaf(n)) {
+        a <- attributes(n)
+        # Label colour
+        lab_col <- label_colour[data_type_label[which(names(data_type_label) == a$label)]]
+        # Label text
+        # lab_font <- label_font[data_label[which(names(data_label) == a$label)]]
+        # lab_font <- all_event_daily_anom_0.5$event[data_type_label[which(names(data_type_label) == a$label)]]
+        # Label shape
+        # lab_shape <- label_shape[data_season_label[which(names(data_season_label) == a$label)]]
+        # Index for shapes and labels
+        attr(n, "nodePar") <- c(a$nodePar, list(lab.col = "black", col = lab_col,
+                                                pch = 16, cex = 0.8, lab.cex = 0.3)) 
+        # The line below changes the dendrogram labels from the row number to the 'label_font' value
+        # attr(n, "label") <- lab_font
+        # attr(n, "label") <- NA
+    }
+    n
+}
+
+# Change the dendrogram appearance
+clust <- all_anom_0.5_hclust
+clust_d <- as.dendrogram(clust)
+clust_full <- dendrapply(clust_d, point.lab.a)
+grp <- cutree(clust, 9)
+
+# Draw the plot
+plot(clust_full, ylab = "Height")
+rect.hclust(clust, k = 9, border = seq(1:9))
+legend("topright", legend = seq(1:9),
+       col = label_colour, pch = 7, title = "Node")
+# legend("right", legend = c("summer", "autumn", "winter", "spring"),
+       # pch = label_shape, title = "Season")
 ```
 
 
 # K-means clustering
-The simplest method of clustering, and for that reason still one of the best. This is a basic algorithm that takes all data vectors and positions them in a 2D space. It then picks K points and sees, given the best possible fit of all dimensions being used, which data vectors are closest to which of the K points. This process is then repeated x number of times until a best fit is found. The data vectors are classified into the cluster centroid to which they are closest.
+The simplest method of clustering, and for that reason still one of the best. This is a basic algorithm that takes all data vectors and positions them in a 2D space. It then picks K points and sees, given the best possible fit of all dimensions being used, which data vectors are closest to which of the K points. This process is then repeated n times until a best fit is found. The data vectors are classified into the cluster centroid to which they are closest. This method makes two critically flawed assumptions for our purposes. The first is that it assumes the data will be distributed around the centroids in a spherical manner, and the second is that K-means attempts to find equitable samples in each node. Also due to the width of the dataframe being used, there are no built in R functions that I have found that allow one to plot the results 'out of the box'. I therefore run an PCA on the data in order to extract the two largest principal components and plot these via an ordiplot with the K-means results overlayed.
 
+```{r, warning=FALSE, message=FALSE, echo=FALSE}
+## Calculate K-means clustering
+# all_anom_0.5$node <- NULL # Remove the node colun added for the HCA plotting to calculate the kmeans
+# all_anom_0.5_kmeans <- kmeans(as.matrix(scale(all_anom_0.5[,-1])), centers = 9, iter.max = 100)
+# save(all_anom_0.5_kmeans, file = "results/all_anom_0.5_kmeans.Rdata")
+load("results/all_anom_0.5_kmeans.Rdata")
 
-## Ordiplots
-```{r}
+## Calculate PCA
+# all_anom_0.5$node <- NULL
+# all_anom_0.5_PCA <- prcomp(scale(all_anom_0.5[,-c(1)]))
+# save(all_anom_0.5_PCA, file = "results/all_anom_0.5_PCA.Rdata")
+load("results/all_anom_0.5_PCA.Rdata")
+```
+```{r, warning=FALSE, message=FALSE, echo=FALSE, fig.cap="Ordiplot showing the results of K-means clustering on the event data. Axes determined via PCA. The colour of the points shows which K-means cluster the event has been placed in, whereas the colour of the poolygons shows in which cluster the events have been placed via HCA. Lastly, the shape of the point shows the results of the SOM clustering."}
+# Create dataframe for plotting
+kmeans_PCA <- data.frame(data.frame(all_anom_0.5_PCA$x[,1:2]), 
+                         kmeans = as.factor(all_anom_0.5_kmeans$cluster), 
+                         hca = as.factor(grp),
+                         som = as.factor(node_all_anom_pci_1r$node))
 
+# Get the convex hull of each unique point set
+find_hull <- function(df) df[chull(df$PC1, df$PC2), ]
+hulls <- ddply(kmeans_PCA, "som", find_hull)
+
+# Plot the K-means clusters on the 2 principal components
+ggplot(data = kmeans_PCA, aes(x = PC1, y = PC2)) +
+  geom_point(aes(colour = kmeans, shape = hca)) +
+  geom_polygon(data = hulls, aes(group = som, fill = som), alpha = 0.2) +
+  scale_shape_manual(values = seq(6:14)) +
+  theme(legend.position = "top")
 ```
 
+Jikes! There is a lot going on in that figure. One could spend hours going over this. After several minutes of study it appears that the HCA and K-means methods are more similar to one another than the SOM. That being said, it seems that the PCA may agree best with the SOM results. And I'm not sure what to think of that. Either way, these are very interesting results and even though there is a big clomp in the center, this is to be expected and from the ordination work I've done in the past these results are much more clear than most things I've seen. Very encouraging. If I were to point out only one thing on this figure it would be that the clomp of 12 events that have always been clustered together, no matter what method is employed, stand out very clearly on the far right. Wonderful!
 
 # SOMs
-The originally proposed technique and perhaps, once this dust settles, the reigning champion. The SOM technique is apart from the previous two methods in that it accounts for the gradient that exists between the nodes it clusters the given data into. Meaning that the positions of the nodes in 2D space is relevant, unlike HCA and K-means.
+The originally proposed technique and perhaps, once this dust settles, the reigning champion. The SOM technique is apart from the previous two methods in that it accounts for the gradient that exists between the nodes it clusters the given data into. Meaning that the positions of the nodes in 2D space is relevant, unlike HCA and K-means. It is unnecessary to revisit the SOM clustering here as the majority of this document has already shown those results.
 
 
-## SOM nodes
-```{r}
+# MDS
+Multi-dimensional scaling provides another possible layer of interpretation of these data, even though it is not in itself a clustering or ordination technique. By highlighting which pixels on the map belong to which meso-scale properties (e.g. Agulhas, Benguela, Agulhas retroflection) it is then possible to 'environmentally fit' the effect of these pixels, and therefore meso-scale features, on top of the ordiplots generated by MDS. This however presents a large undertaking and I think it begins to move outside of the scope of this proposed research project. It would however be an excellent next step in the process. The existing categorical variables of coast and season can however be readily fit to the data and this is shown below.
+
+```{r, warning=FALSE, message=FALSE, echo=FALSE}
+## Calculate MDS
+# all_anom_0.5$node <- NULL
+# all_anom_0.5_MDS <- metaMDS(vegdist(decostand(all_anom_0.5[,-c(1)],
+#                                               method = "standardize"), 
+#                                     method = "euclidean"), try = 100)
+# save(all_anom_0.5_MDS, file = "results/all_anom_0.5_MDS.Rdata")
+load("results/all_anom_0.5_MDS.Rdata")
+```
+```{r, warning=FALSE, message=FALSE, echo=FALSE, fig.cap="Ordiplot showing the MDS results on the event data. The two environmental variables of season and coast have been fit to the data. Vectors are not available as these are discrete variables."}
+# Fit environmental variables
+ord_fit <- envfit(all_anom_0.5_MDS ~ coast + season, data = event_list[,26:27])
+# ord_fit
+ord_fit_df <- as.data.frame(ord_fit$factors$centroids)
+ord_fit_df$factors <- rownames(ord_fit_df)
+
+# Create MDS dataframe
+mds_df <- data.frame(all_anom_0.5_MDS$points)
+
+# Plot the fits
+ggplot(data = mds_df, aes(x = MDS1, y = MDS2)) +
+  geom_point(colour = "salmon") +
+  geom_text(data = ord_fit_df, aes(label = factors, x = NMDS1, y = NMDS2))
 
 ```
 
-# MDS
-Multi-dimensional scaling provides another possible layer of interpretation of these data. By highlighting which pixels on the map belong to which meso-scale properties (e.g. Agulhas, Benguela, Agulhas retroflection) it is then possible to overlay the effect of these pixels, and therefore meso-scale features, on top of the ordiplots generated by MDS.
+I intentionally omitted all of the other clustering results from this figure so as to allow for the effect of the environmental variables to stand out on their own. Notably, they do not. There is very little environmental effect from these two categories. The east coast events stand out a bit from the rest, which is worth mentioning. This is not surprising, and only serves to support the hypothesis that the east coast, controlled by the (relatively) consistent Agulhas current is different from the south and west coasts. If we look at the significance of the fit of these variables we see that the fit of the coastal variables is significant at _p_ = `r ord_fit$factors$pvals[1]` but that season is not at _p_ = `r ord_fit$factors$pvals[2]`.
 
-## Ordiplots
+# ANOSIM
+Before we look at all of the results laid out next to each other, let's have a peak at the analysis of similarity for the clusterings of the three methods.
 
+```{r, warning=FALSE, message=FALSE, echo=FALSE}
+# Remove node column again
+all_anom_0.5$node <- NULL
+
+# HCA
+hca_anosim <- anosim(vegdist(decostand(all_anom_0.5[,-1], method = "standardize"),
+                                                  method = "euclidean"), grp)
+# hca_anosim
+
+# K-means
+kmeans_anosim <- anosim(as.matrix(scale(all_anom_0.5[,-1])), all_anom_0.5_kmeans$cluster)
+# kmeans_anosim
+
+# SOM
+som_anosim <- anosim(as.matrix(scale(all_anom_0.5[,-1])), node_all_anom_pci_1r$node)
+# som_anosim
+```
+
+All three clustering techniques produce significantly different clusters when 9 are used at _p_ = 0.001. This is good as it means I don't have to redo everything to satisfy this requirement... From a non-lazy point of view this is also good because it shows that these techniques are effectively finding differences in the data and partitioning them accordingly. Rather surprisingly (or perhaps not) HCA is by far the winner with the largest R (this represents cluster dissimilarity, not a correlation value, confusing yes) = `r round(hca_anosim$statistic, 3)`. K-means is in second at R = `r round(kmeans_anosim$statistic, 3)` with SOM taking up third at R = `r round(som_anosim$statistic, 3)`. This is perhaps not surprising in that these results represent the gradient in selectivity that these three techniques employ when clustering/ ordinating data. 
+
+# Comparison
+Now that the clustering/ ordination of all of the different techniques has been run, we may plot all of them side by side. There are of course a near limitless number of ways in which this may be done, but I've chosen to use lolliplots. Because I like them. I also think they do a good job of conveying the many dimensions of the data well.
+
+```{r, warning=FALSE, message=FALSE, echo=FALSE, fig.cap="Lolliplots for all three methods shown together in three panels. Each facet shows the events clustered into each grouping."}
+# Add other cluster results
+node_all_anom_2$hca <- grp
+node_all_anom_2$kmeans <- all_anom_0.5_kmeans$cluster
+
+# The SOM results
+lolli_som <- ggplot(data = node_all_anom_2, aes(x = date_start, y = int_cum)) +
+  geom_lolli() +
+  facet_wrap(~node) +
+  labs(x = "date", y = "cummulative intensity (Cxdays)") +
+  ggtitle("SOM nodes") + 
+ theme(strip.background = element_blank(),
+       strip.text.x = element_blank())
+
+# The K-means results
+lolli_kmeans <- ggplot(data = node_all_anom_2, aes(x = date_start, y = int_cum)) +
+  geom_lolli() +
+  facet_wrap(~kmeans) +
+  labs(x = "date", y = "cummulative intensity (Cxdays)") +
+  ggtitle("K-means clusters") + 
+ theme(strip.background = element_blank(),
+       strip.text.x = element_blank())
+
+# The HCA results
+lolli_hca <- ggplot(data = node_all_anom_2, aes(x = date_start, y = int_cum)) +
+  geom_lolli() +
+  facet_wrap(~hca) +
+  labs(x = "date", y = "cummulative intensity (Cxdays)") +
+  ggtitle("HCA") + 
+ theme(strip.background = element_blank(),
+       strip.text.x = element_blank())
+
+# Combine
+library(gridExtra)
+grid.arrange(lolli_som, lolli_kmeans, lolli_hca, widths = c(12,12,12))
+```
+
+This will take some time to unpack. It is also still necessary to visualise these clusters in order to see more clearly what it is that the air-sea state is up to that had the different methods setting their minds on how to cluster the events as they have. But for now these lolliplots allow for a cursory examination of the clustering in a different manner than the figure preceding this one. It is important to note that while the orientation of the nodes in the SOM results on the top panel are relevant, the cluster/ ordination layout of the 9 facets in the HCA and K-means results are not. This makes it a bit difficult to compare the results as it is not a direct task. Node/ cluster labels have been omitted for a cleaner visualisation.
 
 # References

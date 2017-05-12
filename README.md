@@ -170,3 +170,6 @@ The scripts and raw data used to compare atmospheric and marine heat waves and c
 ## 2017/05/11
 * Now using principal component initialisation (PCI) rather than random initialisation (RI) for SOMs
 * All SOM modelling in "LaTeX/cluster_results.Rmd" updated accordingly
+
+## 2017/05/11
+* "LaTeX/cluster_results.Rmd" completed
