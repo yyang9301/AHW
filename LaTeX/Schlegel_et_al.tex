@@ -19,7 +19,7 @@
   \usepackage{textcomp} % directly use the degree (and some other) symbol
 \fi
 
-\usepackage{fixltx2e}
+% \usepackage{fixltx2e}
 \usepackage[]{graphicx}
 \usepackage{wrapfig}
 \usepackage{lscape}
@@ -111,7 +111,7 @@
 
 
 \begin{abstract}
-%As the study of extreme climatic events increases, it becomes necessary to document the history of these events more thoroughly. In addition to documentation it behooves us to investigate potential mechanistic causal pathways that may allow us to better forecast the occurrence of these devastating events. To this end we have taken oceanic and atmospheric reanalysis data to examine the state of the air and sea surrounding coastal areas along the coast of South Africa at time in which extreme events have been documented. It was found that X, Y and Z occurred often in tandem with coastal MHWs. This may be taken as the first step of a more in depth exploratory analysis between what may be a causal link in the air sea interaction at these mid-latitude locations.
+The study and documentation of marine heatwaves (MHWs) is outpacing our understanding of the causes of these extreme climatic events. This is even more striking with regards to coastal MHWs. It is therefore becoming increasingly necessary to unravel the relationships between the potential physical drivers of an event and the event itself. An improved understanding of the mechanistic causal pathways of MHWs may allow us to better forecast the occurrence of these devastating events. To this end we have utilised oceanic (BRAN) and atmospheric (ERA-Interim) reanalysis data to examine the state of the air and sea around southern Africa during MHWs. Self-organising maps (SOMs) were then used to cluster each synoptic air-sea state during an event into 1 of 9 nodes to determine the predominant synoptic states during MHWs. It was found that abnormal ocean circulation forcing warm water onto the coast was the main cause of the recorded coastal MHWs. This abnormal circulation often work in tandem with abnormal wind. This may be taken as the first step of a more in depth exploratory analysis between what may be a causal link in the air-sea interaction at these mid-latitude locations.
 \end{abstract}
 
 \begin{keyword}
@@ -123,45 +123,153 @@ extreme events \sep air-sea interaction \sep reanalysis data \sep \emph{in situ}
 \linenumbers
 
 \section{Introduction}
-Documentation on the negative impacts of changing climates due to anthropogenically forced warming on both marine and terrestrial ecosystems has grown rapidly over the last few decades. The primary focus of which tends towards the measuring of linear increases in mean temperatures in distinct regions. Whereas these long term changes are important and are already effecting a myriad of systems identified as critically important \citep{IPCC2014}, the major impacts on humans and ecosystems in the present are due to extreme events \citep{Easterling2000}. Often unpredictable, cyclones, floods, heatwaves and cold-spells may begin and end before any warning systems may be of use. It is for this reason, and others, that more focus in climate change research is now being applied to the study of these extreme events \citep{Jentsch2007}.
+Documentation on the negative impacts of changing climates due to anthropogenically forced warming on both marine and terrestrial ecosystems has grown rapidly over the last few decades. The primary focus of which tended towards the measuring of linear increases in mean temperatures in distinct regions. Whereas these long term changes are important and are already effecting a myriad of systems identified as critically important \citep{IPCC2014}, the major impacts on humans and ecosystems in the present are due to extreme events \citep{Easterling2000}. Often unpredictable, cyclones, floods, heatwaves and cold-spells may begin and end before any warning systems may be of use. It is for this reason, and others, that more focus in climate change research is now being applied to the study of these extreme events \citep{Jentsch2007}.
 
-Due to the currently sparse occurrence of such extreme events in time and space, very few have impacted areas in which long term ecological data were being sampled \emph{a priori}. Two well documented exceptions to this trend are the 2003 heatwave in the Mediterranean and the 2011 heatwave off the west coast of Australia. The 2003 Mediterranean heatwave has been documented to have negatively impacted as much as 80\% of the Gorgonian fan colonies there \citep{Garrabou2009}, and the 2011 Western Australia heatwave is now known to have caused a permanent 100 km range contraction of the ecosystem forming kelp species \emph{Ecklonia radiata} in favour of the tropicalisation of reef fishes and seaweed turfs \citep{Wernberg2016}.
+Due to the currently sparse occurrence of such extreme events in time and space, very few have impacted areas in which long term ecological data were being sampled \emph{a priori}. Two well documented exceptions to this trend are the 2003 heatwave in the Mediterranean and the 2011 heatwave off the west coast of Australia. The 2003 Mediterranean heatwave has been documented to have negatively impacted as much as 80\% of the Gorgonian fan colonies there \citep{Garrabou2009}, and the 2011 Western Australia heatwave is now known to have caused a permanent ~100 km range contraction of the ecosystem forming kelp species \emph{Ecklonia radiata} in favour of the tropicalisation of reef fishes and seaweed turfs \citep{Wernberg2016}.
 
-Both of these seawater temperature anomalies are classified as 'marine heatwaves' (MHWs), which differ slightly from the traditional definition of a heatwave that was originally developed for atmospheric events \citep{Perkins2013}. Here we make use of the definition for marine heatwaves given in \citet{Hobday2016} as ``a prolonged discrete anomalously warm water event that can be described by its duration, intensity, rate of evolution, and spatial extent.'' The characterization of these events in this manner allows investigators from anywhere in the world to compare and classify events using common statistical properties.
+Both of these seawater temperature anomalies are classified as 'marine heatwaves' (MHWs), which differ slightly from the traditional definition of a heatwave originally developed for atmospheric events \citep{Perkins2013}. Here we make use of the definition for marine heatwaves given in \citet{Hobday2016} as ``a prolonged discrete anomalously warm water event that can be described by its duration, intensity, rate of evolution, and spatial extent.'' The characterization of these events in this manner allows investigators from anywhere in the world to compare and classify events using common statistical properties.
 
-In addition to the use of these common statistics for comparing events, it is necessary to identify the possible range of physical causes so as to be able to compare similar 'types' of events as well. It is hypothesised that MHWs should either be caused by oceanic forcing, atmospheric forcing, or a combination of the two. For example, the transport of warm water onto the coast of Western Australia is responsible for the large scale MHW that occurred there in 2011 \citep{Feng2013, Benthuysen2014}. However, recent research into the development of a mechanistic understanding between local- \emph{vs.} broad-scale influences on the formation of extreme events at coastal localities has revealed that meso-scale forcing from offshore onto the nearshore (<400 m from the coast) occurs far less than hypothesized \citep{Schlegel2016}. It is therefore necessary to consider additional mechanisms that may be responsible for these events. 
+In addition to the use of these common statistics for comparing events, it is necessary to identify the possible range of physical causes so as to be able to compare similar 'types' of events as well. It is hypothesised that MHWs should either be caused by oceanic forcing, atmospheric forcing, or a combination of the two. For example, the transport of warm water onto the coast of Western Australia is responsible for the large scale MHW that occurred there in 2011 \citep{Feng2013, Benthuysen2014}. However, recent research into the development of a mechanistic understanding between local- \emph{vs.} broad-scale influences on the formation of extreme events at coastal localities has revealed that meso-scale forcing from offshore onto the nearshore (<400 m from the coast) is responsible for the formation of MHWs far less than hypothesized \citep{Schlegel2016}. It is therefore necessary to consider additional mechanisms that may be responsible for these events. 
 
 Air-sea interactions have been a focus of study for decades \citep{Frankignoul1985}, with mixed results. Whereas interactions are often detectable at high latitudes, mid latitude relationships between air and sea are much more tenuous \citep{Krishnamurti1988}. Equation 1 in \citet{Deser2010} shows the process through which the upper mixed layer in the open ocean is effected by atmospheric and oceanic process. Unfortunately this process does not appear to apply to the coastal regions of the world, of which little is yet understood of the mechanistic processes driving the extreme events observed there. In certain special instances, such as the 2003 heatwave over the Mediterranean described in \citet{Garrabou2009} a clear connection may be drawn between the air and sea. This is however an exception to the norm as most bodies of water are not subject to static atmospheric and oceanic conditions. One reason given for the lack of apparent air-sea interactions at mid-latitudes is that the coupling of these two media drives an increase in the variability of both, inhibiting heat flux from one to the other \citep{Barsugli1998}.
 
-An earlier version of this manuscript sought to compare the co-occurrence of MHWs and atmospheric heatwaves (AHWs), both measured \emph{in situ}, along the coastline of South Africa via the same methodology outlined in \citet{Schlegel2016}. The rates of co-occurrence for extreme events between these media were found to be lower than those found for nearshore and offshore seawater. It was therefore decided to create an index of synoptic figures of the mean air-sea state during the occurrence of coastal MHWs. The temperature dataset used for the calculation of the MHWs consisted of daily temperature records collected \emph{in situ} at dozens of locations. The state of the sea, both SST and surface currents, was determined with BRAN. The state of the air temperature and wind were determined with ERA-Interim. The aim of the application of these datasets to this investigations was to visually search for broadscale patterns in the air and/ or sea that occur at similar times to MHWs at coastal localities. We hypothesized that i) similarities in the synoptic view of air and sea would reveal similarities between the largest MHWs detected in the dataset; ii) these similarities would be greater for the sea than the air; and iii) these observed similarities would aid in the development of a broader mechanistic understanding of the relationship between coastal MHWs and air-sea interactions.
+An earlier version of this manuscript sought to compare the co-occurrence of MHWs and atmospheric heatwaves (AHWs), both measured \emph{in situ}, along the coastline of South Africa via the same methodology outlined in \citet{Schlegel2016}. The rates of co-occurrence for extreme events between these media were found to be lower than those found for nearshore and offshore seawater. It was therefore decided to create an index of mean synoptic air-sea states during the occurrence of coastal MHWs and then cluster them with the use of self-organising maps to deduce the general patterns. The temperature dataset used for the calculation of the MHWs consisted of daily temperature records collected \emph{in situ} at dozens of locations. The state of the sea, both SST and surface currents, were determined with the Bluelink ReANalysis (BRAN; wp.csiro.au/bluelink). The state of the air temperature and winds were determined with ERA-Interim (http://www.ecmwf.int/en/research/climate-reanalysis/era-interim). The aim of the clustering of the synoptic air-sea states from these datasets was to visualise broadscale patterns in the air and/ or sea that occur most regularly during MHWs at coastal localities. We hypothesized that i) similar air and sea mesoscale patterns would be revealed through clustering; ii) these similarities would be greater for the sea than the air; and iii) these observed similarities would aid in the development of a broader mechanistic understanding of the relationship between coastal MHWs and air-sea interactions.
 
 \section{Methods}
-\subsection{Data}
-Of the four datasets used for this investigation, the coastal seawater temperature data were acquired from the South African Coastal Temperature Network (SACTN, https://robert-schlegel.shinyapps.io/SACTN/). The SACTN data are contributed by seven different organizations and are collected \emph{in situ} with a mixture of hand-held alcohol & mercury thermometers as well as digital underwater temperature recorders (UTRs). This data set currently consists of XXX daily time series, with a mean duration of XXX years. This means that many of the time series in this dataset are shorter than the 30 year minimum proscribed for the characterization of MHWs \citep{Hobday2016}, with many having gaps of missing data, too. It is however deemed necessary to use these data when investigating extreme events along the coast as satellite derived sea surface temperature (SST) values along the coast have been shown to display large biases \citep{Smit2013} or capture minimum and maximum temperatures poorly \citep{Smale2009, Castillo2010}. All of the \emph{in situ} time series from the SACTN under ten years in length and/ or missing more than 10\% of their daily temperature measurement were excluded from use in this study. These subsetted time series numbered XXX in size, with a mean length of XXX. \Cref{tableS1} shows the metadata for the SACTN time series used in this study.
+\subsection{Study region}
+The \emph{ca}. 3,100 km long South African coast provides a natural laboratory for investigations into the offshore forcing of nearshore phenomena as it may be divided into three sections, allowing for a range of meso-scale influences to be considered within the same research framework (\Cref{figure1}). The entire west coast section of the country is distinct from the other two in that it is the realm of the Benguela Current, which forms an Eastern Boundary Upwelling System (EBUS) \citep{Hutchings2009}. Conversely, the east coast section is dominated by the Agulhas Current \citep{Luning1990}, a poleward flowing current that transports warm water down from Madagascar. Trapped between these two mighty currents the south coast section is consistenly tumultuous. More closely affiliated to the east coast than the west, the south coast nonetheless experiences both sheer forced and wind driven upwelling in addition to having significantly more thermal variability than either of the other two sections \citep{Schlegel2016}. The range of temperatures experienced along all three sections is large and the gradient of increasing temperature as one moves from the border of Namibia to the border of Mozambique is nearly linear. For a more detailed description of these sections see \citet{Smit2013}.
 
-Bluelink
+\begin{figure}
+\includegraphics[width=1.0\textwidth]{figure_1.pdf}
+\caption{Map of southern Africa showing the bathymetry, the location of the \emph{in situ} temperature time series shown with circles. The inset maps show detail of the Cape Peninsula/ False Bay area and the Port Alfred region where site labels are obscured due to overplotting of symbols.}
+\label{figure1}
+\end{figure}
 
-ERA-Interim
+\subsection{\emph{In situ} data}
+The coastal seawater temperature data used in this study were acquired from the South African Coastal Temperature Network (SACTN, https://robert-schlegel.shinyapps.io/SACTN/). The SACTN data are contributed by seven different organizations and are collected \emph{in situ} with a mixture of hand-held alcohol \& mercury thermometers as well as digital underwater temperature recorders (UTRs). This data set currently consists of 135 daily time series, with a mean duration of 19.7 years. Therefore many of the time series in this dataset are shorter than the 30 year minimum proscribed for the characterization of MHWs \citep{Hobday2016}, with many having gaps of missing data above the reccomended limit of 10\%, too. It is however deemed necessary to use these data when investigating extreme events in the nearshore (<400 m from the low tide mark) as satellite derived sea surface temperature (SST) values along the coast have been shown to display large biases \citep{Smit2013} or capture minimum and maximum temperatures poorly \citep{Smale2009, Castillo2010}. All of the \emph{in situ} time series from the SACTN shorter than ten years, missing more than 10\% of their daily temperature measurements, or collected at depths greater than 10 m were excluded from use in this study. This reduced the total time series to 24, with a mean length of XXX years. \Cref{tableS1} shows the metadata for the SACTN time series used in this study.
+
+\subsection{Reanalysis data}
+To visualise a synoptic view of the air-sea state during marine heatwaves (MHWs) (see sections Marine heatwaves and Air-sea state below) it was necessary to use reanlysis products to provide both surface temperatures and wind/ current vectors within a single product.
+
+The 1/10\degree Bluelink ReAnalysis product was chosen to investigate the state of the sea around southern Africa during coastal MHWs. This modelled product relies on the assimilation of an array of data collected \emph{in situ} and remotely. This representation of the sea state is accurate on the scale of 10's of km or larger and is appropriate for the identification of meso-scale events. From this product were taken the sea surface temperature (SST) and surface currents for the study region. BRAN is available for download via XML and is a product of the CSIRO (https://www.csiro.au/).
+
+The state of the air was determined with the use of the ERA-Interim reanalysis product. The native 3/4\degree resolution of this product is courser than BRAN. It is available for download (http://apps.ecmwf.int/datasets/data/interim-full-daily/levtype=sfc/) at finer resolution by interpolation of the data. The data used for this study were downloaded at a resolution of 1/2\degree. The ERA-Interim variables used were the surface temperature (2 m) and winds (10 m). The BRAN data were rounded down to a resolution of 1/2\degree to match. ERA-Interim is produced by the European Centre for Medium-Range Weather Forecasts (ECMWF, http://www.ecmwf.int/).
 
 \subsection{Marine heatwaves}
+The term marine heatwave (MHW) may be found in many publications years before \citet{Hobday2016} created an algorithm that attached several measurable values to this term. We therefore use the methodology laid out in \citet{Hobday2016} for the analysis of MHWs in this research.
 
-\subsection{Air-sea state}
+The algorithm developed by \citet{Hobday2016} isolates MHWs by finding the days in which the temperature of a given locality exceeds the 90th percentile of temperatures found there, based on an 11-day moving average. \citet{Perkins2013} concluded that the minimum duration for the analysis of atmospheric heatwaves was 3 days.  \citet{Hobday2016} found that a minimum length of 5 days allowed for more uniform global results in event detection, leading them to conclude that this would be a good default starting point for MHWs detection. Previous work by \citet{Schlegel2016} showed that the inclusion of these much shorter days led to spurious connections between events found across different datasets. In this research we are interested in deducing the air-sea state patterns during very large MHWs. We found that eliminating events shorter than 15 days in length caused the removal XXX of the XXX total MHWs detected in the \emph{in situ} dataset. This left us with 95 events over a XXX year period. It must also be highlighted that any of the aforementioned 95 MHWs that had `breaks' below the 90th percentile threshold lasting $\leq$2 days followed by subsequent days above the threshold were considered as continuous events \citep{Hobday2016}.
 
+In order to calculate a MHWS it is necessary to supply a climatology against which daily values may be compared. It is proscribed in \citet{Hobday2016} that this period be at least 30 years. Because XXX of the 24 time series used here are below this threshold we have opted to use the entirety of the duration of each individual time series as the climatological period against which the MHWs of each respective time series are compared. By juxtaposing MHWs against daily climatologies, the amount they differ from their local standard may be quantified. An explanation for the metrics that will be focused on in this publication may be found in \Cref{table1}.
+
+\begin{table}[]
+\caption{\small The descriptions for the metrics of MHWs as proposed by \citet{Hobday2016}.}
+\label{table1}
+\centering
+\tiny
+\begin{tabular}{ll}
+\toprule
+ Name [unit] & Definition \\
+ \midrule
+  Count [no. events per year] & \emph{n}: number of MHWs per year \\
+  Duration [days] & \emph{D}: Consecutive period of time that temperature exceeds the threshold \\
+  Maximum intensity [\degree C] & \emph{i\textsubscript{max}}: highest temperature anomaly value during the MHW \\
+  Mean intensity [\degree C] & \emph{i\textsubscript{mean}}: mean temperature anomaly during the MHW \\
+  Cumulative intensity [\degree C$\cdot$days] & \emph{i\textsubscript{cum}}: sum of daily intensity anomalies over the duration of the event \\
+  \bottomrule
+  \end{tabular}
+\end{table}
+
+We calculated the MHWs in the SACTN dataset with the use of the R package `RmarineHeatWaves', which may be downloaded via CRAN (xxx), with the developmental version available on GitHub (xxx). The original algorithm used in \citet{Hobday2016} is available for use via python and may be found at https://github.com/ecjoliver/marineHeatWaves.
+
+It is necessary to emphasise that MHWs as defined here exist against the daily climatological means of the time series in which they are found and not by exceeding an arbitrarily chosen static threshold. Therefore, one may just as likely find a MHW during winter months as summer months. This is a valuable characteristic of this method of investigation because aseasonal warm winter waters may have deleterious effects on relatively thermophobic species \citep{Wernberg2011}, while concurrently aiding the recruitment of con-specific species (cite).
+
+\subsection{Air-sea states}
+The synoptic air-sea state during each MHW was created by averaging the SST, air temperature, wind and current (U and V vectors) values from the BRAN and ERA-Interim products at a 0.5\degree resolution for each day found within the start and end date of each individual event for the entire study area. This allows for possible teleconnections between different coastal section to be incorporated into the study. An example output the largest event in the SACTN dataset may be seen in \Cref{figure2}. In order to create anomaly values for the synoptic states daily climatologies for each pixel for each variable were created with the same 11-day moving average used to create the daily climatologies against which the MHWs were calculated. This provided 366 mean air-sea states that could be subtracted from the daily air-sea values during a coastal MHW for the anomaly values.
+
+\begin{figure}
+\includegraphics[width=1.0\textwidth]{figure_2.pdf}
+\caption{Synoptic air and sea states during a marine heatwave.}
+\label{figure2}
+\end{figure}
+
+\subsection{Cluster analysis}
+There have been several methods employed in climate science to cluster synoptic states. Most commonly hierarchical cluster analysis (HCA) or K-means clustering has been used. Though already decades old, the use of self-organising maps (SOMs) has been gaining in popularity over only the past several years. As it is outside of the focus of the research presented here, we will not go into detail on the differences in the results generated by the three aforementioned methods. We will state however that it was the SOMs that best clustered out the data according to a principal component analysis (PCA). In addition to the superior pattern recognition displayed by the SOM method, the orientation of the nodes (clusters) as produced by the SOM is also of use to the interpretation of the results of this work.
+
+The initialisation of a SOM is similar to more traditional clustering techniques in that K random points are chosen and from there the data points from the given dataset are re-oriented in an iterative process to reduce the within group sum of squares. SOMs differ from more traditional methods in that they also account for the stress of the clustered values in relation to one another and endeavour to orient its nodes (clusters) into the least stressful order in 2D space. This allows one to further evaluate the relationship between the clustered air-sea states. 
+
+Because the synoptic air-sea states during each MHW consist of over 9,000 pixels it is difficult for a computer algorithm to arrive satisfactorily at a consistent answer each time the analysis is run. For this reason we opted out of using random initialization (RI) for our SOM models in favor of principal component initialization (PCI). PCI differs from RI in that it uses the two principal components of the dataset, as determined from a principal component analysis (PCA) to initialize the choice of points for the SOM. This allows the SOM model to create the exact same result whenever it is run on the same data.
+
+The appropriate number of nodes (clusters) to use is always a contentious decision. We have chosen here to use 9 nodes for a number of reasons. The first reason was that SOMs are best run on even grids of data (e.g. 2x3, 3x3, 4x4, etc.). Because 4 nodes was too few, and 16 was too many, 9 was settled on as a provisional number. Calculating the within group sum of squares (WGSS) value as more nodes were included showed that 4 could be satisfactory, but that at least 6 would be better. By comparing the results of the PCA and hierarchical cluster analysis (HCA) also performed on these data (not shown in this research) with the SOM results it became clear that 7 or more nodes (clusters) was appropriate. Ultimately we settled on 9 nodes as this allowed for a wider variety of different synoptic air-sea states to be separated out from one another, allowing for a better understanding of the dominant air-sea states that exist during coastal MHWs.
+
+Once each event was clustered into 1 of 9 nodes, the synoptic air-sea state for each node was calculated by taking the average for each pixel for each variable from all of the mean air-sea states for each MHW as outlined in the 'Air-sea states' section above.
 
 \section{Results}
-\subsection{Marine Heatwaves}
+\subsection{Air-sea states}
+The 9 most common air-sea states around southern Africa during coastal MHWs may be seen in Figure 3(XXX). The top nine panels show the SST and currents, while the bottom 9 panels show the air temperature and winds. All values shown are anomalies.
 
-\subsection{Air-sea state}
+\subsection{Nodes}
+Immediately apparent in the clustering of the data is that there is a 'dead' node where no patterns are apparent. This is where the SOM put all of the events it could not think to do anything else with. This node serves to show that there are still many coastal MHWs that occur without any apparent pattern. At least not a pattern that has occurred often enough over the past 30+ years that would allow it to be clustered with any other events events.
 
+If we look at the events within the nodes via lolliplots, as seen in Figure 4(XXX) we see that XXX of the nodes show air-sea states during only one large event that was recorded at multiple sites. XXX nodes are dominated by one event happening at several sites, with a few other occurrence being similar. XXX nodes consist of a medley of several independent events that cluster together due to their similarity. These nodes represent what a more common air-sea state during a coastal MHW may look like. Also important to note is that a common occurrence in XXX of the nodes is the abnormal retroflection of the Agulhas current onto the Agulhas Bank.
+
+\subsection{Marine heatwaves}
+When we look at the statistics for each node we see that XXX.
 
 \section{Discussion}
-
+\subsection{Abnormal behavior}
+Most notable from the clustering of these events has been the Agulhas current retroflecting north, rather than south, when coastal MHWs were detected. This is a similar finding to the cause of the Western Australia MHW \citep{Feng2013, Benthuysen2014}.
 
 \section{Conclusion}
-
+This research has highlighted that the cause of coastal MHWs is generally, but not always, due to the abnormal advection of water onto the coast due to meso-scale activity. In the case of the west and south coast sections of South Africa this offshore water is often warmer than coastal waters and so it was not necessary that the offshore waters be aseasonally warm at their point of origin. This finding shows that a knowledge of the meso-scale oceanographic properties of an area is necessary to determine what forces may be causing MHWs along a stretch of coastline. Once these areas have been identified, it may then be possible to develop a warning system given a threshold of days during which anomalous currents may be found along a coastline. 
 
 \section*{Acknowledgements}
 We would like to thank DAFF, DEA, EKZNW, KZNSB, SAWS and SAEON for contributing all of the raw data used in this study. Without it, this article and the South African Coastal Temperature Network (SACTN) would not be possible. This research was supported by NRF Grant (CPRR14072378735) and by the Australian Research Council (FT110100174). This paper makes a contribution to the objectives of the Australian Research Council Centre of Excellence for Climate System Science (ARCCSS). The authors report no financial conflicts of interests. The data and analyses used in this paper may be found at https://github.com/schrob040/MHW. The Bluelink ocean data products were provided by CSIRO. Bluelink is a collaboration involving the Commonwealth Bureau of Meteorology, the Commonwealth Scientific and Industrial Research Organisation and the Royal Australian Navy.
+
+\section*{Supplementary}
+\subsection*{Meta-data}
+Further meta-data for each time series and source listed in geographic order along the South African coast from the border of Namibia to the border of Mozambique may be found in \Cref{tableS1}.
+
+\begin{table}[]
+\caption{\small The metadata and coastal averages for all \emph{in situ} time series used in this study.}
+\label{tableS1}
+\centering
+\tiny
+\centering
+\begin{tabular}{rrlllrrrllrrrrrrrrr}
+  \hline
+ & order & site & src & index & lon & lat & depth & type & coast & date.start & date.end & length & NA.perc & mean & sd & range & min & max \\ 
+  \hline
+84 &   2 & Port Nolloth & SAWS & Port Nolloth/ SAWS & 16.87 & -29.25 &   0 & thermo & wc & 1299.00 & 16800.00 & 15502 & 6.00 & 12.41 & 1.36 & 12.00 & 9.00 & 21.00 \\ 
+  100 &  16 & Sea Point & SAWS & Sea Point/ SAWS & 18.38 & -33.92 &   0 & thermo & wc & 1461.00 & 16527.00 & 15067 & 6.00 & 13.07 & 1.57 & 14.50 & 8.50 & 23.00 \\ 
+  71 &  17 & Oudekraal & DAFF & Oudekraal/ DAFF & 18.35 & -33.98 &   9 & UTR & wc & 12108.00 & 16835.00 & 4728 & 6.00 & 12.31 & 1.88 & 10.03 & 8.19 & 18.22 \\ 
+  41 &  18 & Hout Bay & DEA & Hout Bay/ DEA & 18.35 & -34.05 &  28 & UTR & wc & 7753.00 & 13992.00 & 6240 & 5.00 & 11.19 & 1.82 & 9.26 & 7.46 & 16.72 \\ 
+  52 &  20 & Kommetjie & SAWS & Kommetjie/ SAWS & 18.33 & -34.14 &   0 & thermo & wc & 8095.00 & 16527.00 & 8433 & 7.00 & 13.31 & 1.70 & 11.50 & 9.00 & 20.50 \\ 
+  12 &  22 & Bordjies & DAFF & Bordjies/ DAFF & 18.46 & -34.32 &   4 & UTR & sc & 12502.00 & 16748.00 & 4247 & 7.00 & 15.53 & 1.91 & 11.56 & 10.31 & 21.87 \\ 
+  13 &  23 & Bordjies Deep & DAFF & Bordjies Deep/ DAFF & 18.47 & -34.31 &   9 & UTR & sc & 12087.00 & 16748.00 & 4662 & 5.00 & 15.31 & 1.90 & 11.82 & 10.15 & 21.97 \\ 
+  33 &  27 & Fish Hoek & SAWS & Fish Hoek/ SAWS & 18.44 & -34.14 &   0 & thermo & sc & 8095.00 & 16527.00 & 8433 & 6.00 & 15.48 & 2.37 & 14.00 & 9.00 & 23.00 \\ 
+  65 &  29 & Muizenberg & SAWS & Muizenberg/ SAWS & 18.48 & -34.10 &   0 & thermo & sc & 1220.00 & 16527.00 & 15308 & 4.00 & 15.94 & 2.96 & 16.00 & 9.00 & 25.00 \\ 
+  36 &  30 & Gordons Bay & SAWS & Gordons Bay/ SAWS & 18.86 & -34.16 &   0 & thermo & sc & 986.00 & 16527.00 & 15542 & 5.00 & 16.57 & 2.40 & 15.50 & 10.00 & 25.50 \\ 
+  10 &  31 & Betty's Bay & DAFF & Betty's Bay/ DAFF & 18.92 & -34.36 &   5 & UTR & sc & 12765.00 & 16751.00 & 3987 & 0.00 & 14.96 & 1.69 & 10.57 & 10.94 & 21.51 \\ 
+  38 &  32 & Hermanus & SAWS & Hermanus/ SAWS & 19.25 & -34.41 &   0 & thermo & sc & 7274.00 & 16527.00 & 9254 & 5.00 & 15.65 & 1.50 & 14.50 & 9.00 & 23.50 \\ 
+  109 &  37 & Stilbaai & SAWS & Stilbaai/ SAWS & 21.44 & -34.37 &   0 & thermo & sc & 3652.00 & 16527.00 & 12876 & 9.00 & 17.88 & 2.96 & 17.00 & 10.00 & 27.00 \\ 
+  131 &  38 & Ystervarkpunt & DEA & Ystervarkpunt/ DEA & 21.74 & -34.40 &   3 & UTR & sc & 9426.00 & 13685.00 & 4260 & 0.00 & 17.57 & 2.58 & 13.52 & 10.11 & 23.63 \\ 
+  61 &  39 & Mossel Bay & DEA & Mossel Bay/ DEA & 22.16 & -34.18 &   8 & UTR & sc & 7846.00 & 13685.00 & 5840 & 8.00 & 17.98 & 2.69 & 14.52 & 10.12 & 24.65 \\ 
+  50 &  42 & Knysna & DEA & Knysna/ DEA & 23.07 & -34.08 &   7 & UTR & sc & 9210.00 & 14554.00 & 5345 & 6.00 & 17.32 & 2.60 & 13.52 & 10.72 & 24.24 \\ 
+  119 &  45 & Tsitsikamma West & SAWS & Tsitsikamma/ SAWS & 23.65 & -33.98 &   0 & thermo & sc & 7486.00 & 13559.00 & 6074 & 8.00 & 17.20 & 2.57 & 20.00 & 9.50 & 29.50 \\ 
+  111 &  46 & Storms River Mouth & SAWS & Storms River Mouth/ SAWS & 23.90 & -34.02 &   0 & thermo & sc & 8491.00 & 14244.00 & 5754 & 4.00 & 16.82 & 2.50 & 15.00 & 9.50 & 24.50 \\ 
+  118 &  47 & Tsitsikamma East & DEA & Tsitsikamma/ DEA & 23.91 & -34.03 &  10 & UTR & sc & 7849.00 & 14558.00 & 6710 & 4.00 & 16.82 & 2.55 & 14.67 & 8.76 & 23.43 \\ 
+  78 &  58 & Pollock Beach & SAWS & Pollock Beach/ SAWS & 25.68 & -33.99 &   0 & thermo & sc & 10724.00 & 16527.00 & 5804 & 3.00 & 18.15 & 2.13 & 15.50 & 11.00 & 26.50 \\ 
+  43 &  59 & Humewood & SAWS & Humewood/ SAWS & 25.65 & -33.97 &   0 & thermo & sc & 1332.00 & 10956.00 & 9625 & 3.00 & 17.98 & 2.32 & 14.00 & 11.00 & 25.00 \\ 
+  37 &  67 & Hamburg & DEA & Hamburg/ DEA & 27.49 & -33.29 &   4 & UTR & sc & 9433.00 & 14667.00 & 5235 & 6.00 & 17.48 & 1.81 & 11.94 & 12.14 & 24.08 \\ 
+  30 &  68 & Eastern Beach & SAWS & Eastern Beach/ SAWS & 27.92 & -33.02 &   0 & thermo & ec & 5113.00 & 10438.00 & 5326 & 10.00 & 17.91 & 1.77 & 12.50 & 12.50 & 25.00 \\ 
+  70 &  69 & Orient Beach & SAWS & Orient Beach/ SAWS & 27.92 & -33.02 &   0 & thermo & ec & 5113.00 & 16527.00 & 11415 & 4.00 & 17.96 & 1.58 & 14.00 & 12.00 & 26.00 \\ 
+  68 &  70 & Nahoon Beach & SAWS & Nahoon Beach/ SAWS & 27.95 & -32.99 &   0 & thermo & ec & 5113.00 & 10438.00 & 5326 & 7.00 & 18.13 & 1.65 & 15.00 & 10.00 & 25.00 \\ 
+  102 & 133 & Sodwana & DEA & Sodwana/ DEA & 32.73 & -27.42 &  18 & UTR & ec & 8835.00 & 14636.00 & 5802 & 7.00 & 24.42 & 1.96 & 10.44 & 18.62 & 29.05 \\ 
+   \hline
+\end{tabular}
+\end{table}
+
 
 \section*{References}
 

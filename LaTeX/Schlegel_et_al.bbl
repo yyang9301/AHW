@@ -1,4 +1,4 @@
-\begin{thebibliography}{14}
+\begin{thebibliography}{20}
 \expandafter\ifx\csname natexlab\endcsname\relax\def\natexlab#1{#1}\fi
 \expandafter\ifx\csname url\endcsname\relax
   \def\url#1{\texttt{#1}}\fi
@@ -13,6 +13,11 @@ Barsugli, J.~J., Battisti, D.~S., 1998. {The Basic Effects of
 Benthuysen, J., Feng, M., Zhong, L., 2014. {Spatial patterns of warming off
   Western Australia during the 2011 Ningaloo Ni{\~{n}}o: quantifying impacts of
   remote and local forcing}. Continental Shelf Research 91, 232--246.
+
+\bibitem[{Castillo and Lima(2010)}]{Castillo2010}
+Castillo, K.~D., Lima, F.~P., 2010. {Comparison of in situ and
+  satellite-derived (MODIS-Aqua/Terra) methods for assessing temperatures on
+  coral reefs}. Limnology and Oceanography Methods 8, 107--117.
 
 \bibitem[{Deser et~al.(2010)Deser, Alexander, Xie, and Phillips}]{Deser2010}
 Deser, C., Alexander, M.~A., Xie, S.~P., Phillips, A.~S., 2010. {Sea surface
@@ -54,6 +59,16 @@ Hobday, A.~J., Alexander, L.~V., Perkins, S.~E., Smale, D.~A., Straub, S.~C.,
   T., 2016. {A hierarchical approach to defining marine heatwaves}. Progress in
   Oceanography 141, 227--238.
 
+\bibitem[{Hutchings et~al.(2009)Hutchings, van~der Lingen, Shannon, Crawford,
+  Verheye, Bartholomae, van~der Plas, Louw, Kreiner, Ostrowski, Fidel, Barlow,
+  Lamont, Coetzee, Shillington, Veitch, Currie, and Monteiro}]{Hutchings2009}
+Hutchings, L., van~der Lingen, C.~D., Shannon, L.~J., Crawford, R. J.~M.,
+  Verheye, H. M.~S., Bartholomae, C.~H., van~der Plas, a.~K., Louw, D.,
+  Kreiner, A., Ostrowski, M., Fidel, Q., Barlow, R.~G., Lamont, T., Coetzee,
+  J., Shillington, F., Veitch, J., Currie, J.~C., Monteiro, P. M.~S., 2009.
+  {The Benguela Current: an ecosystem of four components}. Progress in
+  Oceanography 83~(1-4), 15--32.
+
 \bibitem[{Jentsch et~al.(2007)Jentsch, Kreyling, and
   Beierkuhnlein}]{Jentsch2007}
 Jentsch, A., Kreyling, J., Beierkuhnlein, C., 2007. {A new generation of
@@ -66,6 +81,10 @@ Krishnamurti, T.~N., Oosterhof, D.~K., Mehta, A.~V., 1988. {Air–Sea
   Interaction on the Time Scale of 30 to 50 Days}.
 \newline\urlprefix\url{http://dx.doi.org/10.1175/1520-0469(1988)045{\%}3C1304:AIOTTS{\%}3E2.0.CO;2}
 
+\bibitem[{L{\"{u}}nning(1990)}]{Luning1990}
+L{\"{u}}nning, K., 1990. {Seaweds: their environment, biogeography and
+  ecophysiology. John Wiley and Sons}. Wiley, New York (USA).
+
 \bibitem[{Perkins and Alexander(2013)}]{Perkins2013}
 Perkins, S.~E., Alexander, L.~V., 2013. {On the measurement of heat waves}.
   Journal of Climate 26~(13), 4500--4517.
@@ -75,6 +94,19 @@ Schlegel, R.~W., Smit, A.~J., 2016. {Climate Change in Coastal Waters: Time
   Series Properties Affecting Trend Estimation}. Journal of Climate 29~(24),
   9113--9124.
 \newline\urlprefix\url{http://journals.ametsoc.org/doi/10.1175/JCLI-D-16-0014.1}
+
+\bibitem[{Smale and Wernberg(2009)}]{Smale2009}
+Smale, D.~A., Wernberg, T., 2009. {Satellite-derived SST data as a proxy for
+  water temperature in nearshore benthic ecology Peer reviewed article}. Marine
+  Biology 387, 27--37.
+
+\bibitem[{Smit et~al.(2013)Smit, Roberts, Anderson, Dufois, Dudley, Bornman,
+  Olbers, and Bolton}]{Smit2013}
+Smit, A.~J., Roberts, M., Anderson, R.~J., Dufois, F., Dudley, S. F.~J.,
+  Bornman, T.~G., Olbers, J., Bolton, J.~J., 2013. {A coastal seawater
+  temperature dataset for biogeographical studies: large biases between in situ
+  and remotely-sensed data sets around the coast of South Africa}. PLOS ONE
+  8~(12).
 
 \bibitem[{Stocker et~al.(2013)Stocker, Qin, Plattner, Tignor, Allen, Boschung,
   Nauels, Xia, Bex, and Midgley}]{IPCC2014}
@@ -92,5 +124,13 @@ Wernberg, T., Bennett, S., Babcock, R.~C., Bettignies, T.~D., Cure, K.,
   E.~S., Holmes, T.~H., Kendrick, G.~A., Radford, B., Santana-garcon, J.,
   Saunders, B.~J., Smale, D.~A., Thomsen, M.~S., 2016. {Climate driven regime
   shift of a temperate marine ecosystem}. Science 149~(1996), 2009--2012.
+
+\bibitem[{Wernberg et~al.(2011)Wernberg, Russell, Moore, Ling, Smale, Campbell,
+  Coleman, Steinberg, Kendrick, and Connell}]{Wernberg2011}
+Wernberg, T., Russell, B.~D., Moore, P.~J., Ling, S.~D., Smale, D.~A.,
+  Campbell, A., Coleman, M.~A., Steinberg, P.~D., Kendrick, G.~A., Connell,
+  S.~D., 2011. {Impacts of climate change in a global hotspot for temperate
+  marine biodiversity and ocean warming}. Journal of Experimental Marine
+  Biology and Ecology 400~(1-2), 7--16.
 
 \end{thebibliography}

@@ -32,10 +32,6 @@ site_list <- droplevels(site_list[site_list$length >= 3650, ])
 SACTN_cropped <- droplevels(SACTNdaily_v4.1[SACTNdaily_v4.1$index %in% site_list$index,])
 SACTN_site_list <- site_list
 
-# There appear to be three duplicate dates... This takes a few minutes to smooth out
-  ## THis has been attended to in the SACTNraw load scripts
-# system.time(SACTN_cropped <- ddply(SACTN_cropped, .(site, src, index, date), summarise, temp = mean(temp)))
-# 206798 -> 206795
 
 # 3. Differentiate between the two Tsitsikamma sites ----------------------
 
