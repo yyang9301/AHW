@@ -1,5 +1,6 @@
 ############################################################################
-# This script prepares the SACTN, BRAN and ERA-Interim data used in the analysis:
+### "1.Data_assembly.R"
+## This script prepares the SACTN, BRAN and ERA-Interim data used in the analysis
 # 1. Load all libraries and functions used in this script 
 # 2. Load and crop the daily SACTN data
 # 3. Load BRAN daily data and create clims
@@ -92,6 +93,11 @@ colnames(BRAN_v_clim)[4] <- "v"
 save(BRAN_v_clim, file = "data/BRAN/BRAN_v_clim.Rdata")
 rm(BRAN_v_daily, BRAN_v_clim)
 
+# Merge into one file for ease of use
+# system.time(BRAN_uv_clim <- merge(BRAN_u_clim, BRAN_v_clim, by = c("x", "y", "date"))) # 17 seconds
+# system.time(BRAN_all_clim <- merge(BRAN_temp_clim, BRAN_uv_clim, by = c("x", "y", "date"))) # 15 seconds
+# save(BRAN_all_clim, file = "data/BRAN/BRAN_all_clim.Rdata")
+# rm(BRAN_temp_daily, BRAN_temp_clim, BRAN_u_daily, BRAN_u_clim, BRAN_v_daily, BRAN_v_clim)
 
 # 4. Load ERA daily data and create clims ---------------------------------
 

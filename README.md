@@ -181,3 +181,15 @@ The scripts and raw data used to compare atmospheric and marine heat waves and c
 * Edits to intro and methods sections
 * Additions to methods and results sections
 * Began cleaning workflow for publication
+
+## 2017/05/17
+* "1.Data_assembly.R" complete
+* Removed data from GitHub not cleared for public access
+* Began moving unused scripts and data to the "old" folder
+
+## 2017/05/18
+* Began "2.Model_assembly.R"
+* More files moved to "old" folder
+
+## 2017/05/19
+* Re-created data packets for use with SOMs and synoptic figures
