@@ -1,5 +1,5 @@
 # AHW
-The scripts and raw data used to compare atmospheric and marine heat waves and cold-spells along the coast of South Africa.
+The scripts and data used to determine common air-sea states during MHWs along the coast of South Africa.
 
 ## File description
 * The raw text of the paper may be found in "LaTeX/Schlegel_et_al.tex"
