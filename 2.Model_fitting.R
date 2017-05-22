@@ -133,7 +133,7 @@ load("setupParams/SACTN_site_list.Rdata")
 # All BRAN anomaly data
 # system.time(BRAN_anom <- plyr::ddply(event_idx, c("event"), load.data.packet,
 #                                      var = c("BRAN/temp-anom", "BRAN/u-anom", "BRAN/v-anom"), .parallel = T)) # 4 seconds
-# save(BRAN_anom, file = "data/BRAN_anom.Rdata")
+# save(BRAN_anom, file = "data/BRAN/BRAN_anom.Rdata")
 load("data/BRAN_anom.Rdata")
 
 # All ERA anomaly data
@@ -146,7 +146,7 @@ load("data/ERA_anom.Rdata")
 all_anom <- cbind(BRAN_anom, ERA_anom[,-1])
 
 # Run SOM
-system.time(som_mdel_pci <- som.model.PCI(all_anom)) # 5 seconds
+system.time(som_mdel_pci <- som.model.PCI(all_anom)) # 2 seconds
 save(som_mdel_pci, file = "data/som_model_pci.Rdata")
 
 # Extract node information
