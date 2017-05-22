@@ -1,0 +1,1 @@
+This folder contains the files required to compile the manuscript via LaTeX.

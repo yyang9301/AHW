@@ -192,4 +192,4 @@ The scripts and raw data used to compare atmospheric and marine heat waves and c
 
 ## 2017/05/22
 * Smoothing out Git push issues
-* Documented all current files within the up-to-date version of the project
+* Complete documentation provided for all files
