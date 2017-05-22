@@ -193,3 +193,6 @@ The scripts and raw data used to compare atmospheric and marine heat waves and c
 
 ## 2017/05/19
 * Re-created data packets for use with SOMs and synoptic figures
+
+## 2017/05/22
+* Smoothing out Git push issues

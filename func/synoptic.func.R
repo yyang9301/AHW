@@ -1,69 +1,37 @@
 #############################################################################
-###"func/synoptic.fig.R"
+###"func/synoptic.func.R"
 ## This script does:
-# 1. Load required data
-# 2. The complete function for creating synoptic figures
+# 1. Function that loads only necessary BRAN files
+# 2. A function that creates synoptic data packets for MHWs
+# 3. Function for rounding event metrics for better plotting
+# 4. ggplot2 code that creates synoptic panels
+# 5. Function for creating synoptic figures
+
 ## DEPENDS ON:
-library(PBSmapping)
-library(marmap)
 library(grid)
-library(ggplot2)
 library(gridExtra)
+library(ggplot2)
 library(scales)
 library(viridis)
-library(stringr)
-library(plyr)
-library(dplyr)
-library(data.table)
-library(reshape2)
-library(lubridate)
-library(zoo)
-library(tidyr)
-library(purrr)
-library(broom)
 library(RmarineHeatWaves)
-library(doMC); registerDoMC(cores = 4)
+# library(stringr)
+# library(plyr)
+# library(dplyr)
+# library(data.table)
+# library(reshape2)
+# library(lubridate)
+# library(zoo)
+# library(doMC); registerDoMC(cores = 4)
 source("func/load.reanalyses.R")
 ## USED BY:
-# "graph/figures3.R"
+# "2.Model_fitting.R"
+# "3.Figures.R"
 ## CREATES:
-# Figures similar to Eric's figures in the MHW atlas
+# A synoptic data packet for each event
+# A synoptic MHW atlas figure for each event
 #############################################################################
 
-
-# 1. Load required data  --------------------------------------------------
-
-# SACTN event data
-load("data/events/SACTN_events.Rdata")
-SACTN_events <- filter(SACTN_events, type == "MHW")
-load("data/events/SACTN_clims.Rdata")
-SACTN_clims <- filter(SACTN_clims, type == "MHW")
-load("setupParams/SACTN_site_list.Rdata")
-
-# Load SA map data
-load("graph/southern_africa_coast.RData") # Lowres
-names(southern_africa_coast)[1] <- "lon"
-load("graph/sa_shore.Rdata") # Hires
-names(sa_shore)[4:5] <- c("lon","lat")
-
-# Daily air-sea state clims
-if(!(exists("BRAN_temp_daily"))){
-  load("data/BRAN/BRAN_temp_daily.Rdata")
-}
-if(!(exists("BRAN_uv_daily"))){
-  load("data/BRAN/BRAN_uv_daily.Rdata")
-}
-if(!(exists("ERA_all_daily"))){
-  load("data/ERA/ERA_all_daily.Rdata")
-}
-
-# ERA Interim file indices
-file_1_dates <- seq(as.Date("1979-01-01"), as.Date("1989-12-31"), by = "day")
-file_2_dates <- seq(as.Date("1990-01-01"), as.Date("1998-12-31"), by = "day")
-file_3_dates <- seq(as.Date("1999-01-01"), as.Date("2007-12-31"), by = "day")
-file_4_dates <- seq(as.Date("2008-01-01"), as.Date("2016-12-31"), by = "day")
-
-# The lon/ lat ranges
+# The default lon/ lat ranges
 wlon <- 10
 elon <- 40
 nlat <- -25
@@ -71,10 +39,146 @@ slat <- -40
 
 sa_lons <- c(10, 40); sa_lats <- c(-40, -25)
 
+# 1. Function that loads only necessary BRAN files ------------------------
+
+# BRAN loading function for single event
+# event <- SACTN_events[SACTN_events$duration == min(SACTN_events$duration),][1,] # tester...
+# "var" must equal "temp", "u" or "v"
+# var <- "temp"
+# var <- "u"
+BRAN.event <- function(event, var){
+  date_idx <- seq(event$date_start, event$date_stop, by = "day")
+  # date_idx_2 <- format(date_idx, "%m-%d")
+  var_idx <- data.frame(files = paste0("~/data/BRAN/ocean_",var,"_",format(seq(event$date_start, event$date_stop, by = "month"), "%Y_%m"),".Rdata"), 
+                        x = length(seq(event$date_start, event$date_stop, by = "month")))
+  BRAN_var <- plyr::ddply(var_idx, c("files"), BRAN.Rdata, .parallel = T)
+  BRAN_var <- filter(BRAN_var, date %in% date_idx)
+  BRAN_var$files <- NULL
+  BRAN_var <- BRAN_var[complete.cases(BRAN_var$var),]
+  BRAN_var <- data.table(BRAN_var)
+  BRAN_var <- BRAN_var[, .(var = mean(var, na.rm = TRUE)), by = .(x,y)]
+  colnames(BRAN_var)[3] <- var
+  BRAN_var <- BRAN_var[order(BRAN_var$x),]
+  return(BRAN_var)
+}
+
+
+# 2. A function that creates synoptic data packets for MHWs ---------------
+
+data.packet <- function(event){
+  
+  ## Begin by adding lon/ lat and determining date index ##
+  event2 <- event
+  event2$lat <- SACTN_site_list$lat[SACTN_site_list$site == event$site]
+  event2$lon <- SACTN_site_list$lon[SACTN_site_list$site == event$site]
+  event2$type <- NULL
+  date_idx <- seq(event$date_start, event$date_stop, by = "day")
+  date_idx_2 <- format(date_idx, "%m-%d")
+  
+  
+  ## Extract BRAN data during the chosen event ##
+  BRAN_temp <- BRAN.event(event, "temp")
+  BRAN_u <- BRAN.event(event, "u")
+  BRAN_v <- BRAN.event(event, "v")
+  # Create uv data frame
+  BRAN_uv <- merge(BRAN_u, BRAN_v, by = c("x", "y")); rm(BRAN_u, BRAN_v)
+  # Temperature anomaly
+  BRAN_temp_anom <- filter(BRAN_temp_clim, date %in% date_idx_2)
+  BRAN_temp_anom <- data.table(BRAN_temp_anom)
+  BRAN_temp_anom <- BRAN_temp_anom[, .(temp = mean(temp, na.rm = TRUE)), by = .(x,y)]
+  BRAN_temp_anom$temp <- BRAN_temp$temp-BRAN_temp_anom$temp
+  # uv anomaly
+  BRAN_uv_anom <- filter(BRAN_uv_clim, date %in% date_idx_2)
+  BRAN_uv_anom <- data.table(BRAN_uv_anom)
+  BRAN_uv_anom <- BRAN_uv_anom[, .(u = mean(u, na.rm = TRUE),
+                                   v = mean(v, na.rm = TRUE)), by = .(x,y)]
+  BRAN_uv_anom$u <- BRAN_uv$u-BRAN_uv_anom$u
+  BRAN_uv_anom$v <- BRAN_uv$v-BRAN_uv_anom$v
+  
+  
+  ## Extract ERA Interim data during this event ##
+  # Run the function as necesary on the following files
+  # NB: There is a slight possibility that more than one file will be used
+    # ERA1 not loaded as these dates precede any available BRAN data
+  if(length(date_idx[date_idx %in% file_2_dates]) > 0){
+    nc.file <- "~/data/ERA/ERA_1990_1998.nc"
+    ERA2 <- ERA.ncdf(nc.file, date_idx)
+  } 
+  if(length(date_idx[date_idx %in% file_3_dates]) > 0){
+    nc.file <- "~/data/ERA/ERA_1999_2007.nc"
+    ERA3 <- ERA.ncdf(nc.file, date_idx)
+  }
+  if(length(date_idx[date_idx %in% file_4_dates]) > 0){
+    nc.file <- "~/data/ERA/ERA_2008_2016.nc"
+    ERA4 <- ERA.ncdf(nc.file, date_idx)
+  }
+  # Combine multiple possible dataframes produced
+  ERA_all <- data.frame()
+    # ERA1 not loaded as these dates precede any available BRAN data
+  if(exists("ERA2")) ERA_all <- rbind(ERA_all, ERA2)
+  if(exists("ERA3")) ERA_all <- rbind(ERA_all, ERA3)
+  if(exists("ERA4")) ERA_all <- rbind(ERA_all, ERA4)
+  # Create mean values
+  ERA_all <- data.table(ERA_all)
+  ERA_all <- ERA_all[, .(temp = mean(temp, na.rm = TRUE),
+                         u = mean(u, na.rm = TRUE),
+                         v = mean(v, na.rm = TRUE)), by = .(x,y)]
+  # Temperature
+  ERA_temp <- ERA_all[,c(1:3)]
+  # UV
+  ERA_uv <- ERA_all[,c(1:2,4:5)]
+  # Temperature anomaly
+  ERA_temp_anom <- filter(ERA_temp_clim, date %in% date_idx_2)
+  ERA_temp_anom <- data.table(ERA_temp_anom)
+  ERA_temp_anom <- ERA_temp_anom[, .(temp = mean(temp, na.rm = TRUE)), by = .(x,y)]
+  ERA_temp_anom$temp <- ERA_temp$temp-ERA_temp_anom$temp
+  # uv anomaly
+  ERA_uv_anom <- filter(ERA_uv_clim, date %in% date_idx_2)
+  ERA_uv_anom <- data.table(ERA_uv_anom)
+  ERA_uv_anom <- ERA_uv_anom[, .(u = mean(u, na.rm = TRUE),
+                                 v = mean(v, na.rm = TRUE)), by = .(x,y)]
+  ERA_uv_anom$u <- ERA_uv$u-ERA_uv_anom$u
+  ERA_uv_anom$v <- ERA_uv$v-ERA_uv_anom$v
+  rm(ERA_all)
+  
+  
+  ## Save all of the dataframes in a list for SOMs and figures ##
+  data_name <- paste0("data/SOM/",event2$site[1],"_",event2$event_no[1],".Rdata")
+  data_packet <- list(event = event2, BRAN_temp = BRAN_temp, BRAN_uv = BRAN_uv, BRAN_temp_anom = BRAN_temp_anom, BRAN_uv_anom = BRAN_uv_anom,
+                      ERA_temp = ERA_temp, ERA_uv = ERA_uv, ERA_temp_anom = ERA_temp_anom, ERA_uv_anom = ERA_uv_anom)
+  save(data_packet, file = data_name)
+}
+
+
+# 3. Function for rounding event metrics for better plotting --------------
+
+round.metrics <- function(df){
+  df <- df %>% 
+    mutate(int_max = round(int_max,1)) %>% 
+    mutate(int_mean = round(int_mean,1)) %>% 
+    mutate(int_cum = round(int_cum,0)) %>% 
+    mutate(rate_onset = round(rate_onset,2)) %>% 
+    mutate(rate_decline = round(rate_decline,2))
+  return(df)
+}
+
+
+# 4. ggplot2 code that creates synoptic panels ----------------------------
+
+# Load South Africa map data
+load("graph/southern_africa_coast.RData") # Lowres
+names(southern_africa_coast)[1] <- "lon"
+load("graph/sa_shore.Rdata") # Hires
+names(sa_shore)[4:5] <- c("lon","lat")
+
 # Load SA bathymetry
+  ## This commmented out code creates the bathy file ##
+# library(PBSmapping)
+# library(marmap)
 # sa_bathy <- as.xyz(getNOAA.bathy(lon1 = sa_lons[1], lon2 = sa_lons[2], lat1 = sa_lats[1], lat2 = sa_lats[2], resolution =  4))
 # colnames(sa_bathy) <- c("lon", "lat", "depth")
 # save(sa_bathy, file = "data/sa_bathy.Rdata")
+  ##
 load("data/sa_bathy.Rdata")
 sa_bathy$type = "BRAN"
 
@@ -113,148 +217,58 @@ synoptic.panel <- function(temperature_dat, vector_dat, label_dat, segment_dat, 
           legend.title = element_text(size = 12))
   if(BRAN){
     sa1 <- sa1 + stat_contour(data = bathy_dat[bathy_dat$depth < -200,], aes(x = lon, y = lat, z = depth, alpha = ..level..),
-                              colour = "white", size = 0.5, binwidth = 1000, na.rm = TRUE, show.legend = FALSE)
+                              colour = "white", size = 0.5, binwidth = 1000, na.rm = TRUE, show.legend = FALSE) +
+      geom_polygon(data = southern_africa_coast, aes(x = lon, y = lat, group = group),
+                   fill = "grey70", colour = "black", size = 0.5, show.legend = FALSE) +
+      geom_point(data = site_dat, aes(x = lon, y = lat), shape = 21,  size = 3, alpha = 0.7, colour = "red", fill = "white")
   }
   # sa1
   return(sa1)
 }
 
-# BRAN loading function for single event
-# event <- SACTN_events[SACTN_events$duration == min(SACTN_events$duration),][1,] # tester...
-# "var" must equal "temp", "u" or "v"
-# var <- "temp"
-# var <- "u"
-BRAN.event <- function(event, var){
-  date_idx <- seq(event$date_start, event$date_stop, by = "day")
-  # date_idx_2 <- format(date_idx, "%m-%d")
-  var_idx <- data.frame(files = paste0("~/data/BRAN/ocean_",var,"_",format(seq(event$date_start, event$date_stop, by = "month"), "%Y_%m"),".Rdata"), 
-                         x = length(seq(event$date_start, event$date_stop, by = "month")))
-  BRAN_var <- ddply(var_idx, .(files), BRAN.Rdata, .parallel = T)
-  BRAN_var <- filter(BRAN_var, date %in% date_idx)
-  BRAN_var$files <- NULL
-  BRAN_var <- BRAN_var[complete.cases(BRAN_var$var),]
-  BRAN_var <- data.table(BRAN_var)
-  BRAN_var <- BRAN_var[, .(var = mean(var, na.rm = TRUE)), by = .(x,y)]
-  colnames(BRAN_var)[3] <- var
-  BRAN_var <- BRAN_var[order(BRAN_var$x),]
-  return(BRAN_var)
-}
 
-# Function for rounding event metrics for better plotting
-round.metrics <- function(df){
-  df <- df %>% 
-    mutate(int_max = round(int_max,1)) %>% 
-    mutate(int_mean = round(int_mean,1)) %>% 
-    mutate(int_cum = round(int_cum,0)) %>% 
-    mutate(rate_onset = round(rate_onset,2)) %>% 
-    mutate(rate_decline = round(rate_decline,2))
-  return(df)
-}
+# 5. Function for creating synoptic figures ------------------
 
-# 2. The complete function for creating synoptic figures ------------------
+# Testers...
+# data_file <- event_idx[SACTN_events$duration == min(SACTN_events$duration),][1,] # shortest...
+# data_file <- event_idx[SACTN_events$duration == max(SACTN_events$duration),] # longest...
+# data_file <- event_idx[1,] # lucky...
 
-# event <- SACTN_events[SACTN_events$duration == min(SACTN_events$duration),][1,] # shortest...
-# event <- SACTN_events[SACTN_events$duration == max(SACTN_events$duration),] # longest...
-
-synoptic.fig <- function(event){
+synoptic.fig <- function(data_file){
   
+  ## Load the data packet
+  data_file2 <- as.character(data_file$event)
+  load(data_file2)
   
-  ## Begin by adding lon/ lat and determining date index ##
-  event2 <- event
-  event2$lat <- SACTN_site_list$lat[SACTN_site_list$site == event$site]
-  event2$lon <- SACTN_site_list$lon[SACTN_site_list$site == event$site]
-  event2$type <- NULL
-  date_idx <- seq(event$date_start, event$date_stop, by = "day")
-  date_idx_2 <- format(date_idx, "%m-%d")
-  
-  
-  ## Extract BRAN data during the chosen event ##
-  BRAN_temp <- BRAN.event(event, "temp")
-  BRAN_u <- BRAN.event(event, "u")
-  BRAN_v <- BRAN.event(event, "v")
-  # Create uv data frame
-  BRAN_uv <- merge(BRAN_u, BRAN_v, by = c("x", "y")); rm(BRAN_u, BRAN_v)
-  # Temperature anomaly
-  BRAN_temp_anom <- filter(BRAN_temp_daily, date %in% date_idx_2)
-  BRAN_temp_anom <- data.table(BRAN_temp_anom)
-  BRAN_temp_anom <- BRAN_temp_anom[, .(temp = mean(temp, na.rm = TRUE)), by = .(x,y)]
-  BRAN_temp_anom$temp <- BRAN_temp$temp-BRAN_temp_anom$temp
-  # uv anomaly
-  BRAN_uv_anom <- filter(BRAN_uv_daily, date %in% date_idx_2)
-  BRAN_uv_anom <- data.table(BRAN_uv_anom)
-  BRAN_uv_anom <- BRAN_uv_anom[, .(u = mean(u, na.rm = TRUE),
-                                   v = mean(v, na.rm = TRUE)), by = .(x,y)]
-  BRAN_uv_anom$u <- BRAN_uv$u-BRAN_uv_anom$u
-  BRAN_uv_anom$v <- BRAN_uv$v-BRAN_uv_anom$v
-  
-  
-  ## Extract ERA Interim data during this event ##
-  # Run the function as necesary on the following files
-  # NB: There is a slight possibility that more than one file will be used
-  if(length(date_idx[date_idx %in% file_1_dates]) > 0){
-    nc.file <- "~/data/ERA/ERA_1979_1989.nc" 
-    ERA1 <- ERA.ncdf(nc.file, date_idx)
-  }
-  if(length(date_idx[date_idx %in% file_2_dates]) > 0){
-    nc.file <- "~/data/ERA/ERA_1990_1998.nc"
-    ERA2 <- ERA.ncdf(nc.file, date_idx)
-  } 
-  if(length(date_idx[date_idx %in% file_3_dates]) > 0){
-    nc.file <- "~/data/ERA/ERA_1999_2007.nc"
-    ERA3 <- ERA.ncdf(nc.file, date_idx)
-  }
-  if(length(date_idx[date_idx %in% file_4_dates]) > 0){
-    nc.file <- "~/data/ERA/ERA_2008_2016.nc"
-    ERA4 <- ERA.ncdf(nc.file, date_idx)
-  }
-  # Combine multiple possible dataframes produced
-  # Messy but a quick enough fix
-  ERA_all <- data.frame()
-  if(exists("ERA1")) ERA_all <- rbind(ERA_all, ERA1)
-  if(exists("ERA2")) ERA_all <- rbind(ERA_all, ERA2)
-  if(exists("ERA3")) ERA_all <- rbind(ERA_all, ERA3)
-  if(exists("ERA4")) ERA_all <- rbind(ERA_all, ERA4)
-  # Prep for plotting
-  # ERA_all <- data.table(ERA_all)
-  ERA_all <- ERA_all[, .(temp = mean(temp, na.rm = TRUE),
-                         u = mean(u, na.rm = TRUE),
-                         v = mean(v, na.rm = TRUE)), by = .(x,y)]
-  # Temperature
-  ERA_temp <- ERA_all[,c(1:3)]
-  # UV
-  ERA_uv <- ERA_all[,c(1:2,4:5)]
-  # Anomalies
-  ERA_all_anom <- filter(ERA_all_daily, date %in% date_idx_2)
-  ERA_all_anom <- data.table(ERA_all_anom)
-  ERA_all_anom <- ERA_all_anom[, .(temp = mean(temp, na.rm = TRUE),
-                                   u = mean(u, na.rm = TRUE),
-                                   v = mean(v, na.rm = TRUE)), by = .(x,y)]
-  ERA_all_anom$temp <- ERA_all$temp-ERA_all_anom$temp
-  ERA_all_anom$u <- ERA_all$u-ERA_all_anom$u
-  ERA_all_anom$v <- ERA_all$v-ERA_all_anom$v
-  # It is necessary to split temp from uv so that the winds may be subsetted further
-  ERA_temp_anom <- ERA_all_anom[,c(1:3)]
-  ERA_uv_anom <- ERA_all_anom[,c(1:2,4:5)]
-  rm(ERA_all)
+  ## Extract the data
+  # Event
+  event2 <- data_packet$event
+  date_idx <- seq(event2$date_start, event2$date_stop, by = "day")
+  # BRAN
+  BRAN_temp <- data_packet$BRAN_temp
+  BRAN_temp_anom <- data_packet$BRAN_temp_anom
+  BRAN_uv <- data_packet$BRAN_uv
+  BRAN_uv_anom <- data_packet$BRAN_uv_anom
+  # ERA
+  ERA_temp <- data_packet$ERA_temp
+  ERA_temp_anom <- data_packet$ERA_temp_anom
+  ERA_uv <- data_packet$ERA_uv
+  ERA_uv_anom <- data_packet$ERA_uv_anom
   
   
   ## Create sea state figure ##
   # Double up temps for correct facet labelling
   BRAN_temp2 <- rbind(BRAN_temp, BRAN_temp)
+  # Add 'type' columns for faceting
   BRAN_temp2$type <- rep(c("SST + Bathy", "SST + Current"), each = nrow(BRAN_temp))
-  # Remove some current rows for clearer plotting
-  lon_sub <- seq(10, 40, by = 0.5)
-  lat_sub <- seq(-40, -15, by = 0.5)
-  BRAN_uv2 <- BRAN_uv[(BRAN_uv$x %in% lon_sub & BRAN_uv$y %in% lat_sub),]
-  BRAN_uv2$type <- "SST + Current"
-  # The bathy
+  BRAN_uv$type <- "SST + Current"
   sa_bathy$type <- "SST + Bathy"
   # The label dataframes
   BRAN_plot_data <- data_frame(txt = "1.0 m/s\n",
                                x = 36, y = -37, type = "SST + Current")
   BRAN_plot_seg <- data.frame(x = 35.5, y = -37.5, xend = 36.5, yend = -37.5, type = "SST + Current")
   # The figure
-  BRAN_state <- synoptic.panel(temperature_dat = BRAN_temp2, vector_dat = BRAN_uv2, label_dat = BRAN_plot_data, segment_dat =  BRAN_plot_seg,
+  BRAN_state <- synoptic.panel(temperature_dat = BRAN_temp2, vector_dat = BRAN_uv, label_dat = BRAN_plot_data, segment_dat =  BRAN_plot_seg,
                                bathy_dat = sa_bathy, site_dat = event2, legend_title = "Temp.\n(°C)", uv_scalar = 1, viridis_colour = "D", BRAN = T)
   # BRAN_state
   
@@ -262,20 +276,16 @@ synoptic.fig <- function(event){
   ## Create sea state anomaly figure ##
   # Double up temps for correct facet labelling
   BRAN_temp_anom2 <- rbind(BRAN_temp_anom, BRAN_temp_anom)
+  # Add 'type' columns for faceting
   BRAN_temp2$type <- rep(c("SST Anomaly + Bathy", "SST Anomaly + Current Anomaly"), each = nrow(BRAN_temp_anom))
-  # Remove some uv rows for clearer plotting
-  lon_sub <- seq(10, 40, by = 0.5)
-  lat_sub <- seq(-40, -15, by = 0.5)
-  BRAN_uv_anom2 <- BRAN_uv_anom[(BRAN_uv_anom$x %in% lon_sub & BRAN_uv_anom$y %in% lat_sub),]
-  BRAN_uv_anom2$type <- "SST Anomaly + Current Anomaly"
-  # The bathy
+  BRAN_uv_anom$type <- "SST Anomaly + Current Anomaly"
   sa_bathy$type <- "SST Anomaly + Bathy"
   # The label dataframes
   BRAN_plot_anom_data <- data_frame(txt = "1.0 m/s\n",
                                x = 36, y = -37, type = "SST Anomaly + Current Anomaly")
   BRAN_plot_anom_seg <- data.frame(x = 35.5, y = -37.5, xend = 36.5, yend = -37.5, type = "SST Anomaly + Current Anomaly")
   # The figure
-  BRAN_state_anom <- synoptic.panel(temperature_dat = BRAN_temp_anom2, vector_dat = BRAN_uv_anom2, label_dat = BRAN_plot_anom_data, segment_dat =  BRAN_plot_anom_seg,
+  BRAN_state_anom <- synoptic.panel(temperature_dat = BRAN_temp_anom2, vector_dat = BRAN_uv_anom, label_dat = BRAN_plot_anom_data, segment_dat =  BRAN_plot_anom_seg,
                                     bathy_dat = sa_bathy, site_dat = event2, legend_title = "Anom.\n(°C)", uv_scalar = 1, viridis_colour = "D", BRAN = T)
   # BRAN_state_anom
   
@@ -303,8 +313,6 @@ synoptic.fig <- function(event){
   ERA_uv_anom2 <- ERA_uv_anom[(ERA_uv_anom$x %in% lon_sub & ERA_uv_anom$y %in% lat_sub),]
   ERA_uv_anom2$type <- "Air Temp Anomaly + Wind Anomaly"
   # The label dataframes
-  # ERA_plot_anom_data <- data_frame(txt = c("Air temp + Wind\nAnomaly", "4.0 m/s\n"),
-  #                                  x = c(25,25), y = c(-28,-31))
   ERA_plot_anom_data <- data_frame(txt = "4.0 m/s\n",
                                    x = 36, y = -37)
   ERA_plot_anom_seg <- data.frame(x = 35, y = -37.5, xend = 37, yend = -37.5)
@@ -313,18 +321,12 @@ synoptic.fig <- function(event){
                                    bathy_dat = sa_bathy, site_dat = event2, legend_title = "Anom.\n(°C)", uv_scalar = 0.5, viridis_colour = "C", BRAN = F)
   # ERA_state_anom
   
-  
-  ## Save all of the map data frames in a list for SOM ##
-  SOM_name <- paste0("data/SOM/",event2$site[1],"_",event2$event_no[1],".Rdata")
-  SOM_packet <- list(BRAN_temp = BRAN_temp, BRAN_uv = BRAN_uv, BRAN_temp_anom = BRAN_temp_anom, BRAN_uv_anom = BRAN_uv_anom,
-                     ERA_temp = ERA_temp, ERA_uv = ERA_uv, ERA_temp_anom = ERA_temp_anom, ERA_uv_anom = ERA_uv_anom)
-  save(SOM_packet, file = SOM_name)
-  
+
   ## The event figure ##
   # Determine spread and subset days
   spread <- 31
-  spread_clim <- filter(SACTN_clims, site == event$site & date %in% ((date_idx[1]-spread):(date_idx[length(date_idx)]+spread)))
-  event_clim <- filter(SACTN_clims, site == event$site & date %in% ((date_idx[1]-1):(date_idx[length(date_idx)]+1)))
+  spread_clim <- filter(SACTN_clims, site == event2$site & date %in% ((date_idx[1]-spread):(date_idx[length(date_idx)]+spread)))
+  event_clim <- filter(SACTN_clims, site == event2$site & date %in% ((date_idx[1]-1):(date_idx[length(date_idx)]+1)))
   # The figure
   event_flame <- ggplot(data = spread_clim, aes(x = date, y = temp, y2 = thresh_clim_year)) +
     geom_flame(aes(y = temp, y2 = thresh_clim_year, fill = "other"), show.legend = T) +
@@ -337,8 +339,8 @@ synoptic.fig <- function(event){
     scale_y_continuous(labels = scales::unit_format("°C", sep = "")) +
     guides(colour = guide_legend(override.aes = list(fill = NA))) +
     xlab("") + ylab("") +
-    ggtitle(paste0("Average air-sea state during ", event$site[1], " event #", event$event_no[1], 
-                   " (", format(event$date_start, "%d %b %Y"), " - ", format(event$date_stop, "%d %b %Y"), ")")) +
+    ggtitle(paste0("Average air-sea state during ", event2$site[1], " event #", event2$event_no[1], 
+                   " (", format(event2$date_start, "%d %b %Y"), " - ", format(event2$date_stop, "%d %b %Y"), ")")) +
     theme(plot.title = element_text(hjust = 0.5, size = 14, face = "bold"),
           axis.text = element_text(size = 12),
           legend.text = element_text(size = 12),
@@ -351,9 +353,9 @@ synoptic.fig <- function(event){
   
   ## The info boxes ##
   # All events at the chosen site
-  site_events <- filter(SACTN_events, site == event$site)
+  site_events <- filter(SACTN_events, site == event2$site)
   # Create data frames of rounded values for easier comparisons
-  event_round <- round.metrics(event)
+  event_round <- round.metrics(event2)
   site_round <- round.metrics(site_events)
   all_round <- round.metrics(SACTN_events)
   # The properties of the event
@@ -405,6 +407,7 @@ synoptic.fig <- function(event){
   
   ## Combine figures and save ##
   # Generate file name
+  # file_name <- "~/Desktop/test.pdf"
   file_name <- paste0("graph/synoptic/",event2$site[1],"_",event2$event_no[1],".pdf")
   # The figure
   pdf(file_name, width = 17, height = 10, pointsize = 10) # Set PDF dimensions
@@ -418,7 +421,5 @@ synoptic.fig <- function(event){
   print(event_flame, vp = vplayout(3,1:2))
   print(text_table, vp = vplayout(3,3))
   dev.off()
-  
 }
-
 

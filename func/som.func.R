@@ -2,7 +2,9 @@
 ###"func/som.func.R"
 ## This script does:
 # 1. A load function for reanalysis data by variable
-# 2. Function for calculating soms
+# 2. Function for calculating SOMs using PCI
+# 3. Function for determining node indexes
+
 # 3. Functions for unpacking som results
 # 4. Function for determining node indexes
 # 5. Functions for creating figures
@@ -10,69 +12,28 @@
 # 7. Function for melting rounding and re-casting data
 # 8. Function for melting trimming and re-casting data 
 # 9. Function for melting subsetting and re-casting data
-# 10. Function for calculating SOMs using PCI
-# 11. Function for extracting only count of events per node
+# 10. Function for extracting only count of events per node
+
 ## DEPENDS ON:
-library(scales)
-library(kohonen)
-library(SOMbrero)
+# library(scales)
+# library(kohonen)
+# library(SOMbrero)
 library(yasomi)
-library(plyr)
-library(dplyr)
+# library(plyr)
+# library(dplyr)
 library(data.table)
-library(reshape2)
-library(lubridate)
-library(zoo)
+# library(reshape2)
+# library(lubridate)
+# library(zoo)
 library(doMC); registerDoMC(cores = 4)
 ## USED BY:
-# "graph/figures3.R"
+# "2.Model_fitting.R"
 ## CREATES:
-# Figures similar to Eric's figures in the MHW atlas
+# SOM results and analyses
 #############################################################################
 
 
 # 1. A load function for reanalysis data by variable ----------------------
-
-# The site list info
-load("~/AHW/setupParams/SACTN_site_list.Rdata")
-
-# Event data
-load("~/AHW/data/events/SACTN_events.Rdata")
-SACTN_events <- filter(SACTN_events, type == "MHW")
-
-# Screen out those under 15 days in length
-event_list <- filter(SACTN_events, duration >= 15) # 126
-rm(SACTN_events)
-
-# Screen out those occurring before or after reanalysis period
-event_list <- filter(event_list, date_start > as.Date("1994-01-01")) # 95
-event_list <- filter(event_list, date_stop < as.Date("2016-08-31")) # 95
-
-# Season index
-summer <- format(seq(as.Date("2015-12-01"), as.Date("2016-02-29"), by = "day"),"%m-%d")
-autumn <- format(seq(as.Date("2016-03-01"), as.Date("2016-05-31"), by = "day"),"%m-%d")
-winter <- format(seq(as.Date("2016-06-01"), as.Date("2016-08-31"), by = "day"),"%m-%d")
-spring <- format(seq(as.Date("2016-09-01"), as.Date("2016-11-30"), by = "day"),"%m-%d")
-
-# Add coastal clusters
-event_list$coast <- NA
-event_list$coast[event_list$site %in% SACTN_site_list$site[SACTN_site_list$coast == "wc"]] <- "wc"
-event_list$coast[event_list$site %in% SACTN_site_list$site[SACTN_site_list$coast == "sc"]] <- "sc"
-event_list$coast[event_list$site %in% SACTN_site_list$site[SACTN_site_list$coast == "ec"]] <- "ec"
-
-# Add season
-event_list$season <- NA
-event_list$season[format(event_list$date_start,"%m-%d") %in% summer] <- "summer"
-event_list$season[format(event_list$date_start,"%m-%d") %in% autumn] <- "autumn"
-event_list$season[format(event_list$date_start,"%m-%d") %in% winter] <- "winter"
-event_list$season[format(event_list$date_start,"%m-%d") %in% spring] <- "spring"
-
-# Add event indexing column for later
-event_list$event <- paste0(event_list$site,"_",event_list$event_no)
-
-# The files for loading
-event_idx <- data.frame(event = dir("~/AHW/data/SOM", full.names = TRUE),
-                        x = length(dir("~/AHW/data/SOM")))
 
 # A helper function for the following function
 col.shimmy <- function(df, var = "blank"){
@@ -88,50 +49,69 @@ load.data.packet <- function(df, var){
   load(df2)
   res <- data.frame()
   # Combine all BRAN data
-  if("BRAN/temp" %in% var) res <- rbind(res, col.shimmy(SOM_packet$BRAN_temp, "BRAN/temp"))
-  if("BRAN/u" %in% var) res <- rbind(res, col.shimmy(SOM_packet$BRAN_uv[,c(1:3)], "BRAN/u"))
-  if("BRAN/v" %in% var) res <- rbind(res, col.shimmy(SOM_packet$BRAN_uv[,c(1:2,4)], "BRAN/v"))
+  if("BRAN/temp" %in% var) res <- rbind(res, col.shimmy(data_packet$BRAN_temp, "BRAN/temp"))
+  if("BRAN/u" %in% var) res <- rbind(res, col.shimmy(data_packet$BRAN_uv[,c(1:3)], "BRAN/u"))
+  if("BRAN/v" %in% var) res <- rbind(res, col.shimmy(data_packet$BRAN_uv[,c(1:2,4)], "BRAN/v"))
   # Combine all BRAN anomaly data
-  if("BRAN/temp-anom" %in% var) res <- rbind(res, col.shimmy(SOM_packet$BRAN_temp_anom, "BRAN/temp-anom"))
-  if("BRAN/u-anom" %in% var) res <- rbind(res, col.shimmy(SOM_packet$BRAN_uv_anom[,c(1:3)], "BRAN/u-anom"))
-  if("BRAN/v-anom" %in% var) res <- rbind(res, col.shimmy(SOM_packet$BRAN_uv_anom[,c(1:2,4)], "BRAN/v-anom"))
+  if("BRAN/temp-anom" %in% var) res <- rbind(res, col.shimmy(data_packet$BRAN_temp_anom, "BRAN/temp-anom"))
+  if("BRAN/u-anom" %in% var) res <- rbind(res, col.shimmy(data_packet$BRAN_uv_anom[,c(1:3)], "BRAN/u-anom"))
+  if("BRAN/v-anom" %in% var) res <- rbind(res, col.shimmy(data_packet$BRAN_uv_anom[,c(1:2,4)], "BRAN/v-anom"))
   # Combine all ERA data
-  if("ERA/temp" %in% var) res <- rbind(res, col.shimmy(SOM_packet$ERA_temp, "ERA/temp"))
-  if("ERA/u" %in% var) res <- rbind(res, col.shimmy(SOM_packet$ERA_uv[,c(1:3)], "ERA/u"))
-  if("ERA/v" %in% var) res <- rbind(res, col.shimmy(SOM_packet$ERA_uv[,c(1:2,4)], "ERA/v"))
+  if("ERA/temp" %in% var) res <- rbind(res, col.shimmy(data_packet$ERA_temp, "ERA/temp"))
+  if("ERA/u" %in% var) res <- rbind(res, col.shimmy(data_packet$ERA_uv[,c(1:3)], "ERA/u"))
+  if("ERA/v" %in% var) res <- rbind(res, col.shimmy(data_packet$ERA_uv[,c(1:2,4)], "ERA/v"))
   # Combine all ERA anomaly data
-  if("ERA/temp-anom" %in% var) res <- rbind(res, col.shimmy(SOM_packet$ERA_temp_anom, "ERA/temp-anom"))
-  if("ERA/u-anom" %in% var) res <- rbind(res, col.shimmy(SOM_packet$ERA_uv_anom[,c(1:3)], "ERA/u-anom"))
-  if("ERA/v-anom" %in% var) res <- rbind(res, col.shimmy(SOM_packet$ERA_uv_anom[,c(1:2,4)], "ERA/v-anom"))
-  # Round x/y for better colum names
-  res$x <- round(res$x,2) # Have to use second decimal place as first decimal rounding creates possible duplicate entries
-  res$y <- round(res$y,2)
-  # Remove any possible duplicates. Should be none.
-  # res <- res[, .(value = mean(value, na.rm = TRUE)),
-  # by = .(x,y, var)]
+  if("ERA/temp-anom" %in% var) res <- rbind(res, col.shimmy(data_packet$ERA_temp_anom, "ERA/temp-anom"))
+  if("ERA/u-anom" %in% var) res <- rbind(res, col.shimmy(data_packet$ERA_uv_anom[,c(1:3)], "ERA/u-anom"))
+  if("ERA/v-anom" %in% var) res <- rbind(res, col.shimmy(data_packet$ERA_uv_anom[,c(1:2,4)], "ERA/v-anom"))
+  # Create coords column
   res$coords <- paste0(res$x, "_" , res$y, "_", res$var)
+  # Transpose
   res_wide <- t(res$value)
   colnames(res_wide) <- res$coords
   return(res_wide)
 }
 
 
-# 2. Function for calculating soms ----------------------------------------
+# 2. Function for calculating SOMs using PCI ------------------------------
 
-som.model <- function(data_packet, xdim = 3, ydim = 3){
+som.model.PCI <- function(data_packet, xdim = 3, ydim = 3){
   # Create a scaled matrix for the SOM
   # Cancel out first column as this is the file name of the data packet
   data_packet_matrix <- as.matrix(scale(data_packet[,-1]))
+  
   # Create the grid that the SOM will use to determine the number of nodes
-  som_grid <- kohonen::somgrid(xdim = xdim, ydim = ydim, topo = "hexagonal")
-  # Run the SOM
-  som_model <- som(data_packet_matrix,
-                   grid = som_grid, 
-                   rlen = 100, # It appears that rlen = 40 may be sufficient
-                   alpha = c(0.05,0.01), 
-                   keep.data = TRUE )
+  som_grid <- somgrid(xdim = xdim, ydim = ydim, topo = "hexagonal")
+  
+  # Run the SOM with PCI
+  som_model <- batchsom(data_packet_matrix, 
+                        somgrid = som_grid, 
+                        init = "pca",
+                        max.iter = 100)
   return(som_model)
 }
+
+# 3. Function for determining node indexes --------------------------------
+
+event.node <- function(data_packet, som_output){
+  event_node <- data.frame(event = sapply(strsplit(basename(as.character(data_packet$event)), ".Rdata"),  "[[", 1),
+                            node = som_output$classif)
+  node_count <- as.data.frame(table(event_node$node))
+  event_node <- event_node %>%
+    group_by(node) %>% 
+    mutate(count = node_count$Freq[as.integer(node_count$Var1) == node[1]]) %>% 
+    mutate(site = sapply(strsplit(as.character(event), "_"), "[[", 1)) %>% 
+    mutate(event_no = as.integer(sapply(strsplit(as.character(event), "_"), "[[", 2))) %>% 
+    group_by(site) %>% 
+    mutate(lon = SACTN_site_list$lon[as.character(SACTN_site_list$site) == site[1]]) %>% 
+    mutate(lat = SACTN_site_list$lat[as.character(SACTN_site_list$site) == site[1]]) %>%
+    group_by(event) %>% 
+    mutate(season = as.factor(SACTN_events$season[SACTN_events$event == event[1]]))
+  event_node <- as.data.frame(event_node)
+  return(event_node)
+}
+
+
 
 
 
@@ -191,32 +171,6 @@ som.unpack.rescale <- function(data_packet, som_output, kohonen = FALSE){
   var_unscaled$var <- sapply(strsplit(as.character(var_unscaled$variable), "_"), "[[", 3)
   var_unscaled$variable <- NULL
   return(var_unscaled)
-}
-
-
-# 4. Function for determining node indexes --------------------------------
-
-event.node <- function(data_packet, som_output, kohonen = FALSE){
-  if(kohonen){
-    event_node <- data.frame(event = sapply(strsplit(basename(as.character(data_packet$event)), ".Rdata"),  "[[", 1),
-                             node = som_output$unit.classif)
-  } else {
-    event_node <- data.frame(event = sapply(strsplit(basename(as.character(data_packet$event)), ".Rdata"),  "[[", 1),
-                             node = som_output$classif)
-  }
-  node_count <- as.data.frame(table(event_node$node))
-  event_node <- event_node %>%
-    group_by(node) %>% 
-    mutate(count = node_count$Freq[as.integer(node_count$Var1) == node[1]]) %>% 
-    mutate(site = sapply(strsplit(as.character(event), "_"), "[[", 1)) %>% 
-    mutate(event_no = as.integer(sapply(strsplit(as.character(event), "_"), "[[", 2))) %>% 
-    group_by(site) %>% 
-    mutate(lon = SACTN_site_list$lon[as.character(SACTN_site_list$site) == site[1]]) %>% 
-    mutate(lat = SACTN_site_list$lat[as.character(SACTN_site_list$site) == site[1]]) %>%
-    group_by(event) %>% 
-    mutate(season = as.factor(event_list$season[event_list$event == event[1]]))
-  event_node <- as.data.frame(event_node)
-  return(event_node)
 }
 
 
@@ -368,7 +322,7 @@ all.panels <- function(data_res, data_node){
 
 # df <- node_all_anom
 node.summary.metrics <- function(df){
-  df_1 <- merge(df, event_list, by = c("event", "site", "season", "event_no"))
+  df_1 <- merge(df, SACTN_events, by = c("event", "site", "season", "event_no"))
   df_2 <- df_1 %>% 
     group_by(node) %>% 
     summarise(count = count[1],
@@ -475,26 +429,7 @@ synoptic.sub <- function(df, subvar){
 }
 
 
-# 10. Function for calculating SOMs using PCI -----------------------------
-
-som.model.PCI <- function(data_packet, xdim = 3, ydim = 3){
-  # Create a scaled matrix for the SOM
-  # Cancel out first column as this is the file name of the data packet
-  data_packet_matrix <- as.matrix(scale(data_packet[,-1]))
-  
-  # Create the grid that the SOM will use to determine the number of nodes
-  som_grid <- somgrid(xdim = xdim, ydim = ydim, topo = "hexagonal")
-  
-  # Run the SOM with PCI
-  som_model <- batchsom(data_packet_matrix, 
-                        somgrid = som_grid, 
-                        init = "pca",
-                        max.iter = 100)
-  return(som_model)
-}
-
-
-# 11. Function for extracting only count of events per node ---------------
+# 10. Function for extracting only count of events per node ---------------
 
 # This function runs a SOM with PCI and then counts the number of events in each node
 # It returns only one column of data
@@ -505,3 +440,4 @@ node.count <- function(data_packet, column_name, xdim = 3, ydim = 3, kohonen = F
   colnames(res) <- column_name
   return(res)
 }
+

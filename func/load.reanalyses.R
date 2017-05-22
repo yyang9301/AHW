@@ -3,19 +3,22 @@
 ## This script does:
 # 1. Create a function for loading BRAN data
 # 2. Create a function for loading ERA Interim data
+# 3. Create function for loading all ERA days
+# 4. Create function for calculating daily clims from a grid
 ## DEPENDS ON:
 library(doMC); registerDoMC(cores = 4)
-library(plyr)
+# library(plyr)
 library(dplyr)
 library(reshape2)
 library(data.table)
 library(ncdf4)
 library(ncdf.tools)
 ## USED BY:
-# "graph/figures3.R"
+# "1.Data_assembly.R"
 ## CREATES:
 # BRAN dataframes as requested
 # ERA Interim dataframes as requested
+# Gridded daily clims as requested
 #############################################################################
 
 # The default lon/ lat ranges
@@ -53,11 +56,19 @@ BRAN.Rdata <- function(x){
     df2 <- melt(as.matrix(df1), value.name = "var")
     df2$date <- rep(stor_date, each = (length(stor.nc$x)*length(stor.nc$y))) # At this step the hour values are removed
     colnames(df2)[1:2] <- c("x","y")
+    df2 <- df2 %>% 
+      mutate(x = plyr::round_any(x, 0.5)) %>% 
+      mutate(y = plyr::round_any(y, 0.5))
+    df2 <- data.table(df2)
+    df2 <- df2[, .(var = mean(var, na.rm = TRUE)),
+                       by = .(x, y, date)]
+    df2 <- data.frame(df2)
+    df2 <- df2[,c(1,2,4,3)]
+    df2 <- df2[complete.cases(df2), ]
     return(df2)
-    # df2 <- data.table(df2)
-    # df2 <- df2[, .(var = mean(var, na.rm = TRUE)), by = .(x,y,date)]
   }
   
+  # Run and exit
   BRAN_data <- BRAN.to.df()
   return(BRAN_data)
 }
@@ -137,3 +148,34 @@ ERA.ncdf <- function(nc.file, date_idx){
   return(ERA_all)
 }
 
+
+# 3. Create function for loading all ERA days -----------------------------
+
+ERA.daily <- function(nc.file){
+  nc.stor <- nc_open(nc.file)
+  # print(nc.stor)
+  date_idx <- ncvar_get(nc.stor, nc.stor$dim[[3]])
+  nc_close(nc.stor)
+  date_idx <- data.frame(date = unique(as.Date(convertDateNcdf2R(date_idx, units = "hours", 
+                                                                 origin = as.POSIXct("1900-01-01 00:00:0.0", tz = "UTC"), 
+                                                                 time.format = c("%Y-%m-%d %H:%M:%S")))))
+  system.time(ERA <- ERA.ncdf(nc.file, date_idx$date)) # 8 seconds
+  return(ERA)
+}
+
+
+# 4. Create function for calculating daily clims from a grid --------------
+# Use development version of detect()', not the one on CRAN
+source("~/RmarineHeatWaves/R/RmarineHeatWaves.R")
+grid.clim <- function(df) {
+  start <- min(df$date, na.rm = T) 
+  end <- max(df$date, na.rm = T)
+  colnames(df) <- c("x", "y", "temp", "t")
+  whole <- RmarineHeatWaves::make_whole(df)
+  res <- detect(whole, climatology_start = start, climatology_end = end, clim_only = T)
+  res <- unique(res[,c(1,4)])
+  res <- res[order(res$doy), ]
+  res$doy <- format(seq(as.Date("2016-01-01"), as.Date("2016-12-31"), by = "day"), "%m-%d")
+  colnames(res) <- c("date", "clim")
+  return(res)
+}
