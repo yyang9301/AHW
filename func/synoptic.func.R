@@ -177,9 +177,9 @@ names(sa_shore)[4:5] <- c("lon","lat")
 # library(marmap)
 # sa_bathy <- as.xyz(getNOAA.bathy(lon1 = sa_lons[1], lon2 = sa_lons[2], lat1 = sa_lats[1], lat2 = sa_lats[2], resolution =  4))
 # colnames(sa_bathy) <- c("lon", "lat", "depth")
-# save(sa_bathy, file = "data/sa_bathy.Rdata")
+# save(sa_bathy, file = "graph/sa_bathy.Rdata")
   ##
-load("data/sa_bathy.Rdata")
+load("graph/sa_bathy.Rdata")
 sa_bathy$type = "BRAN"
 
 # The synoptic image creator

@@ -2,21 +2,17 @@
 The scripts and raw data used to compare atmospheric and marine heat waves and cold-spells along the coast of South Africa.
 
 ## File description
-* The text of the paper may be found in "..."
-* The code used to prepare the raw data for use in the analysis may be found in "load/load.SACTN.R" and "load/load.SAWS.R"
-* The code used to create the site list/ meta-data for the two datasets may be found in "load/load.SACTN.R" and "prep/SACTN.sitelist.R"
-* The code used to calculate indices of comparison between the datasets may be found in "SAWS.SACTN.compare.R"
-* The code used to perform the extreme event analyses may be found in "proc/SACTN.RMarineHeatwaves.R" and "proc/SAWS.RMarineHeatwaves.R"
-* The code used to calculate the rates of co-occurrence may be found in "proc/cooccurrence.R"
-* The code used to create the figures seen in the paper may be found in "graph/..."
-* The code used to create the tables seen in the paper may be found in "..."
-* The "/data" folder contains the raw data used in the analyses as well as the output from the "prep/..." and "proc/..." scripts
-* The "/func" folder contains custom made functions used in the analyses
-* The "/graph" folder contains the files necessary to create maps, as well as the output of the "graph/..." scripts
-* The "/setupParams" folder contains the site lists, comparison indices and a custom ggplot2 theme
-* The "/LaTeX" folder contains the files used to compile "/LaTeX/...", the body of the text
-* The python folder contains everything required to run the "ehfheatwaves.py" script
-* All folders labeled "/old/" contain scripts and data from previous versions of the analysis/ methodology
+* The raw text of the paper may be found in "LaTeX/Schlegel_et_al.tex"
+* The code used to calculate the MHWs and fit the SOM may be found in "2.Model_fitting.R"
+* The code used to create the figures seen in the paper may be found in "3.Figures.R"
+* The code used to create the tables seen in the paper may be found in "4.Tables.R"
+* The code used to generate the specific values given in the text may be found in "5.Text.R"
+* The "data" folder contains the processed data used in the analyses as well as the output of "2.Model_fitting.R"
+* The "func" folder contains custom made functions used in the analyses
+* The "graph" folder contains the files necessary to create maps as well as the output of "3.Figures.R"
+* The "setupParams" folder contains the SACTN site list and analysis period data
+* The "LaTeX" folder contains the files used to compile "/LaTeX/...", the body of the text
+* The "old" folder contains scripts and data from previous versions of the analysis/ methodology
 
 ## 2016/09/18
 * All for loops removed from extreme event calculation work flow
@@ -196,3 +192,4 @@ The scripts and raw data used to compare atmospheric and marine heat waves and c
 
 ## 2017/05/22
 * Smoothing out Git push issues
+* Documented all current files within the up-to-date version of the project
