@@ -4,24 +4,24 @@
 # 1. A load function for reanalysis data by variable
 # 2. Function for calculating SOMs using PCI
 # 3. Function for determining node indexes
-
-# 3. Functions for unpacking som results
-# 4. Function for determining node indexes
+# 4. Functions for unpacking som results
 # 5. Functions for creating figures
 # 6. Function for creating event metrics table
 # 7. Function for melting rounding and re-casting data
 # 8. Function for melting trimming and re-casting data 
 # 9. Function for melting subsetting and re-casting data
 # 10. Function for extracting only count of events per node
-
 ## DEPENDS ON:
-# library(scales)
 # library(kohonen)
 # library(SOMbrero)
 library(yasomi)
 # library(plyr)
 # library(dplyr)
 library(data.table)
+library(ggplot2)
+library(scales)
+library(grid)
+library(gridExtra)
 # library(reshape2)
 # library(lubridate)
 # library(zoo)
@@ -112,25 +112,19 @@ event.node <- function(data_packet, som_output){
 }
 
 
-
-
-
-# 3. Functions for unpacking som results ----------------------------------
+# 4. Functions for unpacking som results ----------------------------------
 
 # Create mean results from initial data frame based on node clustering
-som.unpack.mean <- function(data_packet, som_output, kohonen = FALSE){
+som.unpack.mean <- function(data_packet, som_output){
   # Melt data_packet
   data_packet$event <- sapply(strsplit(basename(as.character(data_packet$event)), ".Rdata"),  "[[", 1)
-  data_packet_long <- melt(data_packet, id = "event")
+  data_packet$node <- som_output$classif
+  data_packet_long <- melt(data_packet, id = c("event", "node"))
   # Determine which event goes in which node
-  if(kohonen){
-    event_node <- data.frame(event = data_packet$event, node = som_output$unit.classif)
-  } else {
-    event_node <- data.frame(event = data_packet$event, node = som_output$classif)
-  }
-  data_packet_long <- data_packet_long %>%
-    group_by(event) %>%
-    mutate(node = event_node$node[event_node$event == event][1])
+  # event_node <- data.frame(event = data_packet$event, node = som_output$classif)
+  # data_packet_long <- data_packet_long %>%
+  #   group_by(event) %>%
+  #   mutate(node = event_node$node[event_node$event == event][1])
   data_packet_long <- data.table(data_packet_long)
   # Create the mean values that serve as the unscaled results from the SOM
   var_unscaled <- data_packet_long[, .(value = mean(value, na.rm = TRUE)),
@@ -139,18 +133,17 @@ som.unpack.mean <- function(data_packet, som_output, kohonen = FALSE){
   var_unscaled$y <- as.numeric(sapply(strsplit(as.character(var_unscaled$variable), "_"), "[[", 2))
   var_unscaled$var <- sapply(strsplit(as.character(var_unscaled$variable), "_"), "[[", 3)
   var_unscaled$variable <- NULL
+  var_unscaled <- var_unscaled[order(var_unscaled$node, var_unscaled$x, var_unscaled$y),]
   return(var_unscaled)
 }
 
+
 # Rescale the actual som results
-som.unpack.rescale <- function(data_packet, som_output, kohonen = FALSE){
+# This is not used as it is prone to creating less even results
+som.unpack.rescale <- function(data_packet, som_output){
   # Create matrices for rescaling som results
   matrix1 <- data_packet[,-1]
-  if(kohonen){
-    matrix2 <- as.data.frame(som_output$codes)
-  } else {
-    matrix2 <- as.data.frame(som_output$prototypes)
-  }
+  matrix2 <- as.data.frame(som_output$prototypes)
   # Calculate range for rescale
   min_max <- t(data.frame(min_col = apply(matrix1, 2, min), max_col = apply(matrix1, 2, max)))
   # center <- attributes(som_output$data)
@@ -192,7 +185,7 @@ som.unpack.rescale <- function(data_packet, som_output, kohonen = FALSE){
 ## Create plots
 
 # Load SA map data
-load("~/AHW/graph/southern_africa_coast.RData") # Lowres
+load("~/AHW/graph/southern_africa_coast.Rdata") # Lowres
 names(southern_africa_coast)[1] <- "lon"
 
 # The lon/ lat ranges
@@ -206,7 +199,7 @@ sa_lons <- c(10, 40); sa_lats <- c(-40, -25)
 # The plotting function
 # NB: This function requires input generated from 'all.panels()'
 # data_temp <- res_BRAN_temp; data_uv <- res_BRAN_uv; data_node <- node_all_norm; vector_label <-  "1.0 m/s\n"; plot_title <- "SST + Current"; legend_title <- "SST"; viridis_col <- "D" # tester...
-node.panels <- function(data_temp, data_uv, data_node, plot_title, legend_title, vector_label, viridis_col){
+node.panels <- function(data_temp, data_uv, data_node, plot_title, legend_title, vector_label, viridis_col, BRAN = TRUE){
   np <- ggplot(data = data_temp, aes(x = x, y = y)) +
     geom_raster(aes(fill = value)) +
     geom_segment(data = data_uv, aes(x = x, y = y, xend = x + u, yend = y + v),
@@ -249,23 +242,33 @@ node.panels <- function(data_temp, data_uv, data_node, plot_title, legend_title,
           axis.text = element_text(size = 12),
           legend.text = element_text(size = 12),
           legend.title = element_text(size = 12))
+  if(BRAN){
+    np <- np + geom_polygon(data = southern_africa_coast, aes(x = lon, y = lat, group = group),
+                   fill = "grey70", colour = "black", size = 0.5, show.legend = FALSE) +
+      geom_label(data = data_node, aes(x = 25, y = -28, label = paste0("n = ", count,"/",length(node))), size = 3, label.padding = unit(0.5, "lines")) +
+      geom_point(data = data_node, aes(x = lon, y = lat, colour = season), shape = 19,  size = 3, alpha = 0.6)
+  }
   # np
   return(np)
 }
 
 # The function that puts it all together
-# data_res <- res_all_norm # tester...
+# data_res <- node_means # tester...
+# data_node <- node_all_anom
 all.panels <- function(data_res, data_node){
+  
+  # Prep the data
   data_res$var <- as.factor(data_res$var)
+  
   ## Separate BRAN from ERA and temp from uv
   # BRAN
   res_BRAN_temp <- data_res[data_res$var == levels(data_res$var)[1],]
   res_BRAN_uv <- data_res[data_res$var %in% levels(data_res$var)[2:3],]
   res_BRAN_uv <- dcast(res_BRAN_uv, x+y+node~var)
   colnames(res_BRAN_uv)[4:5] <- c("u", "v")
-  lon_sub <- seq(10, 40, by = 0.5)
-  lat_sub <- seq(-40, -15, by = 0.5)
-  res_BRAN_uv <- res_BRAN_uv[(res_BRAN_uv$x %in% lon_sub & res_BRAN_uv$y %in% lat_sub),]
+  # lon_sub <- seq(10, 40, by = 0.5)
+  # lat_sub <- seq(-40, -15, by = 0.5)
+  # res_BRAN_uv <- res_BRAN_uv[(res_BRAN_uv$x %in% lon_sub & res_BRAN_uv$y %in% lat_sub),]
   
   # ERA
   res_ERA_temp <- data_res[data_res$var == levels(data_res$var)[4],]
@@ -278,35 +281,29 @@ all.panels <- function(data_res, data_node){
   lat_sub <- seq(-40, -15, by = 1)
   res_ERA_uv <- res_ERA_uv[(res_ERA_uv$x %in% lon_sub & res_ERA_uv$y %in% lat_sub),]
   
-  # Determine titles to use
-  if(sum(res_BRAN_temp$value) >= 500000){
-    # node_data <- node_all_norm
-    plot_title_BRAN = "SST + Current"
-    plot_title_ERA = "Air Temp + Wind"
-    legend_title = "Temp.\n(°C)"
-    data_type = "norm"
-  } 
-  if(sum(res_BRAN_temp$value) < 500000){
-    # node_data <- node_all_anom
-    plot_title_BRAN = "SST Anomaly + Current Anomaly"
-    plot_title_ERA = "Air Temp Anomaly + Wind Anomaly"
-    legend_title = "Anom.\n(°C)"
-    data_type = "anom"
-  } 
+  # node_data <- node_all_anom
+  plot_title_BRAN = "SST Anomaly + Current Anomaly"
+  plot_title_ERA = "Air Temp Anomaly + Wind Anomaly"
+  legend_title = "Anom.\n(°C)"
+  data_type = "anom"
   
   ## The  panel figures
   # BRAN
-  panels_BRAN <- node.panels(data_temp = res_BRAN_temp, data_uv = res_BRAN_uv, data_node = data_node,
+  panels_BRAN <- node.panels(data_temp = res_BRAN_temp, data_uv = res_BRAN_uv, data_node = data_node, BRAN = TRUE,
                              plot_title = plot_title_BRAN, legend_title = legend_title, vector_label = "1.0 m/s\n", viridis_col = "D")
   # panels_BRAN
   # ERA
-  panels_ERA <- node.panels(data_temp = res_ERA_temp, data_uv = res_ERA_uv, data_node = data_node,
+  panels_ERA <- node.panels(data_temp = res_ERA_temp, data_uv = res_ERA_uv, data_node = data_node, BRAN = FALSE,
                             plot_title = plot_title_ERA, legend_title = legend_title, vector_label = "4.0 m/s\n", viridis_col = "A")
   # panels_ERA
   
+  # Create grid
+  # print(grid.arrange(panels_BRAN, panels_ERA, layout_matrix = cbind(c(1,2), c(1,2))))
+  # ggsave("graph/SOM_nodes.pdf", height = 18, width = 10)
+  
   ## Combine figures and save
   # Generate file name
-  file_name <- paste0("~/AHW/graph/som/",data_type,"_",length(unique(res_BRAN_temp$node)),".pdf")
+  file_name <- paste0("graph/SOM_nodes.pdf")
   # The figure
   pdf(file_name, width = 10, height = 12, pointsize = 10) # Set PDF dimensions
   grid.newpage()
@@ -321,8 +318,8 @@ all.panels <- function(data_res, data_node){
 # 6. Function for creating event metrics table ----------------------------
 
 # df <- node_all_anom
-node.summary.metrics <- function(df){
-  df_1 <- merge(df, SACTN_events, by = c("event", "site", "season", "event_no"))
+node.summary.metrics <- function(data_node, data_event){
+  df_1 <- merge(data_node, data_event, by = c("event", "site", "season", "event_no"))
   df_2 <- df_1 %>% 
     group_by(node) %>% 
     summarise(count = count[1],

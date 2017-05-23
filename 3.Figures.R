@@ -3,16 +3,8 @@
 ## This script creates the figures for the paper and supplemental
 # 1. Load all libraries and functions used in this script
 # 2. Create synoptic figure for each event
-# 3. Create figure showing SOM nodes
-
-# 1. Load all packages required for the analyses
-# 2. Load all functions etc. found in other scripts
-# 3. Load the site list and spatial data used for the map
-# 4. Create the map of Africa to be windowed
-# 5. Create the map of southern Africa
-# 6. Add site list information
-# 7. Create figure01
-# 8. Load analysis results
+# 3. Create synoptic figure showing SOM nodes
+# 4. Create lolliplots for the SOM nodes
 #############################################################################
 
 
@@ -25,6 +17,7 @@
 # library(tibble)
 # library(doMC); doMC::registerDoMC(cores = 4)
 source("func/synoptic.func.R")
+source("func/som.func.R")
 
 
 # 2. Create synoptic figure for each event  -------------------------------
@@ -42,5 +35,22 @@ event_idx <- data.frame(event = dir("data/SOM", full.names = TRUE),
 system.time(plyr::ddply(event_idx, c("event"), synoptic.fig, .progress = "text")) # 539 seconds
 
 
-# 3. Create figure showing SOM nodes --------------------------------------
+# 3. Create synoptic figure showing SOM nodes -----------------------------
 
+load("data/node_means.Rdata")
+load("data/node_all_anom.Rdata")
+all.panels(node_means, node_all_anom)
+
+
+# 4. Create lolliplots for the SOM nodes ----------------------------------
+
+load("data/SACTN/SACTN_events.Rdata")
+load("data/node_all_anom.Rdata")
+
+node_all <- merge(node_all_anom, SACTN_events, by = c("event", "site", "season", "event_no"))
+ggplot(data = node_all, aes(x = date_start, y = int_cum)) +
+  geom_lolli() +
+  geom_point(aes(colour = season)) +
+  facet_wrap(~node) +
+  labs(x = "", y = "cummulative intensity (°Cxdays)")
+ggsave("graph/SOM_lolli.pdf", height = 9, width = 9)

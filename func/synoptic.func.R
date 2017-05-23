@@ -166,7 +166,7 @@ round.metrics <- function(df){
 # 4. ggplot2 code that creates synoptic panels ----------------------------
 
 # Load South Africa map data
-load("graph/southern_africa_coast.RData") # Lowres
+load("graph/southern_africa_coast.Rdata") # Lowres
 names(southern_africa_coast)[1] <- "lon"
 load("graph/sa_shore.Rdata") # Hires
 names(sa_shore)[4:5] <- c("lon","lat")

@@ -5,6 +5,7 @@
 # 2. Calculate MHWs from cropped SACTN data
 # 3. Create data packets from BRAN and ERA data based on MHWs
 # 4. Cluster the events using SOMs
+# 5. Create mean synoptic states for each node
 ############################################################################
 
 
@@ -153,3 +154,16 @@ save(som_mdel_pci, file = "data/som_model_pci.Rdata")
 node_all_anom <- event.node(all_anom, som_mdel_pci)
 save(node_all_anom, file = "data/node_all_anom.Rdata")
 
+
+# 5. Create mean synoptic states for each node ----------------------------
+
+# Load required data if the above sections were not run
+load("data/som_model_pci.Rdata")
+# load("data/node_all_anom.Rdata")
+load("data/BRAN_anom.Rdata")
+load("data/ERA_anom.Rdata")
+all_anom <- cbind(BRAN_anom, ERA_anom[,-1]); rm(BRAN_anom, ERA_anom)
+
+# Calculate node means
+node_means <- som.unpack.mean(all_anom, som_mdel_pci)
+save(node_means, file = "data/node_means.Rdata")

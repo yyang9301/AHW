@@ -15,3 +15,5 @@ The files "BRAN_anom.Rdata" and "ERA_anom.Rdata" contain the synoptic air (ERA) 
 The file "som_model_pci.Rdata" contains the results of the SOM run on the processed data.
 
 The file "node_all_anom.Rdata" is an index containing the node to which each event has been assigned.
+
+The file "node_means.Rdata" is a long data frame that contains the synoptic data necessary to make figures visualising the nodes.
