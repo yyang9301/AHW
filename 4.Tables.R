@@ -3,6 +3,7 @@
 ## This script creates the tables seen in the manuscript
 # 1. Load all libraries and functions used in this script
 # 2. Create table of statistics for each SOM node
+# 3. Supplementary table
 #############################################################################
 
 
@@ -25,12 +26,22 @@ source("func/som.func.R")
 load("data/SACTN/SACTN_events.Rdata")
 load("data/node_all_anom.Rdata")
 
-
 # Run the metric summary function on these data
 node_table <- node.summary.metrics(node_all_anom, SACTN_events)
 save(node_table, file = "data/node_table.Rdata")
 write.csv(node_table, file = "data/node_table.csv")
 
 # Generate table for LaTeX
+load("data/node_table.Rdata")
 xtable(node_table)
+
+
+# 3. Supplementary table --------------------------------------------------
+
+load("~/SACTN/metadata/site_list_v4.1.Rdata")
+
+# Exclude time series under 10 years or over 10% NA
+site_list <- droplevels(site_list[site_list$NA.perc <= 10, ]) # 50 sites
+site_list <- droplevels(site_list[site_list$length >= 3650, ]) # 26 sites
+xtable(site_list)
 

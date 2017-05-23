@@ -93,11 +93,6 @@ colnames(BRAN_v_clim)[4] <- "v"
 save(BRAN_v_clim, file = "data/BRAN/BRAN_v_clim.Rdata")
 rm(BRAN_v_daily, BRAN_v_clim)
 
-# Merge into one file for ease of use
-# system.time(BRAN_uv_clim <- merge(BRAN_u_clim, BRAN_v_clim, by = c("x", "y", "date"))) # 17 seconds
-# system.time(BRAN_all_clim <- merge(BRAN_temp_clim, BRAN_uv_clim, by = c("x", "y", "date"))) # 15 seconds
-# save(BRAN_all_clim, file = "data/BRAN/BRAN_all_clim.Rdata")
-# rm(BRAN_temp_daily, BRAN_temp_clim, BRAN_u_daily, BRAN_u_clim, BRAN_v_daily, BRAN_v_clim)
 
 # 4. Load ERA daily data and create clims ---------------------------------
 
@@ -109,6 +104,7 @@ BRAN_date_range <- seq(as.Date("1994-01-01"), as.Date("2016-08-31"), by = "day")
 
 # Load all ERA daily values
   # ERA1 not loaded as these dates precede any available BRAN data
+# system.time(ERA1 <- ERA.daily("~/data/ERA/ERA_1979_1989.nc")) # 42 seconds
 system.time(ERA2 <- ERA.daily("~/data/ERA/ERA_1990_1998.nc")) # 42 seconds
 system.time(ERA3 <- ERA.daily("~/data/ERA/ERA_1999_2007.nc")) # 41 seconds
 system.time(ERA4 <- ERA.daily("~/data/ERA/ERA_2008_2016.nc")) # 40 seconds
