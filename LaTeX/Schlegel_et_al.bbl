@@ -1,8 +1,14 @@
-\begin{thebibliography}{20}
+\begin{thebibliography}{31}
 \expandafter\ifx\csname natexlab\endcsname\relax\def\natexlab#1{#1}\fi
 \expandafter\ifx\csname url\endcsname\relax
   \def\url#1{\texttt{#1}}\fi
 \expandafter\ifx\csname urlprefix\endcsname\relax\def\urlprefix{URL }\fi
+
+\bibitem[{Ambroise et~al.(2000)Ambroise, S??ze, Badran, and
+  Thiria}]{Ambroise2000}
+Ambroise, C., S??ze, G., Badran, F., Thiria, S., 2000. {Hierarchical clustering
+  of self-organizing maps for cloud classification}. Neurocomputing 30~(1-4),
+  47--52.
 
 \bibitem[{Barsugli and Battisti(1998)}]{Barsugli1998}
 Barsugli, J.~J., Battisti, D.~S., 1998. {The Basic Effects of
@@ -14,10 +20,29 @@ Benthuysen, J., Feng, M., Zhong, L., 2014. {Spatial patterns of warming off
   Western Australia during the 2011 Ningaloo Ni{\~{n}}o: quantifying impacts of
   remote and local forcing}. Continental Shelf Research 91, 232--246.
 
+\bibitem[{Burrough et~al.(2001)Burrough, Wilson, {Van Gaans}, and
+  Hansen}]{Burrough2001}
+Burrough, P.~A., Wilson, J.~P., {Van Gaans}, P. F.~M., Hansen, A.~J., 2001.
+  {Fuzzy k-means classification of topo-climatic data as an aid to forest
+  mapping in the Greater Yellowstone Area, USA}. Landscape Ecology 16~(6),
+  523--546.
+
 \bibitem[{Castillo and Lima(2010)}]{Castillo2010}
 Castillo, K.~D., Lima, F.~P., 2010. {Comparison of in situ and
   satellite-derived (MODIS-Aqua/Terra) methods for assessing temperatures on
   coral reefs}. Limnology and Oceanography Methods 8, 107--117.
+
+\bibitem[{Cavazos(2000)}]{Cavazos2000}
+Cavazos, T., 2000. {Using self-organizing maps to investigate extreme climate
+  events: An application to wintertime precipitation in the Balkans}. Journal
+  of Climate 13~(10), 1718--1732.
+
+\bibitem[{Corte-Real et~al.(1998)Corte-Real, Qian, and Xu}]{Corte-Real1998}
+Corte-Real, J., Qian, B., Xu, H., 1998. {Regional climate change in Portugal:
+  precipitation variability associated with large-scale atmospheric
+  circulation}. International Journal of Climatology 18~(6), 619--635.
+\newline\urlprefix\url{http://onlinelibrary.wiley.com/doi/10.1002/(SICI)1097-0088(199805)18:6{\%}3C619::AID-JOC271{\%}3E3.0.CO;2-T/abstract
+  http://www.scopus.com/scopus/inward/record.url?eid=2-s2.0-3543007704{\&}partnerID=40{\&}rel=R7.0.0}
 
 \bibitem[{Deser et~al.(2010)Deser, Alexander, Xie, and Phillips}]{Deser2010}
 Deser, C., Alexander, M.~A., Xie, S.~P., Phillips, A.~S., 2010. {Sea surface
@@ -50,6 +75,10 @@ Garrabou, J., Coma, R., Bensoussan, N., Bally, M., Chevaldonn{\'{e}}, P.,
   rocky benthic communities: effects of the 2003 heat wave}. Global Change
   Biology 15~(5), 1090--1103.
 
+\bibitem[{Hewitson and Crane(2002)}]{Hewitson2002}
+Hewitson, B.~C., Crane, R.~G., 2002. {Self-organizing maps: Applications to
+  synoptic climatology}. Climate Research 22~(1), 13--26.
+
 \bibitem[{Hobday et~al.(2016)Hobday, Alexander, Perkins, Smale, Straub, Oliver,
   Benthuysen, Burrows, Donat, Feng, Holbrook, Moore, Scannell, {Sen Gupta}, and
   Wernberg}]{Hobday2016}
@@ -69,11 +98,19 @@ Hutchings, L., van~der Lingen, C.~D., Shannon, L.~J., Crawford, R. J.~M.,
   {The Benguela Current: an ecosystem of four components}. Progress in
   Oceanography 83~(1-4), 15--32.
 
+\bibitem[{Jain(2010)}]{Jain2010}
+Jain, A.~K., 2010. {Data clustering: 50 years beyond K-means}. Pattern
+  Recognition Letters 31~(8), 651--666.
+
 \bibitem[{Jentsch et~al.(2007)Jentsch, Kreyling, and
   Beierkuhnlein}]{Jentsch2007}
 Jentsch, A., Kreyling, J., Beierkuhnlein, C., 2007. {A new generation of
   climate-change experiments: events, not trends}. Frontiers in Ecology and the
   Environment 5~(6), 315--324.
+
+\bibitem[{Johnson(2013)}]{Johnson2013}
+Johnson, N.~C., 2013. {How many enso flavors can we distinguish?} Journal of
+  Climate 26~(13), 4816--4827.
 
 \bibitem[{Krishnamurti et~al.(1988)Krishnamurti, Oosterhof, and
   Mehta}]{Krishnamurti1988}
@@ -81,13 +118,28 @@ Krishnamurti, T.~N., Oosterhof, D.~K., Mehta, A.~V., 1988. {Air–Sea
   Interaction on the Time Scale of 30 to 50 Days}.
 \newline\urlprefix\url{http://dx.doi.org/10.1175/1520-0469(1988)045{\%}3C1304:AIOTTS{\%}3E2.0.CO;2}
 
+\bibitem[{Kumar et~al.(2011)Kumar, Mills, Hoffman, and Hargrove}]{Kumar2011}
+Kumar, J., Mills, R.~T., Hoffman, F.~M., Hargrove, W.~W., 2011. {Parallel
+  k-means clustering for quantitative ecoregion delineation using large data
+  sets}. In: Procedia Computer Science. Vol.~4. pp. 1602--1611.
+
 \bibitem[{L{\"{u}}nning(1990)}]{Luning1990}
 L{\"{u}}nning, K., 1990. {Seaweds: their environment, biogeography and
   ecophysiology. John Wiley and Sons}. Wiley, New York (USA).
 
+\bibitem[{Morioka et~al.(2010)Morioka, Tozuka, and Yamagata}]{Morioka2010}
+Morioka, Y., Tozuka, T., Yamagata, T., 2010. {Climate variability in the
+  southern Indian Ocean as revealed by self-organizing maps}. Climate Dynamics
+  35~(6), 1075--1088.
+
 \bibitem[{Perkins and Alexander(2013)}]{Perkins2013}
 Perkins, S.~E., Alexander, L.~V., 2013. {On the measurement of heat waves}.
   Journal of Climate 26~(13), 4500--4517.
+
+\bibitem[{Ramos(2001)}]{Ramos2001}
+Ramos, M.~C., 2001. {Divisive and hierarchical clustering techniques to analyse
+  variability of rainfall distribution patterns in a Mediterranean region}.
+  Atmospheric Research 57~(2), 123--138.
 
 \bibitem[{Schlegel and Smit(2016)}]{Schlegel2016}
 Schlegel, R.~W., Smit, A.~J., 2016. {Climate Change in Coastal Waters: Time
@@ -115,6 +167,11 @@ Stocker, T., Qin, D., Plattner, G.~K., Tignor, M., Allen, S.~K., Boschung, J.,
   2013: the physical science basis: Working Group I contribution to the Fifth
   Assessment Report of the Intergovernmental Panel on Climate Change}.
   Cambridge University Press, Cambridge, United Kingdom and New York, NY, USA.
+
+\bibitem[{Unal et~al.(2003)Unal, Kindap, and Karaca}]{Unal2003}
+Unal, Y., Kindap, T., Karaca, M., 2003. {Redefining the climate zones of Turkey
+  using cluster analysis}. International Journal of Climatology 23~(9),
+  1045--1055.
 
 \bibitem[{Wernberg et~al.(2016)Wernberg, Bennett, Babcock, Bettignies, Cure,
   Depczynski, Dufois, Fromont, Fulton, Hovey, Harvey, Holmes, Kendrick,
