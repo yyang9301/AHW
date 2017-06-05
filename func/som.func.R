@@ -8,7 +8,7 @@
 # 5. Functions for creating figures
 # 6. Function for creating event metrics table
 # 7. Function for melting rounding and re-casting data
-# 8. Function for melting trimming and re-casting data 
+# 8. Function for melting trimming and re-casting data
 # 9. Function for melting subsetting and re-casting data
 # 10. Function for extracting only count of events per node
 ## DEPENDS ON:
@@ -79,13 +79,13 @@ som.model.PCI <- function(data_packet, xdim = 3, ydim = 3){
   # Create a scaled matrix for the SOM
   # Cancel out first column as this is the file name of the data packet
   data_packet_matrix <- as.matrix(scale(data_packet[,-1]))
-  
+
   # Create the grid that the SOM will use to determine the number of nodes
   som_grid <- somgrid(xdim = xdim, ydim = ydim, topo = "hexagonal")
-  
+
   # Run the SOM with PCI
-  som_model <- batchsom(data_packet_matrix, 
-                        somgrid = som_grid, 
+  som_model <- batchsom(data_packet_matrix,
+                        somgrid = som_grid,
                         init = "pca",
                         max.iter = 100)
   return(som_model)
@@ -98,14 +98,14 @@ event.node <- function(data_packet, som_output){
                             node = som_output$classif)
   node_count <- as.data.frame(table(event_node$node))
   event_node <- event_node %>%
-    group_by(node) %>% 
-    mutate(count = node_count$Freq[as.integer(node_count$Var1) == node[1]]) %>% 
-    mutate(site = sapply(strsplit(as.character(event), "_"), "[[", 1)) %>% 
-    mutate(event_no = as.integer(sapply(strsplit(as.character(event), "_"), "[[", 2))) %>% 
-    group_by(site) %>% 
-    mutate(lon = SACTN_site_list$lon[as.character(SACTN_site_list$site) == site[1]]) %>% 
+    group_by(node) %>%
+    mutate(count = node_count$Freq[as.integer(node_count$Var1) == node[1]]) %>%
+    mutate(site = sapply(strsplit(as.character(event), "_"), "[[", 1)) %>%
+    mutate(event_no = as.integer(sapply(strsplit(as.character(event), "_"), "[[", 2))) %>%
+    group_by(site) %>%
+    mutate(lon = SACTN_site_list$lon[as.character(SACTN_site_list$site) == site[1]]) %>%
     mutate(lat = SACTN_site_list$lat[as.character(SACTN_site_list$site) == site[1]]) %>%
-    group_by(event) %>% 
+    group_by(event) %>%
     mutate(season = as.factor(SACTN_events$season[SACTN_events$event == event[1]]))
   event_node <- as.data.frame(event_node)
   return(event_node)
@@ -175,7 +175,7 @@ som.unpack.rescale <- function(data_packet, som_output){
 #                               x = 36, y = -37, type = "SST + Current")
 # label_ERA_norm <- data_frame(txt = "4.0 m/s\n",
 #                             x = 36, y = -37)
-# 
+#
 # # Anomaly
 # label_BRAN_anom <- data_frame(txt = "1.0 m/s\n",
 #                               x = 36, y = -37, type = "SST Anomaly + Current Anomaly")
@@ -206,13 +206,13 @@ node.panels <- function(data_temp, data_uv, data_node, plot_title, legend_title,
                  arrow = arrow(angle = 15, length = unit(0.02, "inches"), type = "closed"), alpha = 0.2) +
     geom_polygon(data = southern_africa_coast, aes(x = lon, y = lat, group = group),
                  fill = NA, colour = "black", size = 0.5, show.legend = FALSE) +
-    
+
     ### Need to fix the UV vector label...
     # geom_label(data = label_dat, aes(x = x, y = y, label = txt), size = 5, label.padding = unit(0.5, "lines")) +
     # geom_segment(data = segment_dat, aes(x = x, y = y, xend = xend, yend = yend)) +
     geom_label(data = data_node, aes(x = 25, y = -28, label = paste0("n = ", count,"/",length(node))), size = 3, label.padding = unit(0.5, "lines")) +
     ###
-    
+
     ### Different point options
     ## White points
     # geom_point(data = data_node, aes(x = lon, y = lat), shape = 21,  size = 3, alpha = 0.7, colour = "red", fill = "white") +
@@ -220,7 +220,7 @@ node.panels <- function(data_temp, data_uv, data_node, plot_title, legend_title,
     geom_point(data = data_node, aes(x = lon, y = lat, colour = season), shape = 19,  size = 3, alpha = 0.6) +
     scale_color_discrete("Season") +
     ###
-    
+
     scale_x_continuous(limits = sa_lons, expand = c(0, 0), breaks = seq(15, 35, 5),
                        labels = scales::unit_format("°E", sep = "")) +
     scale_y_continuous(limits = sa_lats, expand = c(0, 0), breaks = seq(-35, -30, 5),
@@ -256,10 +256,10 @@ node.panels <- function(data_temp, data_uv, data_node, plot_title, legend_title,
 # data_res <- node_means # tester...
 # data_node <- node_all_anom
 all.panels <- function(data_res, data_node){
-  
+
   # Prep the data
   data_res$var <- as.factor(data_res$var)
-  
+
   ## Separate BRAN from ERA and temp from uv
   # BRAN
   res_BRAN_temp <- data_res[data_res$var == levels(data_res$var)[1],]
@@ -269,7 +269,7 @@ all.panels <- function(data_res, data_node){
   # lon_sub <- seq(10, 40, by = 0.5)
   # lat_sub <- seq(-40, -15, by = 0.5)
   # res_BRAN_uv <- res_BRAN_uv[(res_BRAN_uv$x %in% lon_sub & res_BRAN_uv$y %in% lat_sub),]
-  
+
   # ERA
   res_ERA_temp <- data_res[data_res$var == levels(data_res$var)[4],]
   res_ERA_uv <- data_res[data_res$var %in% levels(data_res$var)[5:6],]
@@ -280,13 +280,13 @@ all.panels <- function(data_res, data_node){
   lon_sub <- seq(10, 40, by = 1)
   lat_sub <- seq(-40, -15, by = 1)
   res_ERA_uv <- res_ERA_uv[(res_ERA_uv$x %in% lon_sub & res_ERA_uv$y %in% lat_sub),]
-  
+
   # node_data <- node_all_anom
   plot_title_BRAN = "SST Anomaly + Current Anomaly"
   plot_title_ERA = "Air Temp Anomaly + Wind Anomaly"
   legend_title = "Anom.\n(°C)"
   data_type = "anom"
-  
+
   ## The  panel figures
   # BRAN
   panels_BRAN <- node.panels(data_temp = res_BRAN_temp, data_uv = res_BRAN_uv, data_node = data_node, BRAN = TRUE,
@@ -296,11 +296,11 @@ all.panels <- function(data_res, data_node){
   panels_ERA <- node.panels(data_temp = res_ERA_temp, data_uv = res_ERA_uv, data_node = data_node, BRAN = FALSE,
                             plot_title = plot_title_ERA, legend_title = legend_title, vector_label = "4.0 m/s\n", viridis_col = "A")
   # panels_ERA
-  
+
   # Create grid
   # print(grid.arrange(panels_BRAN, panels_ERA, layout_matrix = cbind(c(1,2), c(1,2))))
   # ggsave("graph/SOM_nodes.pdf", height = 18, width = 10)
-  
+
   ## Combine figures and save
   # Generate file name
   file_name <- paste0("graph/SOM_nodes.pdf")
@@ -320,8 +320,8 @@ all.panels <- function(data_res, data_node){
 # df <- node_all_anom
 node.summary.metrics <- function(data_node, data_event){
   df_1 <- merge(data_node, data_event, by = c("event", "site", "season", "event_no"))
-  df_2 <- df_1 %>% 
-    group_by(node) %>% 
+  df_2 <- df_1 %>%
+    group_by(node) %>%
     summarise(count = count[1],
               summer = length(season[as.character(season) == "summer"]),
               autumn = length(season[as.character(season) == "autumn"]),
@@ -339,7 +339,7 @@ node.summary.metrics <- function(data_node, data_event){
               int_max_min = round(min(int_max, na.rm = T),2),
               int_max_mean = round(mean(int_max, na.rm = T),3),
               int_max_max = round(max(int_max, na.rm = T),2))
-  df_3 <- df_1 %>% 
+  df_3 <- df_1 %>%
     summarise(count = length(count),
               summer = length(season[as.character(season) == "summer"]),
               autumn = length(season[as.character(season) == "autumn"]),
@@ -375,8 +375,8 @@ synoptic.round <- function(df, resolution = 0.5){
   df_1$y <- as.numeric(sapply(strsplit(as.character(df_1$variable), "_"), "[[", 2))
   df_1$variable <- sapply(strsplit(as.character(df_1$variable), "_"), "[[", 3)
   # Reduce resolution
-  df_resolution <- df_1 %>% 
-    mutate(x = round_any(x, resolution)) %>% 
+  df_resolution <- df_1 %>%
+    mutate(x = round_any(x, resolution)) %>%
     mutate(y = round_any(y, resolution))
   df_resolution <- data.table(df_resolution)
   df_resolution <- df_resolution[, .(value = mean(value, na.rm = TRUE)),

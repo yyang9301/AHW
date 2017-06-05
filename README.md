@@ -201,3 +201,6 @@ The scripts and data used to determine common air-sea states during MHWs along t
 ## 2017/05/24
 * References for clustering added to methods section
 * More results written up
+
+## 2017/06/05
+* Writing for results, discussion and conclusion added
