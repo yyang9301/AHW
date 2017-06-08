@@ -36,6 +36,13 @@ source("func/som.func.R")
 
 # 3. Methods --------------------------------------------------------------
 
+## Study area
+# The default lon/ lat ranges
+wlon <- 10
+elon <- 40
+nlat <- -25
+slat <- -40
+
 ## In situ data
 # Number of time series in SACTN
 load("~/SACTN/metadata/site_list_v4.1.Rdata")

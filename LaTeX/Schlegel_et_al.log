@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.16 (TeX Live 2015/Debian) (preloaded format=pdflatex 2016.9.13)  5 JUN 2017 14:48
+This is pdfTeX, Version 3.14159265-2.6-1.40.16 (TeX Live 2015/Debian) (preloaded format=pdflatex 2016.9.13)  8 JUN 2017 14:51
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -2027,21 +2027,21 @@ Package microtype Info: Loading generic settings for font family
  [1
 
 
-{/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map}] [2] <figure_1.pdf, id=164,
+{/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map}] [2] <figure_1.pdf, id=176,
  579.16376pt x 362.35374pt>
 File: figure_1.pdf Graphic file (type pdf)
 
 <use figure_1.pdf>
-Package pdftex.def Info: figure_1.pdf used on input line 143.
+Package pdftex.def Info: figure_1.pdf used on input line 145.
 (pdftex.def)             Requested size: 441.01773pt x 275.9225pt.
 
-Overfull \hbox (89.36868pt too wide) in paragraph at lines 149--150
+Overfull \hbox (89.36868pt too wide) in paragraph at lines 151--152
 \T1/lmr/m/n/10 (-20) Coastal Tem-per-a-ture Net-work (SACTN, https://github.com
 /ajsmit/SACTN, https://robert-schlegel.shinyapps.io/SACTN/).
  []
 
 [3] [4 <./figure_1.pdf>]
-Overfull \hbox (3.44012pt too wide) in paragraph at lines 156--157
+Overfull \hbox (3.44012pt too wide) in paragraph at lines 158--159
 \T1/lmr/m/n/10 (-20) duced by the Eu-ro-pean Cen-tre for Medium-Range Weather F
 ore-casts (ECMWF, http://www.ecmwf.int/).
  []
@@ -2049,52 +2049,59 @@ ore-casts (ECMWF, http://www.ecmwf.int/).
 [5]
 
 LaTeX Warning: No positions in optional float specifier.
-               Default added (so using `tbp') on input line 167.
+               Default added (so using `tbp') on input line 169.
 
 
-Overfull \hbox (38.75774pt too wide) in paragraph at lines 185--186
+Overfull \hbox (38.75774pt too wide) in paragraph at lines 187--188
 \T1/lmr/m/n/10 (-20) which may be down-loaded via CRAN (https://cran.r-project.
 org/web/packages/RmarineHeatWaves/index.html),
  []
 
-<figure_2.pdf, id=291, 1228.59pt x 722.7pt>
+[6] <figure_2.pdf, id=317, 1228.59pt x 722.7pt>
 File: figure_2.pdf Graphic file (type pdf)
  <use figure_2.pdf>
-Package pdftex.def Info: figure_2.pdf used on input line 193.
+Package pdftex.def Info: figure_2.pdf used on input line 195.
 (pdftex.def)             Requested size: 441.01773pt x 259.42192pt.
- [6] [7 <./figure_2.pdf>] [8] <figure_3.pdf, id=382, 722.7pt x 867.24pt>
-File: figure_3.pdf Graphic file (type pdf)
- <use figure_3.pdf>
-Package pdftex.def Info: figure_3.pdf used on input line 219.
-(pdftex.def)             Requested size: 441.01773pt x 529.22737pt.
+ [7] [8 <./figure_2.pdf>] <figure_3.png, id=395, 602.25pt x 451.6875pt>
+File: figure_3.png Graphic file (type png)
+ <use figure_3.png>
+Package pdftex.def Info: figure_3.png used on input line 221.
+(pdftex.def)             Requested size: 441.01773pt x 330.77673pt.
 
-<figure_4.pdf, id=384, 650.43pt x 650.43pt>
+<figure_4.pdf, id=397, 722.7pt x 867.24pt>
 File: figure_4.pdf Graphic file (type pdf)
  <use figure_4.pdf>
-Package pdftex.def Info: figure_4.pdf used on input line 233.
+Package pdftex.def Info: figure_4.pdf used on input line 230.
+(pdftex.def)             Requested size: 441.01773pt x 529.22737pt.
+ [9] [10 <./figure_3.png (PNG copy)>] [11 <./figure_4.pdf>]
+<figure_5.pdf, id=458, 650.43pt x 650.43pt>
+File: figure_5.pdf Graphic file (type pdf)
+ <use figure_5.pdf>
+Package pdftex.def Info: figure_5.pdf used on input line 244.
 (pdftex.def)             Requested size: 441.01773pt x 441.02611pt.
+ [12] [13 <./figure_5.pdf>] <figure_6.jpeg, id=481, 456.95718pt x 335.75438pt>
+File: figure_6.jpeg Graphic file (type jpg)
 
-Overfull \hbox (341.40076pt too wide) in paragraph at lines 246--262
- [][] 
- []
-
-[9] [10 <./figure_3.pdf>] [11 <./figure_4.pdf>]
-<figure_5.jpeg, id=449, 456.95718pt x 335.75438pt>
-File: figure_5.jpeg Graphic file (type jpg)
- <use figure_5.jpeg>
-Package pdftex.def Info: figure_5.jpeg used on input line 268.
+<use figure_6.jpeg>
+Package pdftex.def Info: figure_6.jpeg used on input line 282.
 (pdftex.def)             Requested size: 441.01773pt x 324.05217pt.
- [12 <./figure_5.jpeg>] [13]
+ <figure_7.jpeg, id=482, 456.95718pt x 335.75438pt>
+File: figure_7.jpeg Graphic file (type jpg)
+
+<use figure_7.jpeg>
+Package pdftex.def Info: figure_7.jpeg used on input line 288.
+(pdftex.def)             Requested size: 441.01773pt x 324.05217pt.
+ [14 <./figure_6.jpeg>] [15 <./figure_7.jpeg>] [16] [17]
 
 LaTeX Warning: No positions in optional float specifier.
-               Default added (so using `tbp') on input line 296.
+               Default added (so using `tbp') on input line 326.
 
 
-Overfull \hbox (238.36334pt too wide) in paragraph at lines 302--334
+Overfull \hbox (238.36334pt too wide) in paragraph at lines 332--364
  [][] 
  []
 
-(./Schlegel_et_al.bbl [14]
+(./Schlegel_et_al.bbl [18]
 Underfull \hbox (badness 10000) in paragraph at lines 41--46
 \T1/lmr/m/n/10 (+20) URL []$\T1/lmtt/m/n/10 http : / / onlinelibrary . wiley . 
 com / doi / 10 . 1002 / (SICI ) 1097-[]0088(199805 ) 18 :
@@ -2106,24 +2113,24 @@ Underfull \hbox (badness 10000) in paragraph at lines 41--46
  : / / www . scopus . com / scopus / inward /
  []
 
-[15] [16]) [17]
-Package atveryend Info: Empty hook `BeforeClearDocument' on input line 354.
-Package atveryend Info: Empty hook `AfterLastShipout' on input line 354.
+[19] [20]) [21]
+Package atveryend Info: Empty hook `BeforeClearDocument' on input line 384.
+Package atveryend Info: Empty hook `AfterLastShipout' on input line 384.
  (./Schlegel_et_al.aux)
-Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 354.
-Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 354.
+Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 384.
+Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 384.
 Package rerunfilecheck Info: File `Schlegel_et_al.out' has not changed.
-(rerunfilecheck)             Checksum: C2F612A2B1DC373D2B1FFB36D67E935D;1037.
-Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 354.
+(rerunfilecheck)             Checksum: 61BBB383657409218ED860A6DCF53D75;1223.
+Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 384.
  ) 
 Here is how much of TeX's memory you used:
- 31657 strings out of 493029
- 595137 string characters out of 6136234
- 688756 words of memory out of 5000000
- 34461 multiletter control sequences out of 15000+600000
- 84392 words of font info for 125 fonts, out of 8000000 for 9000
+ 31694 strings out of 493029
+ 595607 string characters out of 6136234
+ 685756 words of memory out of 5000000
+ 34476 multiletter control sequences out of 15000+600000
+ 84960 words of font info for 130 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 62i,12n,92p,10423b,487s stack positions out of 5000i,500n,10000p,200000b,80000s
+ 62i,12n,92p,10423b,493s stack positions out of 5000i,500n,10000p,200000b,80000s
 {/usr/share/texmf/fonts/enc/dvips/lm/lm-ec.enc}{/usr/share/texmf/fonts/enc/dv
 ips/lm/lm-mathsy.enc}{/usr/share/texmf/fonts/enc/dvips/lm/lm-ts1.enc}</usr/shar
 e/texmf/fonts/type1/public/lm/lmbx10.pfb></usr/share/texmf/fonts/type1/public/l
@@ -2138,10 +2145,10 @@ mf/fonts/type1/public/lm/lmri9.pfb></usr/share/texmf/fonts/type1/public/lm/lmss
 s/type1/public/lm/lmsy5.pfb></usr/share/texmf/fonts/type1/public/lm/lmsy6.pfb><
 /usr/share/texmf/fonts/type1/public/lm/lmsy7.pfb></usr/share/texmf/fonts/type1/
 public/lm/lmtt10.pfb></usr/share/texmf/fonts/type1/public/lm/lmtt8.pfb>
-Output written on Schlegel_et_al.pdf (17 pages, 2368567 bytes).
+Output written on Schlegel_et_al.pdf (21 pages, 2477765 bytes).
 PDF statistics:
- 584 PDF objects out of 1000 (max. 8388607)
- 473 compressed objects within 5 object streams
- 86 named destinations out of 1000 (max. 500000)
- 26294 words of extra memory for PDF output out of 29859 (max. 10000000)
+ 631 PDF objects out of 1000 (max. 8388607)
+ 510 compressed objects within 6 object streams
+ 95 named destinations out of 1000 (max. 500000)
+ 26328 words of extra memory for PDF output out of 29859 (max. 10000000)
 

@@ -31,8 +31,12 @@ node_table <- node.summary.metrics(node_all_anom, SACTN_events)
 save(node_table, file = "data/node_table.Rdata")
 write.csv(node_table, file = "data/node_table.csv")
 
-# Generate table for LaTeX
+# Trim off unused columns
 load("data/node_table.Rdata")
+node_table <- node_table[,c(1:9, 11, 14, 17)]
+node_table[10,1] <- "ALL"
+
+# Generate table for LaTeX
 xtable(node_table)
 
 
