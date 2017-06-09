@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.16 (TeX Live 2015/Debian) (preloaded format=pdflatex 2016.9.13)  8 JUN 2017 14:51
+This is pdfTeX, Version 3.14159265-2.6-1.40.16 (TeX Live 2015/Debian) (preloaded format=pdflatex 2016.9.13)  9 JUN 2017 14:44
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -2034,13 +2034,13 @@ File: figure_1.pdf Graphic file (type pdf)
 <use figure_1.pdf>
 Package pdftex.def Info: figure_1.pdf used on input line 145.
 (pdftex.def)             Requested size: 441.01773pt x 275.9225pt.
-
+ [3] [4 <./figure_1.pdf>]
 Overfull \hbox (89.36868pt too wide) in paragraph at lines 151--152
 \T1/lmr/m/n/10 (-20) Coastal Tem-per-a-ture Net-work (SACTN, https://github.com
 /ajsmit/SACTN, https://robert-schlegel.shinyapps.io/SACTN/).
  []
 
-[3] [4 <./figure_1.pdf>]
+
 Overfull \hbox (3.44012pt too wide) in paragraph at lines 158--159
 \T1/lmr/m/n/10 (-20) duced by the Eu-ro-pean Cen-tre for Medium-Range Weather F
 ore-casts (ECMWF, http://www.ecmwf.int/).
@@ -2057,7 +2057,7 @@ Overfull \hbox (38.75774pt too wide) in paragraph at lines 187--188
 org/web/packages/RmarineHeatWaves/index.html),
  []
 
-[6] <figure_2.pdf, id=317, 1228.59pt x 722.7pt>
+[6] <figure_2.pdf, id=313, 1228.59pt x 722.7pt>
 File: figure_2.pdf Graphic file (type pdf)
  <use figure_2.pdf>
 Package pdftex.def Info: figure_2.pdf used on input line 195.
@@ -2101,7 +2101,7 @@ Overfull \hbox (238.36334pt too wide) in paragraph at lines 332--364
  [][] 
  []
 
-(./Schlegel_et_al.bbl [18]
+[18] (./Schlegel_et_al.bbl
 Underfull \hbox (badness 10000) in paragraph at lines 41--46
 \T1/lmr/m/n/10 (+20) URL []$\T1/lmtt/m/n/10 http : / / onlinelibrary . wiley . 
 com / doi / 10 . 1002 / (SICI ) 1097-[]0088(199805 ) 18 :
@@ -2124,11 +2124,11 @@ Package rerunfilecheck Info: File `Schlegel_et_al.out' has not changed.
 Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 384.
  ) 
 Here is how much of TeX's memory you used:
- 31694 strings out of 493029
- 595607 string characters out of 6136234
+ 31696 strings out of 493029
+ 595629 string characters out of 6136234
  685756 words of memory out of 5000000
  34476 multiletter control sequences out of 15000+600000
- 84960 words of font info for 130 fonts, out of 8000000 for 9000
+ 85090 words of font info for 131 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
  62i,12n,92p,10423b,493s stack positions out of 5000i,500n,10000p,200000b,80000s
 {/usr/share/texmf/fonts/enc/dvips/lm/lm-ec.enc}{/usr/share/texmf/fonts/enc/dv
@@ -2145,10 +2145,10 @@ mf/fonts/type1/public/lm/lmri9.pfb></usr/share/texmf/fonts/type1/public/lm/lmss
 s/type1/public/lm/lmsy5.pfb></usr/share/texmf/fonts/type1/public/lm/lmsy6.pfb><
 /usr/share/texmf/fonts/type1/public/lm/lmsy7.pfb></usr/share/texmf/fonts/type1/
 public/lm/lmtt10.pfb></usr/share/texmf/fonts/type1/public/lm/lmtt8.pfb>
-Output written on Schlegel_et_al.pdf (21 pages, 2477765 bytes).
+Output written on Schlegel_et_al.pdf (21 pages, 2478204 bytes).
 PDF statistics:
- 631 PDF objects out of 1000 (max. 8388607)
- 510 compressed objects within 6 object streams
+ 633 PDF objects out of 1000 (max. 8388607)
+ 512 compressed objects within 6 object streams
  95 named destinations out of 1000 (max. 500000)
  26328 words of extra memory for PDF output out of 29859 (max. 10000000)
 

@@ -37,7 +37,7 @@ node_table <- node_table[,c(1:9, 11, 14, 17)]
 node_table[10,1] <- "ALL"
 
 # Generate table for LaTeX
-xtable(node_table)
+print(xtable(node_table), include.rownames=FALSE)
 
 
 # 3. Supplementary table --------------------------------------------------

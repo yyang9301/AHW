@@ -5,6 +5,8 @@
 # 2. Create synoptic figure for each event
 # 3. Create synoptic figure showing SOM nodes
 # 4. Create lolliplots for the SOM nodes
+# 5. Create dendrogram for HCA results
+# 6. Create ordiplot for MDS results
 #############################################################################
 
 
@@ -54,3 +56,10 @@ ggplot(data = node_all, aes(x = date_start, y = int_cum)) +
   facet_wrap(~node) +
   labs(x = "", y = "cummulative intensity (°Cxdays)")
 ggsave("graph/SOM_lolli.pdf", height = 9, width = 9)
+
+
+# 5. Create dendrogram for HCA results ------------------------------------
+
+
+# 6. Create ordiplot for MDS results --------------------------------------
+
