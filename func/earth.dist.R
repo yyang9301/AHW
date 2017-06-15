@@ -2,6 +2,8 @@
 # http://r.789695.n4.nabble.com/Geographic-distance-between-lat-long-points-in-R-td3442338.html --
 ## According to that blogpost, I am using the function gcd.hf using the haversine formula. I wrapped it up in a function called CalcDists so that I can get a distance matrix between N sites.
 
+## Note that the packages "fossil" and "plyr" must be installed for all functions to run
+
 # Convert degrees to radians
 deg2rad <- function(deg) return(deg*pi/180)
 
@@ -43,7 +45,7 @@ PairsDists <- function(latlongs) {
 # This function finds the distance and bearing between two points
 dist.bear <- function(site1, site2){
   dist <- gcd.hf(deg2rad(site2$lon), deg2rad(site2$lat), deg2rad(site1$lon), deg2rad(site1$lat))
-  bear <- earth.bear(site2$lon, site2$lat, site1$lon, site1$lat)
+  bear <- fossil::earth.bear(site2$lon, site2$lat, site1$lon, site1$lat)
   result <- data.frame(index = paste(site2$site, site1$site, sep = " - "), dist, bear)
   return(result)
 }
@@ -51,7 +53,7 @@ dist.bear <- function(site1, site2){
 # This function compares one site against many
 # It is intended to be used with ddply to compare many sites against many sites
 dist.bear.many <- function(site, df){
-  results <- ddply(df, .(site), dist.bear, site2 = site, .parallel = TRUE)
+  results <- plyr::ddply(df, c("site"), dist.bear, site2 = site)
   results$site <- NULL
   return(results)
 }
