@@ -16,7 +16,7 @@ This requires that once the different events have been clustered, regardless of 
 ![The results of a SOM clustering of the syoptic air-sea anaomaly data during coastal MHWs. The clusters shown here correspond to the following table and figure.](~/AHW/graph/som/anom_9.pdf)
 
 ```{r, warning=FALSE, message=FALSE, echo=FALSE, results='asis'}
-# Load SOM results from anomaly data prepared by "proc/results.som.R"
+# Load SOM results from pci results from later on in this script...
 load("results/node_all_anom_pci_1r.Rdata")
 # Run the metric summary function on these data
 source("~/AHW/func/som.func.R")
@@ -318,17 +318,19 @@ As we see in the table above, separating the variables from one another has a la
 ## Do normal days cluster apart from events?
 The idea here is to include the 366 daily synoptic climatology values in with the synoptic MHW values to see if they cluster differently. From previous SOM and K-means cluster analyses on these daily climatology values it was determined that 2 - 4 nodes/ clusters was optimal. Anything more than that was over fitting. I attribute this to the much more even nature of the climatological data. Therefore I hypothesised that if one were to cluster the daily clims with the event data they would be placed into different clusters. There are 95 events and 366 daily clims, so this should allow for a pattern to be seen if one does exist. Up until this point SOMs have been the primary tool of investigation into clustering, but for this last step I opt to use HCA to produce a dendrogram of the results. I do this because it provides a better visual index of the difference between the points. It also allows for a nice visual representation of the two different classes of data being compared (i.e. event data and daily clim data). Additionally, an MDS is run to allow for another dimension of spatial difference to be inferred.
 ```{r, warning=FALSE, message=FALSE, echo=FALSE}
+library(tidyverse)
+
 # Load the daily clim data and create a 0.5 degree mean
-# load("~/AHW/data/all_daily.Rdata")
-# all_daily_0.5 <- all_daily %>% 
-  # mutate(x = round_any(x, 0.5)) %>% 
-  # mutate(y = round_any(y, 0.5))
+# load("~/AHW/old/data/all_daily.Rdata")
+# all_daily_0.5 <- all_daily %>%
+# mutate(x = plyr::round_any(x, 0.5)) %>%
+# mutate(y = plyr::round_any(y, 0.5))
 # all_daily_0.5 <- data.table(all_daily_0.5)
 # all_daily_0.5 <- all_daily_0.5[, .(value = mean(value, na.rm = TRUE)),
-                                   # by = .(x, y, variable, date)]
+# by = .(x, y, variable, date)]
 # all_daily_0.5$index <- paste0(all_daily_0.5$x,"_",all_daily_0.5$y,"_",all_daily_0.5$variable)
 # save(all_daily_0.5, file = "results/all_daily_0.5.Rdata")
-# load("results/all_daily_0.5.Rdata")
+load("results/all_daily_0.5.Rdata")
 
 ## With the daily data loaded, create anomaly values
 # First create mean

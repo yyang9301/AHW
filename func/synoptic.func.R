@@ -8,9 +8,8 @@
 # 5. Function for creating synoptic figures
 
 ## DEPENDS ON:
-library(grid)
+library(tidyverse)
 library(gridExtra)
-library(ggplot2)
 library(scales)
 library(viridis)
 library(RmarineHeatWaves)
