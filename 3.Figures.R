@@ -67,6 +67,18 @@ ggsave("graph/SOM_lolli.pdf", height = 9, width = 9)
 
 # 7. Create map of study area ---------------------------------------------
 
+### Locations to add ###
+
+# The three coastal section: WC, SC, EC must be shown
+  # This would work best on the bottom panel as it is currently less busy
+  # But it would make more sense on the top panel...
+
+# Also need to label: Namibia, Mozam and SA
+
+# It would also be good to tweak the 200 m isobath
+
+###
+
 ## Data
 # International borders
 load("graph/africa_borders.Rdata")
