@@ -1,14 +1,8 @@
-\begin{thebibliography}{57}
+\begin{thebibliography}{58}
 \expandafter\ifx\csname natexlab\endcsname\relax\def\natexlab#1{#1}\fi
 \expandafter\ifx\csname url\endcsname\relax
   \def\url#1{\texttt{#1}}\fi
 \expandafter\ifx\csname urlprefix\endcsname\relax\def\urlprefix{URL }\fi
-
-\bibitem[{Ambroise et~al.(2000)Ambroise, S??ze, Badran, and
-  Thiria}]{Ambroise2000}
-Ambroise, C., S??ze, G., Badran, F., Thiria, S., 2000. {Hierarchical clustering
-  of self-organizing maps for cloud classification}. Neurocomputing 30~(1-4),
-  47--52.
 
 \bibitem[{Barrett et~al.(2008)Barrett, Virginia, Wall, Doran, Fountain, Welch,
   and Lyons}]{Barrett2008}
@@ -110,6 +104,24 @@ Corte-Real, J., Qian, B., Xu, H., 1998. {Regional climate change in Portugal:
 Cox, P.~M., Betts, R.~a., Jones, C.~D., Spall, S.~a., Totterdell, I.~J., 2000.
   {Acceleration of global warming due to carbon-cycle feedbacks in a coupled
   climate model.} Nature 408~(6809), 184--187.
+
+\bibitem[{Dee et~al.(2011)Dee, Uppala, Simmons, Berrisford, Poli, Kobayashi,
+  Andrae, Balmaseda, Balsamo, Bauer, Bechtold, Beljaars, van~de Berg, Bidlot,
+  Bormann, Delsol, Dragani, Fuentes, Geer, Haimberger, Healy, Hersbach,
+  H{\'{o}}lm, Isaksen, K{\aa}llberg, K{\"{o}}hler, Matricardi, McNally,
+  Monge-Sanz, Morcrette, Park, Peubey, de~Rosnay, Tavolato, Th{\'{e}}paut, and
+  Vitart}]{Dee2011}
+Dee, D.~P., Uppala, S.~M., Simmons, A.~J., Berrisford, P., Poli, P., Kobayashi,
+  S., Andrae, U., Balmaseda, M.~A., Balsamo, G., Bauer, P., Bechtold, P.,
+  Beljaars, A. C.~M., van~de Berg, L., Bidlot, J., Bormann, N., Delsol, C.,
+  Dragani, R., Fuentes, M., Geer, A.~J., Haimberger, L., Healy, S.~B.,
+  Hersbach, H., H{\'{o}}lm, E.~V., Isaksen, L., K{\aa}llberg, P., K{\"{o}}hler,
+  M., Matricardi, M., McNally, A.~P., Monge-Sanz, B.~M., Morcrette, J.-J.,
+  Park, B.-K., Peubey, C., de~Rosnay, P., Tavolato, C., Th{\'{e}}paut, J.-N.,
+  Vitart, F., apr 2011. {The ERA-Interim reanalysis: configuration and
+  performance of the data assimilation system}. Quarterly Journal of the Royal
+  Meteorological Society 137~(656), 553--597.
+\newline\urlprefix\url{http://doi.wiley.com/10.1002/qj.828}
 
 \bibitem[{Denny et~al.(2009)Denny, Hunt, Miller, and Harley}]{Denny2009}
 Denny, M.~W., Hunt, L. J.~H., Miller, L.~P., Harley, C. D.~G., aug 2009. {On
@@ -228,6 +240,12 @@ Lirman, D., Schopmeyer, S., Manzello, D., Gramer, L.~J., Precht, W.~F.,
 L{\"{u}}nning, K., 1990. {Seaweds: their environment, biogeography and
   ecophysiology. John Wiley and Sons}. Wiley, New York (USA).
 
+\bibitem[{Lutjeharms et~al.(2000)Lutjeharms, Cooper, and
+  Roberts}]{Lutjeharms2000a}
+Lutjeharms, J., Cooper, J., Roberts, M., apr 2000. {Upwelling at the inshore
+  edge of the Agulhas Current}. Continental Shelf Research 20~(7), 737--761.
+\newline\urlprefix\url{http://linkinghub.elsevier.com/retrieve/pii/S0278434399000928}
+
 \bibitem[{Manabe and Wetherald(1967)}]{Manabe1967}
 Manabe, S., Wetherald, R.~T., 1967. {Thermal Equilibrium of the Atmosphere with
   a Given Distribution of Relative Humidity}. Journal of the Atmospheric
@@ -263,11 +281,6 @@ Perkins-Kirkpatrick, S.~E., White, C.~J., Alexander, L.~V., Arg{\"{u}}eso, D.,
   Boschat, G., Cowan, T., Evans, J.~P., Ekstr{\"{o}}m, M., Oliver, E.~C.,
   Phatak, A., Purich, A., 2016. {Natural hazards in Australia: heatwaves}.
   Climatic Change 139~(1), 101--114.
-
-\bibitem[{Ramos(2001)}]{Ramos2001}
-Ramos, M.~C., 2001. {Divisive and hierarchical clustering techniques to analyse
-  variability of rainfall distribution patterns in a Mediterranean region}.
-  Atmospheric Research 57~(2), 123--138.
 
 \bibitem[{Rosenzweig et~al.(2008)Rosenzweig, Karoly, Vicarelli, Neofotis, Wu,
   Casassa, Menzel, Root, Estrella, Seguin, Tryjanowski, Liu, Rawlins, and
@@ -323,6 +336,14 @@ Smit, A.~J., Roberts, M., Anderson, R.~J., Dufois, F., Dudley, S. F.~J.,
   temperature dataset for biogeographical studies: large biases between in situ
   and remotely-sensed data sets around the coast of South Africa}. PLOS ONE
   8~(12).
+
+\bibitem[{Stachowicz et~al.(2002)Stachowicz, Terwin, Whitlatch, and
+  Osman}]{Stachowicz2002}
+Stachowicz, J.~J., Terwin, J.~R., Whitlatch, R.~B., Osman, R.~W., nov 2002.
+  {Linking climate change and biological invasions: Ocean warming facilitates
+  nonindigenous species invasions}. Proceedings of the National Academy of
+  Sciences 99~(24), 15497--15500.
+\newline\urlprefix\url{http://www.pnas.org/cgi/doi/10.1073/pnas.242437499}
 
 \bibitem[{Stocker et~al.(2013)Stocker, Qin, Plattner, Tignor, Allen, Boschung,
   Nauels, Xia, Bex, and Midgley}]{IPCC2014}
