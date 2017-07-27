@@ -12,8 +12,8 @@
 
 
 # 1. Load all libraries and functions used in this script  ----------------
-library(tidyverse)
 library(doMC); registerDoMC(cores = 4)
+library(tidyverse)
 library(RmarineHeatWaves)
 source("func/detect.full.R")
 source("func/synoptic.func.R") # This loads several files
