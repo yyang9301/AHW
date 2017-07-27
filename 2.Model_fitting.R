@@ -6,6 +6,8 @@
 # 3. Create data packets from BRAN and ERA data based on MHWs
 # 4. Cluster the events using SOMs
 # 5. Create mean synoptic states for each node
+# 6. Perform HCA and MDS on clim vs. event days
+# 7. ANOSIM on differences between SOM nodes
 ############################################################################
 
 
@@ -167,3 +169,33 @@ all_anom <- cbind(BRAN_anom, ERA_anom[,-1]); rm(BRAN_anom, ERA_anom)
 # Calculate node means
 node_means <- som.unpack.mean(all_anom, som_mdel_pci)
 save(node_means, file = "data/node_means.Rdata")
+
+
+# 6. Perform HCA and MDS on clim vs. event days ---------------------------
+
+
+## Calculate MDS
+# all_anom_0.5$node <- NULL
+# all_anom_0.5_MDS <- metaMDS(vegdist(decostand(all_anom_0.5[,-c(1)],
+#                                               method = "standardize"), 
+#                                     method = "euclidean"), try = 100)
+# save(all_anom_0.5_MDS, file = "results/all_anom_0.5_MDS.Rdata")
+load("results/all_anom_0.5_MDS.Rdata")
+
+# Fit environmental variables
+ord_fit <- envfit(all_anom_0.5_MDS ~ coast + season, data = event_list[,26:27])
+# ord_fit
+ord_fit_df <- as.data.frame(ord_fit$factors$centroids)
+ord_fit_df$factors <- rownames(ord_fit_df)
+
+# Create MDS dataframe
+mds_df <- data.frame(all_anom_0.5_MDS$points)
+
+# Plot the fits
+ggplot(data = mds_df, aes(x = MDS1, y = MDS2)) +
+  geom_point(colour = "salmon") +
+  geom_text(data = ord_fit_df, aes(label = factors, x = NMDS1, y = NMDS2))
+
+# 7. ANOSIM on differences between SOM nodes ------------------------------
+
+som_anosim <- anosim(as.matrix(scale(all_anom_0.5[,-1])), node_all_anom_pci_1r$node)

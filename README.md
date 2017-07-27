@@ -234,3 +234,8 @@ The scripts and data used to determine common air-sea states during MHWs along t
 
 ## 2017/07/21
 * Comments for methods section wrapped up
+
+## 2017/07/26
+* Phasing out BRAN in favour of AVISO and OISST
+* Recalculated ERA daily clims based on new longer period
+* Calculated OISST daily clims

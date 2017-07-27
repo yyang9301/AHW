@@ -3,16 +3,16 @@
 ## This script prepares the SACTN, BRAN and ERA-Interim data used in the analysis
 # 1. Load all libraries and functions used in this script 
 # 2. Load and crop the daily SACTN data
-# 3. Load BRAN daily data and create clims
-# 4. Load ERA daily data and create clims
+# 3. Load ERA daily data and create clims
+# 4. Load OISST data and create clims
+# 5. Load AVISO data and create clims
 ############################################################################
 
 
 # 1. Load all libraries and functions used in this script  ----------------
-library(tidyverse)
-library(doMC); registerDoMC(cores = 4)
 source("func/load.reanalyses.R")
-
+source("func/load.remote.R")
+#
 
 # 2. Load and crop the daily SACTN data -----------------------------------
 
@@ -55,52 +55,13 @@ write.csv(SACTN_site_list, file = "setupParams/SACTN_site_list.csv")
 rm(site_list, SACTN_site_list)
 
 
-# 3. Load BRAN daily data and create clims --------------------------------
-
-# The script used to download the BRAN data: "data/download.BRAN.R"
-# These data are not stored on this GitHub page as they total 2.2 GB
-
-# Indices for loading
-temp_idx <- data.frame(files = dir("~/data/BRAN", pattern = "ocean_temp", full.names = TRUE), 
-                       x = 1:length(dir("~/data/BRAN", pattern = "ocean_temp")))
-u_idx <- data.frame(files = dir("~/data/BRAN", pattern = "ocean_u", full.names = TRUE), 
-                    x = 1:length(dir("~/data/BRAN", pattern = "ocean_u")))
-v_idx <- data.frame(files = dir("~/data/BRAN", pattern = "ocean_v", full.names = TRUE), 
-                    x = 1:length(dir("~/data/BRAN", pattern = "ocean_v")))
-
-# Daily temperature climatologies
-  # This is not much slower but much more stable on only one core...
-system.time(BRAN_temp_daily <- plyr::ddply(temp_idx, c("files"), BRAN.Rdata, .progress = "text")) # 135 seconds
-BRAN_temp_daily$files <- NULL
-system.time(BRAN_temp_clim <- plyr::ddply(BRAN_temp_daily, c("x","y"), grid.clim, .progress = "text")) # 659 seconds
-colnames(BRAN_temp_clim)[4] <- "temp"
-save(BRAN_temp_clim, file = "data/BRAN/BRAN_temp_clim.Rdata")
-rm(BRAN_temp_daily, BRAN_temp_clim)
-
-# Daily U climatologies
-system.time(BRAN_u_daily <- plyr::ddply(u_idx, c("files"), BRAN.Rdata, .progress = "text")) # 125 seconds
-BRAN_u_daily$files <- NULL
-system.time(BRAN_u_clim <- plyr::ddply(BRAN_u_daily, c("x","y"), grid.clim, .progress = "text")) # 715 seconds
-colnames(BRAN_u_clim)[4] <- "u"
-save(BRAN_u_clim, file = "data/BRAN/BRAN_u_clim.Rdata")
-rm(BRAN_u_daily, BRAN_u_clim)
-
-# Daily V climatologies
-system.time(BRAN_v_daily <- plyr::ddply(v_idx, c("files"), BRAN.Rdata, .progress = "text")) # 146 seconds
-BRAN_v_daily$files <- NULL
-system.time(BRAN_v_clim <- plyr::ddply(BRAN_v_daily, c("x","y"), grid.clim, .progress = "text")) # 760 seconds
-colnames(BRAN_v_clim)[4] <- "v"
-save(BRAN_v_clim, file = "data/BRAN/BRAN_v_clim.Rdata")
-rm(BRAN_v_daily, BRAN_v_clim)
-
-
-# 4. Load ERA daily data and create clims ---------------------------------
+# 3. Load ERA daily data and create clims ---------------------------------
 
 # The ERA-Interim data were downloaded using the providers web interface
 # These data are not stored on this GitHub page as they total 650 MB
 
-# Create date range index so that same date range from BRAN is used for ERA
-BRAN_date_range <- seq(as.Date("1994-01-01"), as.Date("2016-08-31"), by = "day")
+# Create date range index to set the standard for all datasets
+date_range <- seq(as.Date("1993-01-01"), as.Date("2016-12-31"), by = "day")
 
 # Load all ERA daily values
   # ERA1 not loaded as these dates precede any available BRAN data
@@ -111,7 +72,7 @@ system.time(ERA4 <- ERA.daily("~/data/ERA/ERA_2008_2016.nc")) # 40 seconds
 
 # Create single dataframe for subsetting
 ERA_all_daily <- rbind(ERA2, ERA3, ERA4)
-ERA_all_daily <- filter(ERA_all_daily, date %in% BRAN_date_range)
+ERA_all_daily <- filter(ERA_all_daily, date %in% date_range)
 rm(ERA2, ERA3, ERA4)
 
 # Split into three different dataframes
@@ -137,4 +98,53 @@ system.time(ERA_v_clim <- plyr::ddply(ERA_v_daily, c("x","y"), grid.clim, .progr
 colnames(ERA_v_clim)[4] <- "v"
 save(ERA_v_clim, file = "data/ERA/ERA_v_clim.Rdata")
 rm(ERA_v_daily, ERA_v_clim)
+
+
+# 4. Load OISST data and create clims -------------------------------------
+
+# These data are not stored on this GitHub page as they total 107 GB
+
+# Indices for loading
+OISST_idx <- data.frame(files = dir("~/data/OISST/netCDF", pattern = "avhrr-only", full.names = TRUE), 
+                       x = 1:length(dir("~/data/OISST/netCDF", pattern = "avhrr-only")))[4141:12775,]
+
+# Daily temperature climatologies
+# This is not much slower but much more stable on only one core...
+system.time(OISST_temp_daily <- plyr::ddply(OISST_idx, c("files"), OISST.daily, .progress = "text")) # 2495 seconds
+OISST_temp_daily$files <- NULL
+system.time(OISST_temp_clim <- plyr::ddply(OISST_temp_daily, c("x","y"), grid.clim, .progress = "text")) # 3117 seconds
+colnames(OISST_temp_clim)[4] <- "temp"
+save(OISST_temp_clim, file = "data/OISST/OISST_temp_clim.Rdata")
+rm(OISST_temp_daily, OISST_temp_clim)
+
+
+# 6. Load AVISO data and create clims -------------------------------------
+
+# These data are not stored on this GitHub page as they total 22 GB
+
+# Indices for loading
+AVISO_idx <- data.frame(files = dir("~/data/AVISO", pattern = "madt", full.names = TRUE), 
+                        x = 1:length(dir("~/data/AVISO", pattern = "madt")))#[4141:12775,]
+
+# Daily U and V values
+# This is not much slower but much more stable on only one core...
+system.time(AVISO_temp_daily <- plyr::ddply(AVISO_idx, c("files"), AVISO.daily, .progress = "text")) # 2495 seconds
+AVISO_temp_daily$files <- NULL
+
+# Split into three different dataframes
+AVISO_u_daily <- AVISO_all_daily[,c(1,2,4,3)]
+AVISO_v_daily <- AVISO_all_daily[,c(1,2,5,3)]
+rm(AVISO_all_daily)
+
+# Daily U climatologies
+system.time(AVISO_u_clim <- plyr::ddply(AVISO_u_daily, c("x","y"), grid.clim, .progress = "text")) # 912 seconds
+colnames(AVISO_u_clim)[4] <- "u"
+save(AVISO_u_clim, file = "data/AVISO/AVISO_u_clim.Rdata")
+rm(AVISO_u_daily, AVISO_u_clim)
+
+# Daily V climatologies
+system.time(AVISO_v_clim <- plyr::ddply(AVISO_v_daily, c("x","y"), grid.clim, .progress = "text")) # 889 seconds
+colnames(AVISO_v_clim)[4] <- "v"
+save(AVISO_v_clim, file = "data/AVISO/AVISO_v_clim.Rdata")
+rm(AVISO_v_daily, AVISO_v_clim)
 

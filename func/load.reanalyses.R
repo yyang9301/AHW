@@ -7,10 +7,8 @@
 # 4. Create function for calculating daily clims from a grid
 ## DEPENDS ON:
 library(doMC); registerDoMC(cores = 4)
-# library(plyr)
-library(dplyr)
+library(tidyverse)
 library(reshape2)
-library(data.table)
 library(ncdf4)
 library(ncdf.tools)
 ## USED BY:
@@ -59,7 +57,7 @@ BRAN.Rdata <- function(x){
     df2 <- df2 %>% 
       mutate(x = plyr::round_any(x, 0.5)) %>% 
       mutate(y = plyr::round_any(y, 0.5))
-    df2 <- data.table(df2)
+    df2 <- data.table::data.table(df2)
     df2 <- df2[, .(var = mean(var, na.rm = TRUE)),
                        by = .(x, y, date)]
     df2 <- data.frame(df2)
@@ -124,7 +122,7 @@ ERA.ncdf <- function(nc.file, date_idx){
     df2 <- melt(as.matrix(df1), value.name = "var")
     df2$date <- rep(as.Date(stor.nc$t), each = (length(stor.nc$x)*length(stor.nc$y))) # At this step the hour values are removed
     colnames(df2)[1:2] <- c("x","y")
-    df2 <- data.table(df2)
+    df2 <- data.table::data.table(df2)
     df2 <- df2[, .(var = mean(var, na.rm = TRUE)), by = .(x,y,date)]
     return(df2)
   }
@@ -165,6 +163,7 @@ ERA.daily <- function(nc.file){
 
 
 # 4. Create function for calculating daily clims from a grid --------------
+
 # Use development version of detect()', not the one on CRAN
 source("~/RmarineHeatWaves/R/RmarineHeatWaves.R")
 grid.clim <- function(df) {
@@ -172,7 +171,7 @@ grid.clim <- function(df) {
   end <- max(df$date, na.rm = T)
   colnames(df) <- c("x", "y", "temp", "t")
   whole <- RmarineHeatWaves::make_whole(df)
-  res <- detect(whole, climatology_start = start, climatology_end = end, clim_only = T)
+  res <- RmarineHeatWaves::detect(whole, climatology_start = start, climatology_end = end, clim_only = T)
   res <- unique(res[,c(1,4)])
   res <- res[order(res$doy), ]
   res$doy <- format(seq(as.Date("2016-01-01"), as.Date("2016-12-31"), by = "day"), "%m-%d")

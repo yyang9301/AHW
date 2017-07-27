@@ -639,7 +639,6 @@ mds_df <- data.frame(all_anom_0.5_MDS$points)
 ggplot(data = mds_df, aes(x = MDS1, y = MDS2)) +
   geom_point(colour = "salmon") +
   geom_text(data = ord_fit_df, aes(label = factors, x = NMDS1, y = NMDS2))
-
 ```
 
 I intentionally omitted all of the other clustering results from this figure so as to allow for the effect of the environmental variables to stand out on their own. Notably, they do not. There is very little environmental effect from these two categories. The east coast events stand out a bit from the rest, which is worth mentioning. This is not surprising, and only serves to support the hypothesis that the east coast, controlled by the (relatively) consistent Agulhas current is different from the south and west coasts. If we look at the significance of the fit of these variables we see that the fit of the coastal variables is significant at _p_ = `r ord_fit$factors$pvals[1]` but that season is not at _p_ = `r ord_fit$factors$pvals[2]`.

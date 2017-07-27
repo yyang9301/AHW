@@ -6,7 +6,6 @@
 # 3. Function for rounding event metrics for better plotting
 # 4. ggplot2 code that creates synoptic panels
 # 5. Function for creating synoptic figures
-
 ## DEPENDS ON:
 library(tidyverse)
 library(gridExtra)
