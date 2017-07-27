@@ -164,10 +164,8 @@ ERA.daily <- function(nc.file){
 
 # 4. Create function for calculating daily clims from a grid --------------
 
-# Use development version of detect()', not the one on CRAN
-source("~/RmarineHeatWaves/R/RmarineHeatWaves.R")
 grid.clim <- function(df) {
-  start <- min(df$date, na.rm = T) 
+  start <- min(df$date, na.rm = T)
   end <- max(df$date, na.rm = T)
   colnames(df) <- c("x", "y", "temp", "t")
   whole <- RmarineHeatWaves::make_whole(df)

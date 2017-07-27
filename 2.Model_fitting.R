@@ -59,12 +59,12 @@ rm(SACTN_all, SACTN_analysis_period, SACTN_cropped, events)
 # Screen out cold-spells
 SACTN_events <- filter(SACTN_events, type == "MHW") # 976 events
 
-# Screen out those under 15 days in length
-SACTN_events <- filter(SACTN_events, duration >= 15) # 129
+# Screen out those under the 90th percentile in duration
+SACTN_events <- filter(SACTN_events, duration >= quantile(SACTN_events$duration, probs = 0.9)) # 102
 
 # Screen out those occurring before or after reanalysis period
-SACTN_events <- filter(SACTN_events, date_start > as.Date("1994-01-01")) # 98
-SACTN_events <- filter(SACTN_events, date_stop < as.Date("2016-08-31")) # 98
+SACTN_events <- filter(SACTN_events, date_start >= as.Date("1993-01-01")) # 86
+SACTN_events <- filter(SACTN_events, date_stop <= as.Date("2016-12-31")) # 86
 
 # Season index
 summer <- format(seq(as.Date("2015-12-01"), as.Date("2016-02-29"), by = "day"),"%m-%d")
@@ -100,24 +100,34 @@ load("data/SACTN/SACTN_events.Rdata")
 load("setupParams/SACTN_site_list.Rdata")
 
 # Load reanalysis data
-load("data/BRAN/BRAN_temp_clim.Rdata")
-load("data/BRAN/BRAN_u_clim.Rdata")
-load("data/BRAN/BRAN_v_clim.Rdata")
+# load("data/BRAN/BRAN_temp_clim.Rdata")
+# load("data/BRAN/BRAN_u_clim.Rdata")
+# load("data/BRAN/BRAN_v_clim.Rdata")
 load("data/ERA/ERA_temp_clim.Rdata")
 load("data/ERA/ERA_u_clim.Rdata")
 load("data/ERA/ERA_v_clim.Rdata")
 
+# Load remotely sensed data
+load("data/OISST/OISST_temp_clim.Rdata")
+load("data/AVISO/AVISO_u_clim.Rdata")
+load("data/AVISO/AVISO_v_clim.Rdata")
+
 # Merge U and V data frames for data.packet()
-system.time(BRAN_uv_clim <- merge(BRAN_u_clim, BRAN_v_clim, by = c("x", "y", "date"))) # 15 seconds
-BRAN_uv_clim <- BRAN_uv_clim[order(BRAN_uv_clim$x, BRAN_uv_clim$y, BRAN_uv_clim$date),]
 system.time(ERA_uv_clim <- merge(ERA_u_clim, ERA_v_clim, by = c("x", "y", "date"))) # 21 seconds
 ERA_uv_clim <- ERA_uv_clim[order(ERA_uv_clim$x, ERA_uv_clim$y, ERA_uv_clim$date),]
+system.time(AVISO_uv_clim <- merge(AVISO_u_clim, AVISO_v_clim, by = c("x", "y", "date"))) # 15 seconds
+AVISO_uv_clim <- AVISO_uv_clim[order(AVISO_uv_clim$x, AVISO_uv_clim$y, AVISO_uv_clim$date),]
 
 # ERA Interim file indices for data.packet()
-file_1_dates <- seq(as.Date("1979-01-01"), as.Date("1989-12-31"), by = "day")
-file_2_dates <- seq(as.Date("1990-01-01"), as.Date("1998-12-31"), by = "day")
-file_3_dates <- seq(as.Date("1999-01-01"), as.Date("2007-12-31"), by = "day")
-file_4_dates <- seq(as.Date("2008-01-01"), as.Date("2016-12-31"), by = "day")
+ERA_1_dates <- seq(as.Date("1979-01-01"), as.Date("1989-12-31"), by = "day")
+ERA_2_dates <- seq(as.Date("1990-01-01"), as.Date("1998-12-31"), by = "day")
+ERA_3_dates <- seq(as.Date("1999-01-01"), as.Date("2007-12-31"), by = "day")
+ERA_4_dates <- seq(as.Date("2008-01-01"), as.Date("2016-12-31"), by = "day")
+
+# AVISO file indices for data.packet()
+AVISO_1_dates <- seq(as.Date("1993-01-01"), as.Date("1999-12-31"), by = "day")
+AVISO_2_dates <- seq(as.Date("2000-01-01"), as.Date("2009-12-31"), by = "day")
+AVISO_3_dates <- seq(as.Date("2010-01-01"), as.Date("2016-12-31"), by = "day")
 
 # Create a data packet for each MHW
 system.time(plyr::ddply(SACTN_events, c("event"), data.packet, .parallel = TRUE)) # 539 seconds
@@ -133,20 +143,20 @@ event_idx <- data.frame(event = dir("data/SOM", full.names = TRUE),
 load("data/SACTN/SACTN_events.Rdata")
 load("setupParams/SACTN_site_list.Rdata")
 
-# All BRAN anomaly data
-# system.time(BRAN_anom <- plyr::ddply(event_idx, c("event"), load.data.packet,
-#                                      var = c("BRAN/temp-anom", "BRAN/u-anom", "BRAN/v-anom"), .parallel = T)) # 4 seconds
-# save(BRAN_anom, file = "data/BRAN/BRAN_anom.Rdata")
-load("data/BRAN_anom.Rdata")
+# All remote anomaly data
+system.time(remote_anom <- plyr::ddply(event_idx, c("event"), load.data.packet,
+                                     var = c("OISST/temp-anom", "AVISO/u-anom", "AVISO/v-anom"), .parallel = T)) # 4 seconds
+save(BRAN_anom, file = "data/remote_anom.Rdata")
+load("data/remote_anom.Rdata")
 
 # All ERA anomaly data
-# system.time(ERA_anom <- plyr::ddply(event_idx, c("event"), load.data.packet,
-#                                     var = c("ERA/temp-anom", "ERA/u-anom", "ERA/v-anom"), .parallel = T)) # 5 seconds
-# save(ERA_anom, file = "data/ERA_anom.Rdata")
+system.time(ERA_anom <- plyr::ddply(event_idx, c("event"), load.data.packet,
+                                    var = c("ERA/temp-anom", "ERA/u-anom", "ERA/v-anom"), .parallel = T)) # 5 seconds
+save(ERA_anom, file = "data/ERA_anom.Rdata")
 load("data/ERA_anom.Rdata")
 
 # Combine data frames for modeling
-all_anom <- cbind(BRAN_anom, ERA_anom[,-1])
+all_anom <- cbind(remote_anom, ERA_anom[,-1])
 
 # Run SOM
 system.time(som_mdel_pci <- som.model.PCI(all_anom)) # 2 seconds
@@ -162,7 +172,7 @@ save(node_all_anom, file = "data/node_all_anom.Rdata")
 # Load required data if the above sections were not run
 load("data/som_model_pci.Rdata")
 # load("data/node_all_anom.Rdata")
-load("data/BRAN_anom.Rdata")
+load("data/remote_anom.Rdata")
 load("data/ERA_anom.Rdata")
 all_anom <- cbind(BRAN_anom, ERA_anom[,-1]); rm(BRAN_anom, ERA_anom)
 
@@ -173,17 +183,32 @@ save(node_means, file = "data/node_means.Rdata")
 
 # 6. Perform HCA and MDS on clim vs. event days ---------------------------
 
+# Load required data if the above sections were not run
+load("data/remote_anom.Rdata")
+load("data/ERA_anom.Rdata")
+all_anom <- cbind(BRAN_anom, ERA_anom[,-1])
+rm(remote_anom, ERA_anom)
+
+load("data/OISST/OISST_temp_clim.Rdata")
+
+
+## Calculate HCA
+all_anom_hclust <- hclust(vegdist(decostand(all_anom[,-1], method = "standardize"),
+                                                  method = "euclidean"), method = "ward.D2")
+save(all_anom_0.5_hclust, file = "results/all_anom_0.5_hclust.Rdata")
+load("results/all_anom_0.5_hclust.Rdata")
+
 
 ## Calculate MDS
-# all_anom_0.5$node <- NULL
-# all_anom_0.5_MDS <- metaMDS(vegdist(decostand(all_anom_0.5[,-c(1)],
-#                                               method = "standardize"), 
-#                                     method = "euclidean"), try = 100)
-# save(all_anom_0.5_MDS, file = "results/all_anom_0.5_MDS.Rdata")
-load("results/all_anom_0.5_MDS.Rdata")
+# all_anom$node <- NULL
+all_anom_0.5_MDS <- metaMDS(vegdist(decostand(all_anom[,-1],
+                                              method = "standardize"),
+                                    method = "euclidean"), try = 100)
+save(all_anom_MDS, file = "results/all_anom_MDS.Rdata")
+load("data/all_anom_MDS.Rdata")
 
 # Fit environmental variables
-ord_fit <- envfit(all_anom_0.5_MDS ~ coast + season, data = event_list[,26:27])
+ord_fit <- envfit(all_anom_MDS ~ coast + season, data = event_list[,26:27])
 # ord_fit
 ord_fit_df <- as.data.frame(ord_fit$factors$centroids)
 ord_fit_df$factors <- rownames(ord_fit_df)

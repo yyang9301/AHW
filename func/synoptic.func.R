@@ -21,6 +21,7 @@ library(RmarineHeatWaves)
 # library(zoo)
 # library(doMC); registerDoMC(cores = 4)
 source("func/load.reanalyses.R")
+source("func/load.remote.R")
 ## USED BY:
 # "2.Model_fitting.R"
 # "3.Figures.R"
@@ -37,27 +38,24 @@ slat <- -40
 
 sa_lons <- c(10, 40); sa_lats <- c(-40, -25)
 
-# 1. Function that loads only necessary BRAN files ------------------------
+# 1. Function that loads only necessary OISST files ------------------------
 
-# BRAN loading function for single event
+# OISST loading function for single event
 # event <- SACTN_events[SACTN_events$duration == min(SACTN_events$duration),][1,] # tester...
-# "var" must equal "temp", "u" or "v"
-# var <- "temp"
-# var <- "u"
-BRAN.event <- function(event, var){
+OISST.event <- function(event, var){
   date_idx <- seq(event$date_start, event$date_stop, by = "day")
-  # date_idx_2 <- format(date_idx, "%m-%d")
-  var_idx <- data.frame(files = paste0("~/data/BRAN/ocean_",var,"_",format(seq(event$date_start, event$date_stop, by = "month"), "%Y_%m"),".Rdata"), 
-                        x = length(seq(event$date_start, event$date_stop, by = "month")))
-  BRAN_var <- plyr::ddply(var_idx, c("files"), BRAN.Rdata, .parallel = T)
-  BRAN_var <- filter(BRAN_var, date %in% date_idx)
-  BRAN_var$files <- NULL
-  BRAN_var <- BRAN_var[complete.cases(BRAN_var$var),]
-  BRAN_var <- data.table(BRAN_var)
-  BRAN_var <- BRAN_var[, .(var = mean(var, na.rm = TRUE)), by = .(x,y)]
-  colnames(BRAN_var)[3] <- var
-  BRAN_var <- BRAN_var[order(BRAN_var$x),]
-  return(BRAN_var)
+  file_pattern <- gsub("-", "", as.character(date_idx))
+  var_idx <- data.frame(files = paste0("~/data/OISST/netCDF/avhrr-only-v2.", file_pattern,".nc"), 
+                        x = 1:length(date_idx))
+  OISST <- plyr::ddply(var_idx, c("files"), OISST.daily, .parallel = T) %>% 
+    mutate(date = as.Date(date)) %>% 
+    select(-files) %>% 
+    rename(temp = sst)
+  OISST <- OISST[complete.cases(OISST$temp),]
+  OISST <- data.table::data.table(OISST)
+  OISST <- OISST[, .(temp = mean(temp, na.rm = TRUE)), by = .(x,y)]
+  OISST <- OISST[order(OISST$x),]
+  return(OISST)
 }
 
 
@@ -66,6 +64,7 @@ BRAN.event <- function(event, var){
 data.packet <- function(event){
   
   ## Begin by adding lon/ lat and determining date index ##
+  # event <- SACTN_events[1,]
   event2 <- event
   event2$lat <- SACTN_site_list$lat[SACTN_site_list$site == event$site]
   event2$lon <- SACTN_site_list$lon[SACTN_site_list$site == event$site]
@@ -74,39 +73,69 @@ data.packet <- function(event){
   date_idx_2 <- format(date_idx, "%m-%d")
   
   
-  ## Extract BRAN data during the chosen event ##
-  BRAN_temp <- BRAN.event(event, "temp")
-  BRAN_u <- BRAN.event(event, "u")
-  BRAN_v <- BRAN.event(event, "v")
-  # Create uv data frame
-  BRAN_uv <- merge(BRAN_u, BRAN_v, by = c("x", "y")); rm(BRAN_u, BRAN_v)
+  ## Extract OISST data during the chosen event ##
+  OISST_temp <- OISST.event(event, "temp")
+  OISST_temp <- OISST_temp[order(OISST_temp$x),]
   # Temperature anomaly
-  BRAN_temp_anom <- filter(BRAN_temp_clim, date %in% date_idx_2)
-  BRAN_temp_anom <- data.table(BRAN_temp_anom)
-  BRAN_temp_anom <- BRAN_temp_anom[, .(temp = mean(temp, na.rm = TRUE)), by = .(x,y)]
-  BRAN_temp_anom$temp <- BRAN_temp$temp-BRAN_temp_anom$temp
-  # uv anomaly
-  BRAN_uv_anom <- filter(BRAN_uv_clim, date %in% date_idx_2)
-  BRAN_uv_anom <- data.table(BRAN_uv_anom)
-  BRAN_uv_anom <- BRAN_uv_anom[, .(u = mean(u, na.rm = TRUE),
-                                   v = mean(v, na.rm = TRUE)), by = .(x,y)]
-  BRAN_uv_anom$u <- BRAN_uv$u-BRAN_uv_anom$u
-  BRAN_uv_anom$v <- BRAN_uv$v-BRAN_uv_anom$v
+  OISST_temp_anom <- filter(OISST_temp_clim, date %in% date_idx_2)
+  OISST_temp_anom <- data.table::data.table(OISST_temp_anom)
+  OISST_temp_anom <- OISST_temp_anom[, .(temp = mean(temp, na.rm = TRUE)), by = .(x,y)]
+  OISST_temp_anom <- OISST_temp_anom[order(OISST_temp_anom$x),]
+  OISST_temp_anom$temp <- OISST_temp$temp-OISST_temp_anom$temp
+  
+  
+  ## Extract AVISO data during the chosen event ##
+  # Run the function as necesary on the following files
+  # NB: There is a slight possibility that more than one file will be used
+  if(length(date_idx[date_idx %in% AVISO_2_dates]) > 0){
+    nc.file <- "~/data/AVISO/dataset-duacs-rep-global-merged-allsat-phy-l4-v3_19930101-19991231.nc"
+    AVISO1 <- AVISO.ncdf(nc.file, date_idx)
+  } 
+  if(length(date_idx[date_idx %in% AVISO_3_dates]) > 0){
+    nc.file <- "~/data/AVISO/dataset-duacs-rep-global-merged-allsat-phy-l4-v3_20000101-20091231.nc"
+    AVISO2 <- AVISO.ncdf(nc.file, date_idx)
+  }
+  if(length(date_idx[date_idx %in% AVISO_4_dates]) > 0){
+    nc.file <- "~/data/AVISO/dataset-duacs-rep-global-merged-allsat-phy-l4-v3_20100101-20170106.nc"
+    AVISO3 <- AVISO.ncdf(nc.file, date_idx)
+  }
+  # Combine multiple possible dataframes produced
+  AVISO_uv <- data.frame()
+  # AVISO1 not loaded as these dates precede any available BRAN data
+  if(exists("AVISO1")) AVISO_uv <- rbind(AVISO_uv, AVISO1)
+  if(exists("AVISO2")) AVISO_uv <- rbind(AVISO_uv, AVISO2)
+  if(exists("AVISO3")) AVISO_uv <- rbind(AVISO_uv, AVISO3)
+  # Create mean values
+  AVISO_uv <- data.table::data.table(AVISO_uv)
+  AVISO_uv <- AVISO_uv[, .(u = mean(u, na.rm = TRUE),
+                         v = mean(v, na.rm = TRUE)), by = .(x,y)]
+  # UV
+  # AVISO_uv <- AVISO_all[,c(1:2,4:5)]
+  AVISO_uv <- AVISO_uv[order(AVISO_uv$x),]
+  # UV anomaly
+  AVISO_uv_anom <- filter(AVISO_uv_clim, date %in% date_idx_2)
+  AVISO_uv_anom <- data.table::data.table(AVISO_uv_anom)
+  AVISO_uv_anom <- AVISO_uv_anom[, .(u = mean(u, na.rm = TRUE),
+                                 v = mean(v, na.rm = TRUE)), by = .(x,y)]
+  AVISO_uv_anom <- AVISO_uv_anom[order(AVISO_uv_anom$x),]
+  AVISO_uv_anom$u <- AVISO_uv$u-AVISO_uv_anom$u
+  AVISO_uv_anom$v <- AVISO_uv$v-AVISO_uv_anom$v
+  rm(AVISO_uv)
   
   
   ## Extract ERA Interim data during this event ##
   # Run the function as necesary on the following files
   # NB: There is a slight possibility that more than one file will be used
     # ERA1 not loaded as these dates precede any available BRAN data
-  if(length(date_idx[date_idx %in% file_2_dates]) > 0){
+  if(length(date_idx[date_idx %in% ERA_2_dates]) > 0){
     nc.file <- "~/data/ERA/ERA_1990_1998.nc"
     ERA2 <- ERA.ncdf(nc.file, date_idx)
   } 
-  if(length(date_idx[date_idx %in% file_3_dates]) > 0){
+  if(length(date_idx[date_idx %in% ERA_3_dates]) > 0){
     nc.file <- "~/data/ERA/ERA_1999_2007.nc"
     ERA3 <- ERA.ncdf(nc.file, date_idx)
   }
-  if(length(date_idx[date_idx %in% file_4_dates]) > 0){
+  if(length(date_idx[date_idx %in% ERA_4_dates]) > 0){
     nc.file <- "~/data/ERA/ERA_2008_2016.nc"
     ERA4 <- ERA.ncdf(nc.file, date_idx)
   }
@@ -117,24 +146,28 @@ data.packet <- function(event){
   if(exists("ERA3")) ERA_all <- rbind(ERA_all, ERA3)
   if(exists("ERA4")) ERA_all <- rbind(ERA_all, ERA4)
   # Create mean values
-  ERA_all <- data.table(ERA_all)
+  ERA_all <- data.table::data.table(ERA_all)
   ERA_all <- ERA_all[, .(temp = mean(temp, na.rm = TRUE),
                          u = mean(u, na.rm = TRUE),
                          v = mean(v, na.rm = TRUE)), by = .(x,y)]
   # Temperature
   ERA_temp <- ERA_all[,c(1:3)]
+  ERA_temp <- ERA_temp[order(ERA_temp$x),]
   # UV
   ERA_uv <- ERA_all[,c(1:2,4:5)]
+  ERA_uv <- ERA_uv[order(ERA_uv$x),]
   # Temperature anomaly
   ERA_temp_anom <- filter(ERA_temp_clim, date %in% date_idx_2)
-  ERA_temp_anom <- data.table(ERA_temp_anom)
+  ERA_temp_anom <- data.table::data.table(ERA_temp_anom)
   ERA_temp_anom <- ERA_temp_anom[, .(temp = mean(temp, na.rm = TRUE)), by = .(x,y)]
+  ERA_temp_anom <- ERA_temp_anom[order(ERA_temp_anom$x),]
   ERA_temp_anom$temp <- ERA_temp$temp-ERA_temp_anom$temp
-  # uv anomaly
+  # UV anomaly
   ERA_uv_anom <- filter(ERA_uv_clim, date %in% date_idx_2)
-  ERA_uv_anom <- data.table(ERA_uv_anom)
+  ERA_uv_anom <- data.table::data.table(ERA_uv_anom)
   ERA_uv_anom <- ERA_uv_anom[, .(u = mean(u, na.rm = TRUE),
                                  v = mean(v, na.rm = TRUE)), by = .(x,y)]
+  ERA_uv_anom <- ERA_uv_anom[order(ERA_uv_anom$x),]
   ERA_uv_anom$u <- ERA_uv$u-ERA_uv_anom$u
   ERA_uv_anom$v <- ERA_uv$v-ERA_uv_anom$v
   rm(ERA_all)
@@ -142,7 +175,7 @@ data.packet <- function(event){
   
   ## Save all of the dataframes in a list for SOMs and figures ##
   data_name <- paste0("data/SOM/",event2$site[1],"_",event2$event_no[1],".Rdata")
-  data_packet <- list(event = event2, BRAN_temp = BRAN_temp, BRAN_uv = BRAN_uv, BRAN_temp_anom = BRAN_temp_anom, BRAN_uv_anom = BRAN_uv_anom,
+  data_packet <- list(event = event2, OISST_temp = OISST_temp, AVISO_uv = AVISO_uv, OISST_temp_anom = OISST_temp_anom, AVISO_uv_anom = AVISO_uv_anom,
                       ERA_temp = ERA_temp, ERA_uv = ERA_uv, ERA_temp_anom = ERA_temp_anom, ERA_uv_anom = ERA_uv_anom)
   save(data_packet, file = data_name)
 }
@@ -182,7 +215,7 @@ sa_bathy$type = "BRAN"
 
 # The synoptic image creator
 synoptic.panel <- function(temperature_dat, vector_dat, label_dat, segment_dat, bathy_dat, site_dat,
-                           legend_title, uv_scalar, viridis_colour = "D", BRAN = T){
+                           legend_title, uv_scalar, viridis_colour = "D", OISST = T){
   sa1 <- ggplot() + #coord_equal() +
     geom_raster(data = temperature_dat, aes(x = x, y = y, fill = temp)) +
     geom_segment(data = vector_dat, aes(x = x, y = y, xend = x + u * uv_scalar, yend = y + v * uv_scalar),
@@ -213,7 +246,7 @@ synoptic.panel <- function(temperature_dat, vector_dat, label_dat, segment_dat, 
           axis.text = element_text(size = 12),
           legend.text = element_text(size = 12),
           legend.title = element_text(size = 12))
-  if(BRAN){
+  if(OISST){
     sa1 <- sa1 + stat_contour(data = bathy_dat[bathy_dat$depth < -200,], aes(x = lon, y = lat, z = depth, alpha = ..level..),
                               colour = "white", size = 0.5, binwidth = 1000, na.rm = TRUE, show.legend = FALSE) +
       geom_polygon(data = southern_africa_coast, aes(x = lon, y = lat, group = group),
@@ -242,11 +275,12 @@ synoptic.fig <- function(data_file){
   # Event
   event2 <- data_packet$event
   date_idx <- seq(event2$date_start, event2$date_stop, by = "day")
-  # BRAN
-  BRAN_temp <- data_packet$BRAN_temp
-  BRAN_temp_anom <- data_packet$BRAN_temp_anom
-  BRAN_uv <- data_packet$BRAN_uv
-  BRAN_uv_anom <- data_packet$BRAN_uv_anom
+  # OISST
+  OISST_temp <- data_packet$OISST_temp
+  OISST_temp_anom <- data_packet$OISST_temp_anom
+  # AVISO
+  AVISO_uv <- data_packet$AVISO_uv
+  AVISO_uv_anom <- data_packet$AVISO_uv_anom
   # ERA
   ERA_temp <- data_packet$ERA_temp
   ERA_temp_anom <- data_packet$ERA_temp_anom
@@ -259,6 +293,7 @@ synoptic.fig <- function(data_file){
   BRAN_temp2 <- rbind(BRAN_temp, BRAN_temp)
   # Add 'type' columns for faceting
   BRAN_temp2$type <- rep(c("SST + Bathy", "SST + Current"), each = nrow(BRAN_temp))
+  # Label vectors
   BRAN_uv$type <- "SST + Current"
   sa_bathy$type <- "SST + Bathy"
   # The label dataframes

@@ -6,12 +6,16 @@
 # 3. Load ERA daily data and create clims
 # 4. Load OISST data and create clims
 # 5. Load AVISO data and create clims
+# 6. Create clim anomalies
 ############################################################################
 
 
 # 1. Load all libraries and functions used in this script  ----------------
 source("func/load.reanalyses.R")
 source("func/load.remote.R")
+
+# Create date range index to set the standard for all datasets
+date_range <- seq(as.Date("1993-01-01"), as.Date("2016-12-31"), by = "day")
 #
 
 # 2. Load and crop the daily SACTN data -----------------------------------
@@ -59,9 +63,6 @@ rm(site_list, SACTN_site_list)
 
 # The ERA-Interim data were downloaded using the providers web interface
 # These data are not stored on this GitHub page as they total 650 MB
-
-# Create date range index to set the standard for all datasets
-date_range <- seq(as.Date("1993-01-01"), as.Date("2016-12-31"), by = "day")
 
 # Load all ERA daily values
   # ERA1 not loaded as these dates precede any available BRAN data
@@ -118,33 +119,41 @@ save(OISST_temp_clim, file = "data/OISST/OISST_temp_clim.Rdata")
 rm(OISST_temp_daily, OISST_temp_clim)
 
 
-# 6. Load AVISO data and create clims -------------------------------------
+# 5. Load AVISO data and create clims -------------------------------------
 
 # These data are not stored on this GitHub page as they total 22 GB
 
-# Indices for loading
-AVISO_idx <- data.frame(files = dir("~/data/AVISO", pattern = "madt", full.names = TRUE), 
-                        x = 1:length(dir("~/data/AVISO", pattern = "madt")))#[4141:12775,]
+# Load all AVISO daily U and V values
+system.time(AVISO1 <- AVISO.daily("~/data/AVISO/dataset-duacs-rep-global-merged-allsat-phy-l4-v3_19930101-19991231.nc")) # 113 seconds
+system.time(AVISO2 <- AVISO.daily("~/data/AVISO/dataset-duacs-rep-global-merged-allsat-phy-l4-v3_20000101-20091231.nc")) # 171 seconds
+system.time(AVISO3 <- AVISO.daily("~/data/AVISO/dataset-duacs-rep-global-merged-allsat-phy-l4-v3_20100101-20170106.nc")) # 109 seconds
 
-# Daily U and V values
-# This is not much slower but much more stable on only one core...
-system.time(AVISO_temp_daily <- plyr::ddply(AVISO_idx, c("files"), AVISO.daily, .progress = "text")) # 2495 seconds
-AVISO_temp_daily$files <- NULL
+# Create single dataframe for subsetting
+AVISO_all_daily <- rbind(AVISO1, AVISO2, AVISO3)
+AVISO_all_daily <- filter(AVISO_all_daily, date %in% date_range)
+rm(AVISO1, AVISO2, AVISO3)
 
-# Split into three different dataframes
+# Split into two different dataframes
 AVISO_u_daily <- AVISO_all_daily[,c(1,2,4,3)]
 AVISO_v_daily <- AVISO_all_daily[,c(1,2,5,3)]
 rm(AVISO_all_daily)
 
 # Daily U climatologies
-system.time(AVISO_u_clim <- plyr::ddply(AVISO_u_daily, c("x","y"), grid.clim, .progress = "text")) # 912 seconds
+system.time(AVISO_u_clim <- plyr::ddply(AVISO_u_daily, c("x","y"), grid.clim, .progress = "text")) # 3567 seconds
 colnames(AVISO_u_clim)[4] <- "u"
 save(AVISO_u_clim, file = "data/AVISO/AVISO_u_clim.Rdata")
 rm(AVISO_u_daily, AVISO_u_clim)
 
 # Daily V climatologies
-system.time(AVISO_v_clim <- plyr::ddply(AVISO_v_daily, c("x","y"), grid.clim, .progress = "text")) # 889 seconds
+  # Causes an error when run in one shot
+system.time(AVISO_v_clim <- plyr::ddply(AVISO_v_daily, c("x","y"), grid.clim, .parallel = T)) # 889 seconds
 colnames(AVISO_v_clim)[4] <- "v"
 save(AVISO_v_clim, file = "data/AVISO/AVISO_v_clim.Rdata")
 rm(AVISO_v_daily, AVISO_v_clim)
 
+
+# 6. Create clim anomalies ------------------------------------------------
+
+
+# Load data from previous steps
+load("data/ERA/ERA_temp_clim.Rdata")

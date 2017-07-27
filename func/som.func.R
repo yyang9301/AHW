@@ -49,13 +49,13 @@ load.data.packet <- function(df, var){
   load(df2)
   res <- data.frame()
   # Combine all BRAN data
-  if("BRAN/temp" %in% var) res <- rbind(res, col.shimmy(data_packet$BRAN_temp, "BRAN/temp"))
-  if("BRAN/u" %in% var) res <- rbind(res, col.shimmy(data_packet$BRAN_uv[,c(1:3)], "BRAN/u"))
-  if("BRAN/v" %in% var) res <- rbind(res, col.shimmy(data_packet$BRAN_uv[,c(1:2,4)], "BRAN/v"))
+  if("OISST/temp" %in% var) res <- rbind(res, col.shimmy(data_packet$OISST_temp, "OISST/temp"))
+  if("AVISO/u" %in% var) res <- rbind(res, col.shimmy(data_packet$AVISO_uv[,c(1:3)], "AVISO/u"))
+  if("AVISO/v" %in% var) res <- rbind(res, col.shimmy(data_packet$AVISO_uv[,c(1:2,4)], "AVISO/v"))
   # Combine all BRAN anomaly data
-  if("BRAN/temp-anom" %in% var) res <- rbind(res, col.shimmy(data_packet$BRAN_temp_anom, "BRAN/temp-anom"))
-  if("BRAN/u-anom" %in% var) res <- rbind(res, col.shimmy(data_packet$BRAN_uv_anom[,c(1:3)], "BRAN/u-anom"))
-  if("BRAN/v-anom" %in% var) res <- rbind(res, col.shimmy(data_packet$BRAN_uv_anom[,c(1:2,4)], "BRAN/v-anom"))
+  if("OISST/temp-anom" %in% var) res <- rbind(res, col.shimmy(data_packet$OISST_temp_anom, "OISST/temp-anom"))
+  if("AVISO/u-anom" %in% var) res <- rbind(res, col.shimmy(data_packet$AVISO_uv_anom[,c(1:3)], "AVISO/u-anom"))
+  if("AVISO/v-anom" %in% var) res <- rbind(res, col.shimmy(data_packet$AVISO_uv_anom[,c(1:2,4)], "AVISO/v-anom"))
   # Combine all ERA data
   if("ERA/temp" %in% var) res <- rbind(res, col.shimmy(data_packet$ERA_temp, "ERA/temp"))
   if("ERA/u" %in% var) res <- rbind(res, col.shimmy(data_packet$ERA_uv[,c(1:3)], "ERA/u"))
@@ -90,6 +90,7 @@ som.model.PCI <- function(data_packet, xdim = 3, ydim = 3){
                         max.iter = 100)
   return(som_model)
 }
+
 
 # 3. Function for determining node indexes --------------------------------
 

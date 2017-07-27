@@ -239,3 +239,7 @@ The scripts and data used to determine common air-sea states during MHWs along t
 * Phasing out BRAN in favour of AVISO and OISST
 * Recalculated ERA daily clims based on new longer period
 * Calculated OISST daily clims
+
+## 2017/07/27
+* More phasing out of BRAN
+* Calculated AVISO daily clims
