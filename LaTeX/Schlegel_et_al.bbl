@@ -1,4 +1,4 @@
-\begin{thebibliography}{58}
+\begin{thebibliography}{59}
 \expandafter\ifx\csname natexlab\endcsname\relax\def\natexlab#1{#1}\fi
 \expandafter\ifx\csname url\endcsname\relax
   \def\url#1{\texttt{#1}}\fi
@@ -264,6 +264,13 @@ Mills, K., Pershing, A., Brown, C., Chen, Y., Chiang, F.-S., Holland, D.,
 Morioka, Y., Tozuka, T., Yamagata, T., 2010. {Climate variability in the
   southern Indian Ocean as revealed by self-organizing maps}. Climate Dynamics
   35~(6), 1075--1088.
+
+\bibitem[{Oliver et~al.(2017)Oliver, Benthuysen, Bindoff, Hobday, Holbrook,
+  Mundy, and Perkins-Kirkpatrick}]{Oliver2017}
+Oliver, E. C.~J., Benthuysen, J.~A., Bindoff, N.~L., Hobday, A.~J., Holbrook,
+  N.~J., Mundy, C.~N., Perkins-Kirkpatrick, S.~E., jul 2017. {The unprecedented
+  2015/16 Tasman Sea marine heatwave}. Nature Communications 8, 16101.
+\newline\urlprefix\url{http://www.nature.com/doifinder/10.1038/ncomms16101}
 
 \bibitem[{Pearce and Feng(2013)}]{Pearce2013}
 Pearce, A.~F., Feng, M., 2013. {The rise and fall of the "marine heat wave" off
