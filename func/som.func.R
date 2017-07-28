@@ -202,7 +202,8 @@ node.panels <- function(data_temp, data_uv, data_node, plot_title, legend_title,
   np <- ggplot(data = data_temp, aes(x = x, y = y)) +
     geom_raster(aes(fill = value)) +
     geom_segment(data = data_uv, aes(x = x, y = y, xend = x + u, yend = y + v),
-                 arrow = arrow(angle = 15, length = unit(0.02, "inches"), type = "closed"), alpha = 0.2) +
+                 arrow = arrow(angle = 15, length = unit(0.02, "inches"), type = "closed"), 
+                 alpha = 0.8, colour = "ivory") +
     geom_polygon(data = southern_africa_coast, aes(x = lon, y = lat, group = group),
                  fill = NA, colour = "black", size = 0.5, show.legend = FALSE) +
 
@@ -268,9 +269,9 @@ all.panels <- function(data_res, data_node){
   colnames(res_AVISO_uv)[4:5] <- c("u", "v")
   res_AVISO_uv$u <- res_AVISO_uv$u*2
   res_AVISO_uv$v <- res_AVISO_uv$v*2
-  # lon_sub <- seq(10, 40, by = 0.5)
-  # lat_sub <- seq(-40, -15, by = 0.5)
-  # res_BRAN_uv <- res_BRAN_uv[(res_BRAN_uv$x %in% lon_sub & res_BRAN_uv$y %in% lat_sub),]
+  lon_sub <- seq(10, 40, by = 1)
+  lat_sub <- seq(-40, -15, by = 1)
+  res_AVISO_uv <- res_AVISO_uv[(res_AVISO_uv$x %in% lon_sub & res_AVISO_uv$y %in% lat_sub),]
 
   # ERA
   res_ERA_temp <- data_res[data_res$var == "ERA/temp-anom",]
