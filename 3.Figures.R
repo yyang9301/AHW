@@ -12,13 +12,6 @@
 
 
 # 1. Load all libraries and functions used in this script -----------------
-# library(ggplot2)
-# library(plyr)
-# library(dplyr)
-# library(reshape2)
-# library(tidyr)
-# library(tibble)
-# library(doMC); doMC::registerDoMC(cores = 4)
 source("func/synoptic.func.R")
 source("func/som.func.R")
 source("func/scale.bar.func.R")

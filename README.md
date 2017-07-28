@@ -243,3 +243,9 @@ The scripts and data used to determine common air-sea states during MHWs along t
 ## 2017/07/27
 * More phasing out of BRAN
 * Calculated AVISO daily clims
+
+## 2017/07/28
+* Analysis with new OISST+AVISO data complete
+* New data packets created
+* New synoptic atlas figures created
+* New SOM figures created

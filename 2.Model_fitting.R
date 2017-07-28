@@ -3,7 +3,7 @@
 ## This script calculates MHWs, creates data packets, and clusters events
 # 1. Load all libraries and functions used in this script 
 # 2. Calculate MHWs from cropped SACTN data
-# 3. Create data packets from BRAN and ERA data based on MHWs
+# 3. Create data packets from remote and ERA data based on MHWs 
 # 4. Cluster the events using SOMs
 # 5. Create mean synoptic states for each node
 # 6. Perform HCA and MDS on clim vs. event days
@@ -39,7 +39,7 @@ SACTN_cropped$idx <- as.numeric(SACTN_cropped$site) # Use numeric values as site
 # Calculate events
 system.time(SACTN_all <- plyr::dlply(SACTN_cropped, c("idx"), detect.SACTN, .parallel = TRUE)) ## 9 seconds
 
-# Calculate climatologies
+# Extract climatologies
 SACTN_clims <- data.frame()
 for(i in 1:max(SACTN_cropped$idx)){
   clims <- SACTN_all[[i]]$clim
@@ -92,7 +92,8 @@ SACTN_events$event <- paste0(SACTN_events$site,"_",SACTN_events$event_no)
 save(SACTN_events, file = "data/SACTN/SACTN_events.Rdata")
 
 
-# 3. Create data packets from BRAN and ERA data based on MHWs -------------
+
+# 3. Create data packets from remote and ERA data based on MHWs  ----------
 
 # Load SACTN data
 load("~/data/SACTN/AHW/SACTN_clims.Rdata")
@@ -100,9 +101,6 @@ load("data/SACTN/SACTN_events.Rdata")
 load("setupParams/SACTN_site_list.Rdata")
 
 # Load reanalysis data
-# load("data/BRAN/BRAN_temp_clim.Rdata")
-# load("data/BRAN/BRAN_u_clim.Rdata")
-# load("data/BRAN/BRAN_v_clim.Rdata")
 load("data/ERA/ERA_temp_clim.Rdata")
 load("data/ERA/ERA_u_clim.Rdata")
 load("data/ERA/ERA_v_clim.Rdata")
@@ -130,7 +128,7 @@ AVISO_2_dates <- seq(as.Date("2000-01-01"), as.Date("2009-12-31"), by = "day")
 AVISO_3_dates <- seq(as.Date("2010-01-01"), as.Date("2016-12-31"), by = "day")
 
 # Create a data packet for each MHW
-system.time(plyr::ddply(SACTN_events, c("event"), data.packet, .parallel = TRUE)) # 539 seconds
+system.time(plyr::ddply(SACTN_events, c("event"), data.packet, .parallel = TRUE)) # 560 seconds
 
 
 # 4. Cluster the events using SOMs ----------------------------------------
@@ -144,15 +142,15 @@ load("data/SACTN/SACTN_events.Rdata")
 load("setupParams/SACTN_site_list.Rdata")
 
 # All remote anomaly data
-system.time(remote_anom <- plyr::ddply(event_idx, c("event"), load.data.packet,
-                                     var = c("OISST/temp-anom", "AVISO/u-anom", "AVISO/v-anom"), .parallel = T)) # 4 seconds
-save(BRAN_anom, file = "data/remote_anom.Rdata")
+# system.time(remote_anom <- plyr::ddply(event_idx, c("event"), load.data.packet,
+#                                      var = c("OISST/temp-anom", "AVISO/u-anom", "AVISO/v-anom"), .parallel = T)) # 4 seconds
+# save(remote_anom, file = "data/remote_anom.Rdata")
 load("data/remote_anom.Rdata")
 
 # All ERA anomaly data
-system.time(ERA_anom <- plyr::ddply(event_idx, c("event"), load.data.packet,
-                                    var = c("ERA/temp-anom", "ERA/u-anom", "ERA/v-anom"), .parallel = T)) # 5 seconds
-save(ERA_anom, file = "data/ERA_anom.Rdata")
+# system.time(ERA_anom <- plyr::ddply(event_idx, c("event"), load.data.packet,
+#                                     var = c("ERA/temp-anom", "ERA/u-anom", "ERA/v-anom"), .parallel = T)) # 5 seconds
+# save(ERA_anom, file = "data/ERA_anom.Rdata")
 load("data/ERA_anom.Rdata")
 
 # Combine data frames for modeling
@@ -174,7 +172,7 @@ load("data/som_model_pci.Rdata")
 # load("data/node_all_anom.Rdata")
 load("data/remote_anom.Rdata")
 load("data/ERA_anom.Rdata")
-all_anom <- cbind(BRAN_anom, ERA_anom[,-1]); rm(BRAN_anom, ERA_anom)
+all_anom <- cbind(remote_anom, ERA_anom[,-1]); rm(remote_anom, ERA_anom)
 
 # Calculate node means
 node_means <- som.unpack.mean(all_anom, som_mdel_pci)

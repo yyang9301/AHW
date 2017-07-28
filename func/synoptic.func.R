@@ -12,14 +12,6 @@ library(gridExtra)
 library(scales)
 library(viridis)
 library(RmarineHeatWaves)
-# library(stringr)
-# library(plyr)
-# library(dplyr)
-# library(data.table)
-# library(reshape2)
-# library(lubridate)
-# library(zoo)
-# library(doMC); registerDoMC(cores = 4)
 source("func/load.reanalyses.R")
 source("func/load.remote.R")
 ## USED BY:
@@ -42,11 +34,17 @@ sa_lons <- c(10, 40); sa_lats <- c(-40, -25)
 
 # OISST loading function for single event
 # event <- SACTN_events[SACTN_events$duration == min(SACTN_events$duration),][1,] # tester...
+# event <- SACTN_events[1,]
+# event <- SACTN_events[58,]
 OISST.event <- function(event, var){
   date_idx <- seq(event$date_start, event$date_stop, by = "day")
   file_pattern <- gsub("-", "", as.character(date_idx))
   var_idx <- data.frame(files = paste0("~/data/OISST/netCDF/avhrr-only-v2.", file_pattern,".nc"), 
                         x = 1:length(date_idx))
+  ### January 14th, 2016 is missing in the OISST data ###
+    ### This affects Port Nolloth 78 ###
+  var_idx <- filter(var_idx, files != "~/data/OISST/netCDF/avhrr-only-v2.20160114.nc")
+  ###
   OISST <- plyr::ddply(var_idx, c("files"), OISST.daily, .parallel = T) %>% 
     mutate(date = as.Date(date)) %>% 
     select(-files) %>% 
@@ -64,7 +62,7 @@ OISST.event <- function(event, var){
 data.packet <- function(event){
   
   ## Begin by adding lon/ lat and determining date index ##
-  # event <- SACTN_events[1,]
+  # event <- SACTN_events[23,]
   event2 <- event
   event2$lat <- SACTN_site_list$lat[SACTN_site_list$site == event$site]
   event2$lon <- SACTN_site_list$lon[SACTN_site_list$site == event$site]
@@ -87,15 +85,15 @@ data.packet <- function(event){
   ## Extract AVISO data during the chosen event ##
   # Run the function as necesary on the following files
   # NB: There is a slight possibility that more than one file will be used
-  if(length(date_idx[date_idx %in% AVISO_2_dates]) > 0){
+  if(length(date_idx[date_idx %in% AVISO_1_dates]) > 0){
     nc.file <- "~/data/AVISO/dataset-duacs-rep-global-merged-allsat-phy-l4-v3_19930101-19991231.nc"
     AVISO1 <- AVISO.ncdf(nc.file, date_idx)
   } 
-  if(length(date_idx[date_idx %in% AVISO_3_dates]) > 0){
+  if(length(date_idx[date_idx %in% AVISO_2_dates]) > 0){
     nc.file <- "~/data/AVISO/dataset-duacs-rep-global-merged-allsat-phy-l4-v3_20000101-20091231.nc"
     AVISO2 <- AVISO.ncdf(nc.file, date_idx)
   }
-  if(length(date_idx[date_idx %in% AVISO_4_dates]) > 0){
+  if(length(date_idx[date_idx %in% AVISO_3_dates]) > 0){
     nc.file <- "~/data/AVISO/dataset-duacs-rep-global-merged-allsat-phy-l4-v3_20100101-20170106.nc"
     AVISO3 <- AVISO.ncdf(nc.file, date_idx)
   }
@@ -120,7 +118,6 @@ data.packet <- function(event){
   AVISO_uv_anom <- AVISO_uv_anom[order(AVISO_uv_anom$x),]
   AVISO_uv_anom$u <- AVISO_uv$u-AVISO_uv_anom$u
   AVISO_uv_anom$v <- AVISO_uv$v-AVISO_uv_anom$v
-  rm(AVISO_uv)
   
   
   ## Extract ERA Interim data during this event ##
@@ -211,7 +208,7 @@ names(sa_shore)[4:5] <- c("lon","lat")
 # save(sa_bathy, file = "graph/sa_bathy.Rdata")
   ##
 load("graph/sa_bathy.Rdata")
-sa_bathy$type = "BRAN"
+sa_bathy$type = "OISST"
 
 # The synoptic image creator
 synoptic.panel <- function(temperature_dat, vector_dat, label_dat, segment_dat, bathy_dat, site_dat,
@@ -219,7 +216,7 @@ synoptic.panel <- function(temperature_dat, vector_dat, label_dat, segment_dat, 
   sa1 <- ggplot() + #coord_equal() +
     geom_raster(data = temperature_dat, aes(x = x, y = y, fill = temp)) +
     geom_segment(data = vector_dat, aes(x = x, y = y, xend = x + u * uv_scalar, yend = y + v * uv_scalar),
-                 arrow = arrow(angle = 15, length = unit(0.02, "inches"), type = "closed"), alpha = 0.2) +
+                 arrow = arrow(angle = 15, length = unit(0.02, "inches"), type = "closed"), alpha = 0.3) +
     geom_polygon(data = southern_africa_coast, aes(x = lon, y = lat, group = group),
                  fill = NA, colour = "black", size = 0.5, show.legend = FALSE) +
     geom_label(data = label_dat, aes(x = x, y = y, label = txt), size = 5, label.padding = unit(0.5, "lines")) +
@@ -269,6 +266,7 @@ synoptic.fig <- function(data_file){
   
   ## Load the data packet
   data_file2 <- as.character(data_file$event)
+  # load("data/SOM/Hermanus_25.Rdata")
   load(data_file2)
   
   ## Extract the data
@@ -290,37 +288,37 @@ synoptic.fig <- function(data_file){
   
   ## Create sea state figure ##
   # Double up temps for correct facet labelling
-  BRAN_temp2 <- rbind(BRAN_temp, BRAN_temp)
+  OISST_temp2 <- rbind(OISST_temp, OISST_temp)
   # Add 'type' columns for faceting
-  BRAN_temp2$type <- rep(c("SST + Bathy", "SST + Current"), each = nrow(BRAN_temp))
+  OISST_temp2$type <- rep(c("SST + Bathy", "SST + Current"), each = nrow(OISST_temp))
   # Label vectors
-  BRAN_uv$type <- "SST + Current"
+  AVISO_uv$type <- "SST + Current"
   sa_bathy$type <- "SST + Bathy"
   # The label dataframes
-  BRAN_plot_data <- data_frame(txt = "1.0 m/s\n",
+  OISST_plot_data <- data_frame(txt = "2.0 m/s\n",
                                x = 36, y = -37, type = "SST + Current")
-  BRAN_plot_seg <- data.frame(x = 35.5, y = -37.5, xend = 36.5, yend = -37.5, type = "SST + Current")
+  OISST_plot_seg <- data.frame(x = 35, y = -37.5, xend = 37, yend = -37.5, type = "SST + Current")
   # The figure
-  BRAN_state <- synoptic.panel(temperature_dat = BRAN_temp2, vector_dat = BRAN_uv, label_dat = BRAN_plot_data, segment_dat =  BRAN_plot_seg,
-                               bathy_dat = sa_bathy, site_dat = event2, legend_title = "Temp.\n(°C)", uv_scalar = 1, viridis_colour = "D", BRAN = T)
-  # BRAN_state
+  remote_state <- synoptic.panel(temperature_dat = OISST_temp2, vector_dat = AVISO_uv, label_dat = OISST_plot_data, segment_dat =  OISST_plot_seg,
+                               bathy_dat = sa_bathy, site_dat = event2, legend_title = "Temp.\n(°C)", uv_scalar = 1, viridis_colour = "D", OISST = T)
+  # remote_state
   
   
   ## Create sea state anomaly figure ##
   # Double up temps for correct facet labelling
-  BRAN_temp_anom2 <- rbind(BRAN_temp_anom, BRAN_temp_anom)
+  OISST_temp_anom2 <- rbind(OISST_temp_anom, OISST_temp_anom)
   # Add 'type' columns for faceting
-  BRAN_temp2$type <- rep(c("SST Anomaly + Bathy", "SST Anomaly + Current Anomaly"), each = nrow(BRAN_temp_anom))
-  BRAN_uv_anom$type <- "SST Anomaly + Current Anomaly"
+  OISST_temp2$type <- rep(c("SST Anomaly + Bathy", "SST Anomaly + Current Anomaly"), each = nrow(OISST_temp_anom))
+  AVISO_uv_anom$type <- "SST Anomaly + Current Anomaly"
   sa_bathy$type <- "SST Anomaly + Bathy"
   # The label dataframes
-  BRAN_plot_anom_data <- data_frame(txt = "1.0 m/s\n",
+  OISST_plot_anom_data <- data_frame(txt = "2.0 m/s\n",
                                x = 36, y = -37, type = "SST Anomaly + Current Anomaly")
-  BRAN_plot_anom_seg <- data.frame(x = 35.5, y = -37.5, xend = 36.5, yend = -37.5, type = "SST Anomaly + Current Anomaly")
+  OISST_plot_anom_seg <- data.frame(x = 35, y = -37.5, xend = 37, yend = -37.5, type = "SST Anomaly + Current Anomaly")
   # The figure
-  BRAN_state_anom <- synoptic.panel(temperature_dat = BRAN_temp_anom2, vector_dat = BRAN_uv_anom, label_dat = BRAN_plot_anom_data, segment_dat =  BRAN_plot_anom_seg,
-                                    bathy_dat = sa_bathy, site_dat = event2, legend_title = "Anom.\n(°C)", uv_scalar = 1, viridis_colour = "D", BRAN = T)
-  # BRAN_state_anom
+  remote_state_anom <- synoptic.panel(temperature_dat = OISST_temp_anom2, vector_dat = AVISO_uv_anom, label_dat = OISST_plot_anom_data, segment_dat = OISST_plot_anom_seg,
+                                    bathy_dat = sa_bathy, site_dat = event2, legend_title = "Anom.\n(°C)", uv_scalar = 1, viridis_colour = "D", OISST = T)
+  # remote_state_anom
   
   
   ## Create air state figure ##
@@ -335,7 +333,7 @@ synoptic.fig <- function(data_file){
   ERA_plot_seg <- data.frame(x = 35, y = -37.5, xend = 37, yend = -37.5)
   # The figure
   ERA_state <- synoptic.panel(temperature_dat = ERA_temp, vector_dat = ERA_uv2, label_dat = ERA_plot_data, segment_dat = ERA_plot_seg,
-                              bathy_dat = sa_bathy, site_dat = event2, legend_title = "Temp.\n(°C)", uv_scalar = 0.5, viridis_colour = "C", BRAN = F)
+                              bathy_dat = sa_bathy, site_dat = event2, legend_title = "Temp.\n(°C)", uv_scalar = 0.5, viridis_colour = "C", OISST = F)
   # ERA_state
   
   
@@ -351,7 +349,7 @@ synoptic.fig <- function(data_file){
   ERA_plot_anom_seg <- data.frame(x = 35, y = -37.5, xend = 37, yend = -37.5)
   # The figure
   ERA_state_anom <- synoptic.panel(temperature_dat = ERA_temp_anom, vector_dat = ERA_uv_anom2, label_dat = ERA_plot_anom_data, segment_dat = ERA_plot_anom_seg,
-                                   bathy_dat = sa_bathy, site_dat = event2, legend_title = "Anom.\n(°C)", uv_scalar = 0.5, viridis_colour = "C", BRAN = F)
+                                   bathy_dat = sa_bathy, site_dat = event2, legend_title = "Anom.\n(°C)", uv_scalar = 0.5, viridis_colour = "C", OISST = F)
   # ERA_state_anom
   
 
@@ -443,16 +441,23 @@ synoptic.fig <- function(data_file){
   # file_name <- "~/Desktop/test.pdf"
   file_name <- paste0("graph/synoptic/",event2$site[1],"_",event2$event_no[1],".pdf")
   # The figure
-  pdf(file_name, width = 17, height = 10, pointsize = 10) # Set PDF dimensions
-  grid.newpage()
-  pushViewport(viewport(layout = grid.layout(3,3)))
-  vplayout <- function(x, y) viewport(layout.pos.row = x, layout.pos.col = y)
-  print(BRAN_state, vp = vplayout(1,1:2))
-  print(ERA_state, vp = vplayout(1,3))
-  print(BRAN_state_anom, vp = vplayout(2,1:2))
-  print(ERA_state_anom, vp = vplayout(2,3))
-  print(event_flame, vp = vplayout(3,1:2))
-  print(text_table, vp = vplayout(3,3))
-  dev.off()
+  # pdf(file_name, width = 17, height = 10, pointsize = 10) # Set PDF dimensions
+  # grid.newpage()
+  # pushViewport(viewport(layout = grid.layout(3,3)))
+  # vplayout <- function(x, y) viewport(layout.pos.row = x, layout.pos.col = y)
+  # print(remote_state, vp = vplayout(1,1:2))
+  # print(ERA_state, vp = vplayout(1,3))
+  # print(remote_state_anom, vp = vplayout(2,1:2))
+  # print(ERA_state_anom, vp = vplayout(2,3))
+  # print(event_flame, vp = vplayout(3,1:2))
+  # print(text_table, vp = vplayout(3,3))
+  # dev.off()
+  # 
+  atlas_fig <- grid.arrange(remote_state, ERA_state,
+                            remote_state_anom, ERA_state_anom,
+                            event_flame, text_table,
+                            layout_matrix = cbind(c(1,3,5), c(1,3,5), c(2,4,6)))
+  # atlas_fig
+  ggsave(filename = file_name, plot = atlas_fig, width = 17, height = 10, pointsize = 10)
 }
 

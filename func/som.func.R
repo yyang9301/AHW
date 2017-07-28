@@ -12,20 +12,13 @@
 # 9. Function for melting subsetting and re-casting data
 # 10. Function for extracting only count of events per node
 ## DEPENDS ON:
+library(doMC); registerDoMC(cores = 4)
+library(tidyverse)
+library(scales)
+library(gridExtra)
 # library(kohonen)
 # library(SOMbrero)
 library(yasomi)
-# library(plyr)
-# library(dplyr)
-library(data.table)
-library(ggplot2)
-library(scales)
-library(grid)
-library(gridExtra)
-# library(reshape2)
-# library(lubridate)
-# library(zoo)
-library(doMC); registerDoMC(cores = 4)
 ## USED BY:
 # "2.Model_fitting.R"
 ## CREATES:
@@ -94,6 +87,7 @@ som.model.PCI <- function(data_packet, xdim = 3, ydim = 3){
 
 # 3. Function for determining node indexes --------------------------------
 
+# data_packet <- all_anom; som_output <- som_mdel_pci
 event.node <- function(data_packet, som_output){
   event_node <- data.frame(event = sapply(strsplit(basename(as.character(data_packet$event)), ".Rdata"),  "[[", 1),
                             node = som_output$classif)
@@ -107,7 +101,7 @@ event.node <- function(data_packet, som_output){
     mutate(lon = SACTN_site_list$lon[as.character(SACTN_site_list$site) == site[1]]) %>%
     mutate(lat = SACTN_site_list$lat[as.character(SACTN_site_list$site) == site[1]]) %>%
     group_by(event) %>%
-    mutate(season = as.factor(SACTN_events$season[SACTN_events$event == event[1]]))
+    mutate(season = SACTN_events$season[SACTN_events$event == event[1]])
   event_node <- as.data.frame(event_node)
   return(event_node)
 }
@@ -116,6 +110,7 @@ event.node <- function(data_packet, som_output){
 # 4. Functions for unpacking som results ----------------------------------
 
 # Create mean results from initial data frame based on node clustering
+# data_packet <- all_anom; som_output <- som_mdel_pci
 som.unpack.mean <- function(data_packet, som_output){
   # Melt data_packet
   data_packet$event <- sapply(strsplit(basename(as.character(data_packet$event)), ".Rdata"),  "[[", 1)
@@ -126,7 +121,7 @@ som.unpack.mean <- function(data_packet, som_output){
   # data_packet_long <- data_packet_long %>%
   #   group_by(event) %>%
   #   mutate(node = event_node$node[event_node$event == event][1])
-  data_packet_long <- data.table(data_packet_long)
+  data_packet_long <- data.table::data.table(data_packet_long)
   # Create the mean values that serve as the unscaled results from the SOM
   var_unscaled <- data_packet_long[, .(value = mean(value, na.rm = TRUE)),
                                    by = .(node, variable)]
@@ -134,9 +129,12 @@ som.unpack.mean <- function(data_packet, som_output){
   var_unscaled$y <- as.numeric(sapply(strsplit(as.character(var_unscaled$variable), "_"), "[[", 2))
   var_unscaled$var <- sapply(strsplit(as.character(var_unscaled$variable), "_"), "[[", 3)
   var_unscaled$variable <- NULL
-  var_unscaled <- var_unscaled[order(var_unscaled$node, var_unscaled$x, var_unscaled$y),]
+  var_unscaled <- var_unscaled[order(var_unscaled$var, var_unscaled$node, var_unscaled$x, var_unscaled$y),]
   return(var_unscaled)
 }
+
+# ggplot(data = var_unscaled[var_unscaled$node == 1 & var_unscaled$var == "ERA/temp-anom"], aes(x = x, y = y)) +
+#   geom_raster(aes(fill = value))
 
 
 # Rescale the actual som results
@@ -172,13 +170,13 @@ som.unpack.rescale <- function(data_packet, som_output){
 
 # ## Create wind vector labels
 # # Normal
-# label_BRAN_norm <- data_frame(txt = "1.0 m/s\n",
+# label_OISST_norm <- data_frame(txt = "2.0 m/s\n",
 #                               x = 36, y = -37, type = "SST + Current")
 # label_ERA_norm <- data_frame(txt = "4.0 m/s\n",
 #                             x = 36, y = -37)
 #
 # # Anomaly
-# label_BRAN_anom <- data_frame(txt = "1.0 m/s\n",
+# label_OISST_anom <- data_frame(txt = "2.0 m/s\n",
 #                               x = 36, y = -37, type = "SST Anomaly + Current Anomaly")
 # label_ERA_anom <- data_frame(txt = "4.0 m/s\n",
 #                                  x = 36, y = -37)
@@ -200,7 +198,7 @@ sa_lons <- c(10, 40); sa_lats <- c(-40, -25)
 # The plotting function
 # NB: This function requires input generated from 'all.panels()'
 # data_temp <- res_BRAN_temp; data_uv <- res_BRAN_uv; data_node <- node_all_norm; vector_label <-  "1.0 m/s\n"; plot_title <- "SST + Current"; legend_title <- "SST"; viridis_col <- "D" # tester...
-node.panels <- function(data_temp, data_uv, data_node, plot_title, legend_title, vector_label, viridis_col, BRAN = TRUE){
+node.panels <- function(data_temp, data_uv, data_node, plot_title, legend_title, vector_label, viridis_col, OISST = T){
   np <- ggplot(data = data_temp, aes(x = x, y = y)) +
     geom_raster(aes(fill = value)) +
     geom_segment(data = data_uv, aes(x = x, y = y, xend = x + u, yend = y + v),
@@ -243,7 +241,7 @@ node.panels <- function(data_temp, data_uv, data_node, plot_title, legend_title,
           axis.text = element_text(size = 12),
           legend.text = element_text(size = 12),
           legend.title = element_text(size = 12))
-  if(BRAN){
+  if(OISST){
     np <- np + geom_polygon(data = southern_africa_coast, aes(x = lon, y = lat, group = group),
                    fill = "grey70", colour = "black", size = 0.5, show.legend = FALSE) +
       geom_label(data = data_node, aes(x = 25, y = -28, label = paste0("n = ", count,"/",length(node))), size = 3, label.padding = unit(0.5, "lines")) +
@@ -260,20 +258,23 @@ all.panels <- function(data_res, data_node){
 
   # Prep the data
   data_res$var <- as.factor(data_res$var)
-
-  ## Separate BRAN from ERA and temp from uv
-  # BRAN
-  res_BRAN_temp <- data_res[data_res$var == levels(data_res$var)[1],]
-  res_BRAN_uv <- data_res[data_res$var %in% levels(data_res$var)[2:3],]
-  res_BRAN_uv <- dcast(res_BRAN_uv, x+y+node~var)
-  colnames(res_BRAN_uv)[4:5] <- c("u", "v")
+  levels(data_res$var)
+  
+  ## Separate remote from ERA and temp from uv
+  # remote
+  res_OISST_temp <- data_res[data_res$var == "OISST/temp-anom",]
+  res_AVISO_uv <- data_res[data_res$var %in% c("AVISO/u-anom", "AVISO/v-anom"),]
+  res_AVISO_uv <- dcast(res_AVISO_uv, x+y+node~var)
+  colnames(res_AVISO_uv)[4:5] <- c("u", "v")
+  res_AVISO_uv$u <- res_AVISO_uv$u*2
+  res_AVISO_uv$v <- res_AVISO_uv$v*2
   # lon_sub <- seq(10, 40, by = 0.5)
   # lat_sub <- seq(-40, -15, by = 0.5)
   # res_BRAN_uv <- res_BRAN_uv[(res_BRAN_uv$x %in% lon_sub & res_BRAN_uv$y %in% lat_sub),]
 
   # ERA
-  res_ERA_temp <- data_res[data_res$var == levels(data_res$var)[4],]
-  res_ERA_uv <- data_res[data_res$var %in% levels(data_res$var)[5:6],]
+  res_ERA_temp <- data_res[data_res$var == "ERA/temp-anom",]
+  res_ERA_uv <- data_res[data_res$var %in% c("ERA/u-anom", "ERA/v-anom"),]
   res_ERA_uv <- dcast(res_ERA_uv, x+y+node~var)
   colnames(res_ERA_uv)[4:5] <- c("u", "v")
   res_ERA_uv$u <- res_ERA_uv$u/2
@@ -283,36 +284,36 @@ all.panels <- function(data_res, data_node){
   res_ERA_uv <- res_ERA_uv[(res_ERA_uv$x %in% lon_sub & res_ERA_uv$y %in% lat_sub),]
 
   # node_data <- node_all_anom
-  plot_title_BRAN = "SST Anomaly + Current Anomaly"
+  plot_title_remote = "SST Anomaly + Current Anomaly"
   plot_title_ERA = "Air Temp Anomaly + Wind Anomaly"
   legend_title = "Anom.\n(°C)"
   data_type = "anom"
 
   ## The  panel figures
   # BRAN
-  panels_BRAN <- node.panels(data_temp = res_BRAN_temp, data_uv = res_BRAN_uv, data_node = data_node, BRAN = TRUE,
-                             plot_title = plot_title_BRAN, legend_title = legend_title, vector_label = "1.0 m/s\n", viridis_col = "D")
-  # panels_BRAN
+  panels_remote <- node.panels(data_temp = res_OISST_temp, data_uv = res_AVISO_uv, data_node = data_node, OISST = TRUE,
+                             plot_title = plot_title_remote, legend_title = legend_title, vector_label = "1.0 m/s\n", viridis_col = "D")
+  # panels_remote
   # ERA
-  panels_ERA <- node.panels(data_temp = res_ERA_temp, data_uv = res_ERA_uv, data_node = data_node, BRAN = FALSE,
+  panels_ERA <- node.panels(data_temp = res_ERA_temp, data_uv = res_ERA_uv, data_node = data_node, OISST = FALSE,
                             plot_title = plot_title_ERA, legend_title = legend_title, vector_label = "4.0 m/s\n", viridis_col = "A")
   # panels_ERA
 
-  # Create grid
-  # print(grid.arrange(panels_BRAN, panels_ERA, layout_matrix = cbind(c(1,2), c(1,2))))
-  # ggsave("graph/SOM_nodes.pdf", height = 18, width = 10)
-
   ## Combine figures and save
-  # Generate file name
-  file_name <- paste0("graph/SOM_nodes.pdf")
-  # The figure
-  pdf(file_name, width = 10, height = 12, pointsize = 10) # Set PDF dimensions
-  grid.newpage()
-  pushViewport(viewport(layout = grid.layout(2,1)))
-  vplayout <- function(x, y) viewport(layout.pos.row = x, layout.pos.col = y)
-  print(panels_BRAN, vp = vplayout(1,1))
-  print(panels_ERA, vp = vplayout(2,1))
-  dev.off()
+  # Create grid
+  node_grid <- grid.arrange(panels_remote, panels_ERA, ncol = 1)
+  ggsave(filename = "graph/SOM_nodes.pdf", plot = node_grid, height = 12, width = 10)
+
+  # # Generate file name
+  # file_name <- paste0("graph/SOM_nodes.pdf")
+  # # The figure
+  # pdf(file_name, width = 10, height = 12, pointsize = 10) # Set PDF dimensions
+  # grid.newpage()
+  # pushViewport(viewport(layout = grid.layout(2,1)))
+  # vplayout <- function(x, y) viewport(layout.pos.row = x, layout.pos.col = y)
+  # print(panels_BRAN, vp = vplayout(1,1))
+  # print(panels_ERA, vp = vplayout(2,1))
+  # dev.off()
 }
 
 
@@ -379,7 +380,7 @@ synoptic.round <- function(df, resolution = 0.5){
   df_resolution <- df_1 %>%
     mutate(x = round_any(x, resolution)) %>%
     mutate(y = round_any(y, resolution))
-  df_resolution <- data.table(df_resolution)
+  df_resolution <- data.table::data.table(df_resolution)
   df_resolution <- df_resolution[, .(value = mean(value, na.rm = TRUE)),
                      by = .(x, y, variable, event)]
   df_resolution$index <- paste0(df_resolution$x,"_",df_resolution$y,"_",df_resolution$variable)

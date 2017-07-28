@@ -5,3 +5,6 @@ ERA4.Rdata
 ERA_all_daily.Rdata
 ERA_anom.Rdata
 ERA_norm.Rdata
+ERA_temp_clim.Rdata
+ERA_u_clim.Rdata
+ERA_v_clim.Rdata
