@@ -249,3 +249,7 @@ The scripts and data used to determine common air-sea states during MHWs along t
 * New data packets created
 * New synoptic atlas figures created
 * New SOM figures created
+
+## 2017/07/30
+* New colour palette used for SOM nodes
+* SOM nodes described in the results

@@ -203,7 +203,7 @@ node.panels <- function(data_temp, data_uv, data_node, plot_title, legend_title,
     geom_raster(aes(fill = value)) +
     geom_segment(data = data_uv, aes(x = x, y = y, xend = x + u, yend = y + v),
                  arrow = arrow(angle = 15, length = unit(0.02, "inches"), type = "closed"), 
-                 alpha = 0.8, colour = "ivory") +
+                 alpha = 0.8, colour = "black") +
     geom_polygon(data = southern_africa_coast, aes(x = lon, y = lat, group = group),
                  fill = NA, colour = "black", size = 0.5, show.legend = FALSE) +
 
@@ -227,7 +227,8 @@ node.panels <- function(data_temp, data_uv, data_node, plot_title, legend_title,
                        labels = c("35°S", "30°S")) +
     coord_fixed(xlim = c(10.5, 39.5), ylim = c(-39.5, -25.5), expand = F) +
     xlab("") + ylab("") + ggtitle(plot_title) +
-    scale_fill_viridis(legend_title, option = viridis_col) +
+    # scale_fill_viridis(legend_title, option = viridis_col) +
+    scale_fill_gradient2(legend_title, low = muted("blue"), high = muted("red")) +
     facet_wrap(~node, nrow = ceiling((length(unique(data_temp$node))/3))) +
     theme(plot.title = element_text(hjust = 0.5, size = 12),
           panel.background = element_rect(fill = "grey70"),

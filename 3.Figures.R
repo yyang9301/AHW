@@ -66,6 +66,8 @@ ggsave("graph/SOM_lolli.pdf", height = 9, width = 9)
   # This would work best on the bottom panel as it is currently less busy
   # But it would make more sense on the top panel...
 
+# Cape Peninsuala
+
 # Also need to label: Namibia, Mozam and SA
 
 # It would also be good to tweak the 200 m isobath
