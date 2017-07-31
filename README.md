@@ -253,3 +253,6 @@ The scripts and data used to determine common air-sea states during MHWs along t
 ## 2017/07/30
 * New colour palette used for SOM nodes
 * SOM nodes described in the results
+
+## 2017/07/31
+* Editing of results and discussion sections
