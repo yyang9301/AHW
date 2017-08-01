@@ -15,6 +15,8 @@
 source("func/synoptic.func.R")
 source("func/som.func.R")
 source("func/scale.bar.func.R")
+library(vegan)
+library(ggdendro)
 
 # 2. Create synoptic figure for each event  -------------------------------
 
@@ -48,14 +50,56 @@ ggplot(data = node_all, aes(x = date_start, y = int_cum)) +
   geom_lolli() +
   geom_point(aes(colour = season)) +
   facet_wrap(~node) +
-  labs(x = "", y = "cummulative intensity (°Cxdays)")
+  labs(x = "", y = "cummulative intensity (°Cxdays)") +
+  theme(strip.background = element_rect(fill = NA))
 ggsave("graph/SOM_lolli.pdf", height = 9, width = 9)
 
 
 # 5. Create dendrogram for HCA results ------------------------------------
 
+# Load data
+load("data/all_anom_hclust.Rdata")
+load("data/all_anom_env.Rdata")
+
+# Prep dendrogram
+dhc <- as.dendrogram(all_anom_hclust)
+ddata <- dendro_data(dhc, type = "rectangle")
+label_data <- label(ddata)
+label_data$season <- all_anom_env$season[as.numeric(as.character(label_data$label))]
+label_data$type <- all_anom_env$type[as.numeric(as.character(label_data$label))]
+
+# Plot the dendrogram
+ggplot(segment(ddata)) + 
+  geom_segment(aes(x = x, y = y, xend = xend, yend = yend)) +
+  geom_point(data = label_data, aes(x = x, y = y, shape = type, colour = season)) +
+  scale_shape_manual(values = c(1, 16))
+ggsave("graph/HCA.pdf", height = 9, width = 9)
+
 
 # 6. Create ordiplot for MDS results --------------------------------------
+
+# Load data
+load("data/all_anom_MDS.Rdata")
+load("data/all_anom_env.Rdata")
+
+## Fit environmental variables
+ord_fit <- envfit(all_anom_MDS ~ season + type, data = all_anom_env)
+# ord_fit
+ord_fit_df <- as.data.frame(ord_fit$factors$centroids)
+ord_fit_df$factors <- c("autumn", "spring", "summer", "winter", "clim", "event")
+
+# Create MDS dataframe
+mds_df <- data.frame(all_anom_MDS$points, type = all_anom_env$type, 
+                     event = all_anom_env$event, season = all_anom_env$season)
+
+# Plot the fits
+ggplot(data = mds_df, aes(x = MDS1, y = MDS2)) +
+  geom_point(aes(colour = season, shape = type)) +
+  geom_segment(data = ord_fit_df, aes(x = 0, y = 0, xend = NMDS1, yend = NMDS2),
+               arrow = arrow(angle = 15, length = unit(0.1, "inches"), type = "open"), 
+               alpha = 0.6, colour = "black")  +
+  geom_text(data = ord_fit_df, aes(label = factors, x = NMDS1, y = NMDS2))
+ggsave("graph/MDS.pdf", height = 9, width = 12)
 
 
 # 7. Create map of study area ---------------------------------------------
@@ -66,11 +110,9 @@ ggsave("graph/SOM_lolli.pdf", height = 9, width = 9)
   # This would work best on the bottom panel as it is currently less busy
   # But it would make more sense on the top panel...
 
-# Cape Peninsuala
+# Should label: Namibia and Mozam
 
-# Also need to label: Namibia, Mozam and SA
-
-# It would also be good to tweak the 200 m isobath
+# Potentially touch up the 200 m isobath
 
 ###
 
@@ -78,25 +120,42 @@ ggsave("graph/SOM_lolli.pdf", height = 9, width = 9)
 # International borders
 load("graph/africa_borders.Rdata")
 
+# Hi-res bathy
+load("graph/bathy.Rdata")
+
 # Reanalysis data
-load("graph/all_jan1_0.5.Rdata")
-names(all_jan1_0.5)[1:2] <- c("lon","lat")
+load("data/ERA/ERA_temp_clim.Rdata")
+load("data/ERA/ERA_u_clim.Rdata")
+colnames(ERA_u_clim)[4] <- "val"
+load("data/ERA/ERA_v_clim.Rdata")
+colnames(ERA_v_clim)[4] <- "val"
+
+# Remote data
+load("data/OISST/OISST_temp_clim.Rdata")
+load("data/AVISO/AVISO_u_clim.Rdata")
+colnames(AVISO_u_clim)[4] <- "val"
+load("data/AVISO/AVISO_v_clim.Rdata")
+colnames(AVISO_v_clim)[4] <- "val"
 
 # In situ time series locations
 load("setupParams/SACTN_site_list.Rdata")
 SACTN_site_list$order <- 1:nrow(SACTN_site_list)
 
-# Devide the reanalysis data
-sea_temp <- filter(all_jan1_0.5, variable == "BRAN/temp")
-air_temp <- filter(all_jan1_0.5, variable == "ERA/temp")
-currents <- filter(all_jan1_0.5, variable == "BRAN/u" | variable == "BRAN/v") %>% 
-  select(-date, -index) %>% 
-  spread(key = variable, value = value) %>% 
-  rename(u = "BRAN/u", v = "BRAN/v")
-winds <- filter(all_jan1_0.5, variable == "ERA/u" | variable == "ERA/v") %>% 
-  select(-date, -index) %>% 
-  spread(key = variable, value = value) %>% 
-  rename(u = "ERA/u", v = "ERA/v")
+# Select only January 1st
+sea_temp <- filter(OISST_temp_clim, date == "01-01") %>% 
+  rename(lon = x, lat = y)
+currents <- rbind(AVISO_u_clim, AVISO_v_clim) %>% 
+  filter(date == "01-01") %>% 
+  mutate(variable = c(rep("u", 1358), rep("v", 1358))) %>% 
+  spread(key = variable, value = val) %>% 
+  rename(lon = x, lat = y)
+air_temp <- filter(ERA_temp_clim, date == "01-01") %>% 
+  rename(lon = x, lat = y)
+winds <- rbind(ERA_u_clim, ERA_v_clim) %>% 
+  filter(date == "01-01") %>% 
+  mutate(variable = c(rep("u", 1891), rep("v", 1891))) %>% 
+  spread(key = variable, value = val) %>% 
+  rename(lon = x, lat = y)
 
 # Reduce wind/ current vectors
 lon_sub <- seq(10, 40, by = 1)
@@ -110,11 +169,11 @@ current_uv_scalar <- 2
 # The top figure (sea)
 fig_1_top <- ggplot(data = southern_africa_coast, aes(x = lon, y = lat)) +
   # The ocean temperature
-  geom_raster(data = sea_temp, aes(fill = value)) +
+  geom_raster(data = sea_temp, aes(fill = temp)) +
   # The bathymetry
-  stat_contour(data = sa_bathy[sa_bathy$depth < -200 & sa_bathy$depth > -2000,], 
-               aes(x = lon, y = lat, z = depth, alpha = ..level..),
-               colour = "ivory", size = 0.5, binwidth = 1000, na.rm = TRUE, show.legend = FALSE) +
+  stat_contour(data = bathy[bathy$depth < -100 & bathy$depth > -300,], 
+               aes(x = lon, y = lat, z = depth), alpha = 0.5,
+               colour = "ivory", size = 0.5, binwidth = 200, na.rm = TRUE, show.legend = FALSE) +
   # The current vectors
   geom_segment(data = currents, aes(xend = lon + u * current_uv_scalar, yend = lat + v * current_uv_scalar),
                arrow = arrow(angle = 15, length = unit(0.02, "inches"), type = "closed"), alpha = 0.4) +
@@ -123,10 +182,10 @@ fig_1_top <- ggplot(data = southern_africa_coast, aes(x = lon, y = lat)) +
   geom_path(data = africa_borders, aes(group = group)) +
   # The legend for the vector length
   geom_label(aes(x = 36, y = -37, label = "1.0 m/s\n"), size = 3, label.padding = unit(0.5, "lines")) +
-  geom_segment(aes(x = 35, y = -37.5, xend = 37, yend = -37.5)) +
+  geom_segment(aes(x = 35, y = -37.3, xend = 37, yend = -37.3)) +
   # The in situ sites
   geom_point(data = SACTN_site_list, shape = 19,  size = 2.8, colour = "ivory") +
-  geom_text(data = SACTN_site_list, aes(label = order), size = 1.9, colour = "red") +
+  geom_text(data = SACTN_site_list[-c(3,4,7:9,18,21,23:24),], aes(label = order), size = 1.9, colour = "red") +
   # Oceans
   annotate("text", label = "INDIAN\nOCEAN", x = 37.00, y = -34.0, size = 4.0, angle = 0, colour = "ivory") +
   annotate("text", label = "ATLANTIC\nOCEAN", x = 13.10, y = -34.0, size = 4.0, angle = 0, colour = "ivory") +
@@ -152,7 +211,7 @@ fig_1_top <- ggplot(data = southern_africa_coast, aes(x = lon, y = lat)) +
   # Slightly shrink the plotting area
   coord_cartesian(xlim = c(10.5, 39.5), ylim = c(-39.5, -25.5), expand = F) +
   # Use viridis colour scheme
-  scale_fill_viridis(name = "Temp.\n(°C)", option = "D") +
+  scale_fill_viridis(name = "Temp.\n(°C)", option = "D", breaks = c(25, 21, 17)) +
   # Adjust the theme
   theme_bw() +
   theme(panel.border = element_rect(fill = NA, colour = "black", size = 1),
@@ -167,7 +226,7 @@ fb_inset <- ggplot(data = sa_shore, aes(x = lon, y = lat)) +
                fill = "grey70", colour = NA, size = 0.5, show.legend = FALSE) +
   # The in situ sites
   geom_point(data = SACTN_site_list, shape = 1,  size = 3, colour = "black") +
-  geom_text(data = SACTN_site_list, aes(label = order), size = 2.3, colour = "red") +
+  geom_text(data = SACTN_site_list[-6,], aes(label = order), size = 2.3, colour = "red") +
   # Text label
   geom_text(aes(x = 18.65, y = -34.25, label = "False\nBay"), size = 2.7) +
   # Control the x and y axes
@@ -191,7 +250,7 @@ wind_uv_scalar <- 0.5
 # The bottom figure (air)
 fig_1_bottom <- ggplot(data = southern_africa_coast, aes(x = lon, y = lat)) +
   # The ocean temperature
-  geom_raster(data = air_temp, aes(fill = value)) +
+  geom_raster(data = air_temp, aes(fill = temp)) +
   # The land mass
   geom_polygon(aes(group = group), fill = NA, colour = "black", size = 0.5, show.legend = FALSE) +
   geom_path(data = africa_borders, aes(group = group)) +
@@ -200,7 +259,15 @@ fig_1_bottom <- ggplot(data = southern_africa_coast, aes(x = lon, y = lat)) +
                arrow = arrow(angle = 15, length = unit(0.02, "inches"), type = "closed"), alpha = 0.4) +
   # The legend for the vector length
   geom_label(aes(x = 36, y = -37, label = "4.0 m/s\n"), size = 3, label.padding = unit(0.5, "lines")) +
-  geom_segment(aes(x = 35, y = -37.5, xend = 37, yend = -37.5)) +
+  geom_segment(aes(x = 35, y = -37.3, xend = 37, yend = -37.3)) +
+  # The coastal sections
+  geom_spoke(aes(x = 18.46520, y = -34.31050, angle = 180, radius = -2), linetype = "dotted", colour = "ivory") +
+  geom_spoke(aes(x = 18.46520, y = -34.31050, angle = 180, radius = 2), linetype = "dotted", colour = "ivory") +
+  geom_spoke(aes(x = 27.48889, y = -33.28611, angle = 40, radius = -2), linetype = "dotted", colour = "ivory") +
+  geom_spoke(aes(x = 27.48889, y = -33.28611, angle = 40, radius = 2), linetype = "dotted", colour = "ivory") +
+  annotate("text", label = "West\nCoast", x = 16.5, y = -32, size = 3.0, angle = 0, colour = "ivory") +
+  annotate("text", label = "South\nCoast", x = 23, y = -35.5, size = 3.0, angle = 0, colour = "ivory") +
+  annotate("text", label = "East\nCoast", x = 31, y = -32, size = 3.0, angle = 0, colour = "ivory") +
   # Improve on the x and y axis labels
   scale_x_continuous(breaks = seq(15, 35, 5),
                      labels = scales::unit_format("°E", sep = "")) +
@@ -214,7 +281,7 @@ fig_1_bottom <- ggplot(data = southern_africa_coast, aes(x = lon, y = lat)) +
   # Slightly shrink the plotting area
   coord_cartesian(xlim = c(10.5, 39.5), ylim = c(-39.5, -25.5), expand = F) +
   # Use viridis colour scheme
-  scale_fill_viridis(name = "Temp.\n(°C)", option = "A") +
+  scale_fill_viridis(name = "Temp.\n(°C)", option = "A", breaks = c(25, 21, 17)) +
   # Adjust the theme
   theme_bw() +
   theme(panel.border = element_rect(fill = NA, colour = "black", size = 1),
@@ -240,5 +307,5 @@ fig_1 <- ggplot() +
   annotation_custom(fig_1_bottom_grob,
                     xmin = 1, xmax = 10, ymin = 1, ymax = 5.5)
 # save
-# DPI set very low because my internet is slow...
 ggsave(plot = fig_1, filename = "graph/fig_1.pdf", height = 8, width = 8)
+

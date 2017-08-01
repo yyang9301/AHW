@@ -256,3 +256,9 @@ The scripts and data used to determine common air-sea states during MHWs along t
 
 ## 2017/07/31
 * Editing of results and discussion sections
+
+## 2017/08/01
+* Calculated MDS and HCA with new data
+* Created biplot and dendrogram
+* Edits to figure 1
+* Some edits to text

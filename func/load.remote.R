@@ -140,18 +140,26 @@ AVISO.daily <- function(nc.file){
 
 # 4. Function for creating clim anomalies ---------------------------------
 
-clim.anom <- function(df){
+clim.anom <- function(df, var_name){
   # First create mean
-  colnames(df)[3] <- val
+  if(colnames(df)[4] %in% c("date", "x",  "y")) stop("Ensure that the fourth colum is the desired valiable.")
+  colnames(df)[4] <- "val"
   df1 <- data.table::data.table(df)
   df1 <- df1[, .(val = mean(val, na.rm = TRUE)),
                        by = .(x, y)]
   # Then order the two data frames the same
   df <- df[order(df$date, df$x),]
   df1 <- df1[order(df1$x),]
-  # Lastly subtract the mean for anomalies
+  # Subtract the mean for anomalies
   df2 <- df %>%
     mutate(val = val-df1$val)
-  # mean(df1$value)
+  # mean(df2$var)
+  # Create coords column
+  df2$coords <- factor(paste0(df2$x, "_" , df2$y, "_", var_name),
+                       levels = unique(paste0(df2$x, "_" , df2$y, "_", var_name)))
+  # Cast wide
+  df2_wide <- dcast(df2, date~coords, value.var = "val")
+  colnames(df2_wide)[1] <- "event"
+  return(df2_wide)
 }
 

@@ -154,6 +154,33 @@ rm(AVISO_v_daily, AVISO_v_clim)
 
 # 6. Create clim anomalies ------------------------------------------------
 
-
 # Load data from previous steps
 load("data/ERA/ERA_temp_clim.Rdata")
+load("data/ERA/ERA_u_clim.Rdata")
+load("data/ERA/ERA_v_clim.Rdata")
+load("data/OISST/OISST_temp_clim.Rdata")
+load("data/AVISO/AVISO_u_clim.Rdata")
+load("data/AVISO/AVISO_v_clim.Rdata")
+
+### Create the anomalies and save
+## ERA data
+# Temp
+ERA_temp_clim_anom <- clim.anom(ERA_temp_clim, "ERA/temp-anom")
+save(ERA_temp_clim_anom, file = "data/ERA/ERA_temp_clim_anom.Rdata")
+# U
+ERA_u_clim_anom <- clim.anom(ERA_u_clim, "ERA/u-anom")
+save(ERA_u_clim_anom, file = "data/ERA/ERA_u_clim_anom.Rdata")
+# V
+ERA_v_clim_anom <- clim.anom(ERA_v_clim, "ERA/v-anom")
+save(ERA_v_clim_anom, file = "data/ERA/ERA_v_clim_anom.Rdata")
+
+## Remote data
+# Temp
+OISST_temp_clim_anom <- clim.anom(OISST_temp_clim, "OISST/temp-anom")
+save(OISST_temp_clim_anom, file = "data/OISST/OISST_temp_clim_anom.Rdata")
+# U
+AVISO_u_clim_anom <- clim.anom(AVISO_u_clim, "AVISO/u-anom")
+save(AVISO_u_clim_anom, file = "data/AVISO/AVISO_u_clim_anom.Rdata")
+# V
+AVISO_v_clim_anom <- clim.anom(AVISO_v_clim, "AVISO/v-anom")
+save(AVISO_v_clim_anom, file = "data/AVISO/AVISO_v_clim_anom.Rdata")

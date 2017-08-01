@@ -15,6 +15,7 @@
 library(doMC); registerDoMC(cores = 4)
 library(tidyverse)
 library(RmarineHeatWaves)
+library(vegan)
 source("func/detect.full.R")
 source("func/synoptic.func.R") # This loads several files
 source("func/som.func.R")
@@ -90,7 +91,6 @@ SACTN_events$event <- paste0(SACTN_events$site,"_",SACTN_events$event_no)
 
 # Save
 save(SACTN_events, file = "data/SACTN/SACTN_events.Rdata")
-
 
 
 # 3. Create data packets from remote and ERA data based on MHWs  ----------
@@ -184,41 +184,60 @@ save(node_means, file = "data/node_means.Rdata")
 # Load required data if the above sections were not run
 load("data/remote_anom.Rdata")
 load("data/ERA_anom.Rdata")
-all_anom <- cbind(BRAN_anom, ERA_anom[,-1])
+all_anom1 <- cbind(remote_anom, ERA_anom[,-1])
 rm(remote_anom, ERA_anom)
 
-load("data/OISST/OISST_temp_clim.Rdata")
+# Load clim and combine anomalies
+load("data/ERA/ERA_temp_clim_anom.Rdata")
+load("data/ERA/ERA_u_clim_anom.Rdata")
+load("data/ERA/ERA_v_clim_anom.Rdata")
+load("data/OISST/OISST_temp_clim_anom.Rdata")
+load("data/AVISO/AVISO_u_clim_anom.Rdata")
+load("data/AVISO/AVISO_v_clim_anom.Rdata")
+all_anom2 <- cbind(OISST_temp_clim_anom, AVISO_u_clim_anom[,-1], AVISO_v_clim_anom[,-1],
+                   ERA_temp_clim_anom[,-1], ERA_u_clim_anom[,-1], ERA_v_clim_anom[,-1])
+
+# Combine all anomalies
+all_anom <- rbind(all_anom1, all_anom2)
+rm(all_anom1, all_anom2)
+
+
+## Create environmental variable index
+# Prep for combining
+load("data/node_all_anom.Rdata")
+node_all_anom$event <- as.character(node_all_anom$event)
+all_anom$event <- as.character(all_anom$event)
+all_anom_env <- data.frame(row.names = 1:nrow(all_anom))
+# Event
+all_anom_env$event <- c(node_all_anom$event, all_anom$event[87:452])
+# Season
+all_anom_env$season <- c(node_all_anom$season, rep("summer", 60), rep("autumn", 92), 
+                                  rep("winter", 92), rep("spring", 91), rep("summer", 31))
+# Type
+all_anom_env$type <- c(rep("event", 86), rep("clim", 366))
+# Save
+save(all_anom_env, file = "data/all_anom_env.Rdata")
+# Remove event column from main dataframe
+all_anom$event <- NULL
 
 
 ## Calculate HCA
-all_anom_hclust <- hclust(vegdist(decostand(all_anom[,-1], method = "standardize"),
+all_anom_hclust <- hclust(vegdist(decostand(all_anom, method = "standardize"),
                                                   method = "euclidean"), method = "ward.D2")
-save(all_anom_0.5_hclust, file = "results/all_anom_0.5_hclust.Rdata")
-load("results/all_anom_0.5_hclust.Rdata")
+save(all_anom_hclust, file = "data/all_anom_hclust.Rdata")
+# load("data/all_anom_hclust.Rdata")
 
 
 ## Calculate MDS
-# all_anom$node <- NULL
-all_anom_0.5_MDS <- metaMDS(vegdist(decostand(all_anom[,-1],
-                                              method = "standardize"),
+all_anom_MDS <- metaMDS(vegdist(decostand(all_anom, method = "standardize"),
                                     method = "euclidean"), try = 100)
-save(all_anom_MDS, file = "results/all_anom_MDS.Rdata")
-load("data/all_anom_MDS.Rdata")
+save(all_anom_MDS, file = "data/all_anom_MDS.Rdata")
+# load("data/all_anom_MDS.Rdata")
 
-# Fit environmental variables
-ord_fit <- envfit(all_anom_MDS ~ coast + season, data = event_list[,26:27])
-# ord_fit
-ord_fit_df <- as.data.frame(ord_fit$factors$centroids)
-ord_fit_df$factors <- rownames(ord_fit_df)
-
-# Create MDS dataframe
-mds_df <- data.frame(all_anom_0.5_MDS$points)
-
-# Plot the fits
-ggplot(data = mds_df, aes(x = MDS1, y = MDS2)) +
-  geom_point(colour = "salmon") +
-  geom_text(data = ord_fit_df, aes(label = factors, x = NMDS1, y = NMDS2))
 
 # 7. ANOSIM on differences between SOM nodes ------------------------------
 
-som_anosim <- anosim(as.matrix(scale(all_anom_0.5[,-1])), node_all_anom_pci_1r$node)
+# Load necessary data if above steps ot run
+load("data/node_means.Rdata")
+
+som_anosim <- anosim(as.matrix(scale(node_means[,-1])), node_all_anom_pci_1r$node)
