@@ -240,4 +240,11 @@ save(all_anom_MDS, file = "data/all_anom_MDS.Rdata")
 # Load necessary data if above steps ot run
 load("data/node_means.Rdata")
 
-som_anosim <- anosim(as.matrix(scale(node_means[,-1])), node_all_anom_pci_1r$node)
+# Melt
+node_means$index <- paste0(node_means$x,"_",node_means$y,"_",node_means$var)
+node_means_wide <- dcast(node_means, node~index, value.var = "value")
+
+# Calculate similarity
+som_anosim <- anosim(as.matrix(node_means_wide[,-1]), node_means_wide$node, distance = "euclidean")
+# som_anosim$signif
+save(som_anosim, file = "data/som_ANOSIM.Rdata")

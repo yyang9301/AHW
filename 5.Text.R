@@ -85,6 +85,8 @@ nrow(filter(site_list, length < 365.25*30)) # 20
 # 4. Results --------------------------------------------------------------
 
 # ANOSIM
+load("data/som_ANOSIM.Rdata")
+som_anosim$signif # p = 0.001
 
 
 # 5. Discussion -----------------------------------------------------------
