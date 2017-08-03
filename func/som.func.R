@@ -260,7 +260,7 @@ all.panels <- function(data_res, data_node){
 
   # Prep the data
   data_res$var <- as.factor(data_res$var)
-  levels(data_res$var)
+  # levels(data_res$var)
   
   ## Separate remote from ERA and temp from uv
   # remote

@@ -262,3 +262,6 @@ The scripts and data used to determine common air-sea states during MHWs along t
 * Created biplot and dendrogram
 * Edits to figure 1
 * Some edits to text
+
+## 2017/08/03
+* More edits to text

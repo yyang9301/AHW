@@ -149,7 +149,9 @@ The \emph{ca}. 3,100 km long South African coastline provides a natural laborato
 
 \subsection{Data}
 \subsubsection{\emph{In situ} data}
-The \emph{in situ} coastal seawater temperature data used in this study were acquired from the South African Coastal Temperature Network (SACTN, https://github.com/ajsmit/SACTN, https://robert-schlegel.shinyapps.io/SACTN/). These SACTN data are contributed by seven different organizations and are collected \emph{in situ} with a mixture of hand-held alcohol \& mercury thermometers as well as digital underwater temperature recorders (UTRs). This data set currently consists of 135 daily time series, with a mean duration of 19.7 years. Therefore many of the time series in this dataset are shorter than the 30 year minimum proscribed for the characterisation of marine heatwaves (MHWs, see 'Marine heatwaves' section below) \citep{Hobday2016}. It is however deemed necessary to use these data when investigating extreme events in the nearshore (<400 m from the low tide mark) as satellite derived sea surface temperature (SST) values along the coast have been shown to display large biases \citep{Smit2013} or capture minimum and maximum temperatures poorly \citep{Smale2009, Castillo2010}. Whereas a 30+ year period is ideal for determining a climatology, ten years may serve as an acceptable bottom limit \citep{Schlegel2017}. Following on from the methodology laid out in \citet{Schlegel2017} time series with more than 10\% missing data were also excluded from this research. Accounting for these 10 year length and 10\% missing data constraints, the total number of \emph{in situ} time series used in this study was reduced to 26, with a mean length of 22.3 years. \Cref{tableS1} shows the metadata for the SACTN time series used in this study (RWS: I don't think a supplemental section should be given here, rather host everything on GitHub).
+The \emph{in situ} coastal seawater temperature data used in this study were acquired from the South African Coastal Temperature Network (SACTN, https://github.com/ajsmit/SACTN, https://robert-schlegel.shinyapps.io/SACTN/). These SACTN data are contributed by seven different organizations and are collected \emph{in situ} with a mixture of hand-held alcohol \& mercury thermometers as well as digital underwater temperature recorders (UTRs). This data set currently consists of 135 daily time series, with a mean duration of 19.7 years. Therefore many of the time series in this dataset are shorter than the 30 year minimum proscribed for the characterisation of marine heatwaves (MHWs, see 'Marine heatwaves' section below) \citep{Hobday2016}. It is however deemed necessary to use these data when investigating extreme events in the nearshore (<400 m from the low tide mark) as satellite derived sea surface temperature (SST) values along the coast have been shown to display large biases \citep{Smit2013} or capture minimum and maximum temperatures poorly \citep{Smale2009, Castillo2010}. Whereas a 30+ year period is ideal for determining a climatology, ten years may serve as an acceptable bottom limit \citep{Schlegel2017}. Following on from the methodology laid out in \citet{Schlegel2017} time series with more than 10\% missing data were also excluded from this research. Accounting for these 10 year length and 10\% missing data constraints, the total number of \emph{in situ} time series used in this study was reduced to 26, with a mean length of 22.3 years. The metadata for each SACTN time series used in this study may be downloaded at https://github.com/schrob040/AHW/blob/master/setupParams/SACTN_site_list.csv.
+% \Cref{tableS1} shows the metadata for the SACTN time series used in this study 
+(RWS: I don't think a supplemental section should be given here, rather host everything on GitHub. In fact, should comments like the preceeding sentence be made in the body of the text, or saved for the acknowledgment section? It's a bit jarring to have these long strips of html in the text.)
 
 \subsubsection{Reanalysis data}
 To visualise a synoptic view of the air states during coastal marine heatwaves (see sections 'Marine heatwaves' and 'Air-sea state' below) we chose to use the ERA-Interim to provide air temperatures (2 m above surface) and wind vectors (10 m above surface) in a single product. ERA-Interim is a comprehensive global atmospheric model that assimilates a wide range of data to create short term forecasts for 60 vertical layers \citep{Dee2011}. These forecasts are then combined with the assimilated data again during each 12-hourly cycle \citep{Dee2011}. ERA-Interim is produced by the European Centre for Medium-Range Weather Forecasts (ECMWF, http://www.ecmwf.int/), may be downloaded through a web-based user interface and at the time of this writing was available from January 1st, 1979 to December 31st, 2016. The data used in this study were downloaded at a daily resolution on a 1/2\degree\~ grid and within the latitude/ longitude of the study region (\Cref{figure1}).
@@ -163,10 +165,14 @@ Research on oceanic reanalysis data around southern Africa have shown that none 
 % To ensure even sampling of the synoptic air and sea states the BRAN data were averaged on a 1/2\degree\~ grid to match the resolution of the ERA-Interim data. Both datasets were then trimmed to contain the same longitude and latitude extents as the study area. All variables were then coerced into the same dataframe format for consistent analysis. The BRAN reanalysis product at the writing of this paper was available from January 1st, 1994 to August 31st, 2016. This is less than the range of data currently available for ERA-Interim at January 1st, 1979 to December 31st, 2016. All dates occurring outside of those in the BRAN product were excluded. The analysis period for the climatologies for the BRAN and ERA-Interim data used in this research was therefore set as January 1st, 1994 to December 31st, 2016.
 
 \subsubsection{Remotely sensed data}
+SST within the study region was determined with the AVHRR-Only Optimum Interpolated Sea Surface Temperature (OISST) dataset produced by NOAA. The NOAA OISST is a global 1/4\degree\~ gridded daily SST product that assimilates both remotely sensed and \emph{in situ} sources of data to create a level-4 gap free product (cite, Reynolds2008). These data were averaged to a 1/2\degree\~ grid to match the courser resolution of the ERA-Interim data. At the time of this writing these data were available for download from September 1st, 1981 to June 5th, 2017.
 
-The OISST product was used to determine the SST within the study region. OISST is a global 1/4\degree\~ gridded daily SST product that assimilates both remotely sensed and \emph{in situ} sources of data to create a level-4 gap free product (cite). These data were averaged to a 1/2\degree\~ grid to match the courser resolution of the ERA-Interim data. At the time of this writing these data were available for download from September 1st, 1981 to June 5th, 2017.
+The altimeter products were produced by Ssalto/Duacs and distributed by Aviso, with support from Cnes (http://www.aviso.altimetry.fr/duacs/). Specifically the global 1/4\degree\~ gridded daily surface current product that uses sea level anomaly (SLA) to determine the absolute geostrophic flow of the surface of the ocean. From these absolute flows are derived the U and V vector values that were used in this study. These values were averaged to a 1/2\degree\~ grid to maintain conistent spatial representation between the datasets. At the time of this writing these data were available from January 1st, 1993 to January 6th, 2017.
 
-The surface currents were taken from the Copernicus sea surface height (SSH) product. This is also a global 1/4\degree\~ gridded daily product that uses SSH to determine the absolute geostrophic flow of the surface of the ocean (cite). From these absolute flows are derived the U and V vector values that were used in this study. These U and V vectors were averaged to a 1/2\degree\~ grid to ensure conistent spatial representation between the datasets. At the time of this writing these data were available from January 1st, 1993 to January 6th, 2017.
+(RWS: This last paragraph lacks citation because the web portal where these data are available syas to cite the data with the following sentence, which I have included as the first sentence in the above paragraph:
+The altimeter products were produced by Ssalto/Duacs and distributed by Aviso, with support from Cnes (http://www.aviso.altimetry.fr/duacs/).
+Link as reference:
+https://www.aviso.altimetry.fr/en/data/product-information/citation-and-aviso-products-licence.html)
 
 \subsection{Marine heatwaves}
 We use the definition for a MHW given by \citet{Hobday2016} as ``a prolonged discrete anomalously warm water event that can be described by its duration, intensity, rate of evolution, and spatial extent'' as well as the methodology laid out in \citet{Hobday2016} for the analysis of MHWs in this research. The algorithm developed by \citet{Hobday2016} isolates MHWs by finding the days in which the temperature of a given locality exceeds the 90th percentile of temperatures found there on that given day, based on an 11-day moving window, for a certain number of days. \citet{Perkins2013} concluded that the minimum duration for the analysis of atmospheric heatwaves was 3 days whereas \citet{Hobday2016} found that a minimum length of 5 days allowed for more uniform global results for the detection of heatwaves in the ocean. It was also determined that any MHW that had `breaks' below the 90th percentile threshold lasting $\leq$2 days followed by subsequent days above the threshold were considered as one continuous event \citep{Hobday2016}. Previous work by \citet{Schlegel2017} showed that the inclusion of these short 5 day MHWs may lead to spurious connections between events found across different datasets. Therefore we have limited the inclusion of MHWs to those with a duration in the top 10th percentile of all events detected along the coast and that occurred within the range of dates for the reanalysis data. Thus, from the 976 total MHWs detected in the \emph{in situ} dataset, only 98 were taken.
@@ -230,10 +236,16 @@ Ultimately we settled on 9 nodes as this allowed for a wider variety of differen
 
 \section{Results}
 
-% (RWS: This whole subsection should probably go...)
-% As it is outside of the focus of the research presented here, we will not go into detail on the differences in the results generated by the three aforementioned methods. We will state however that it was the SOMs that best clustered out the data when all methods were visualised in two dimensions via a principal component analysis (PCA) (RWS: Consider moving this to results). In addition to the superior pattern recognition displayed by the SOM method, the orientation of the nodes (clusters) as produced by the SOM is also of use to the interpretation of the results of this work.
+\subsection{MHW states vs. Normal States}
+When we plot the air-sea states during MHWs against days during the 366 day climatology for the study area we see in \Cref{figure3} that the daily climatologies are different from almost all of the synoptic air-sea states during coastal MHWs. 
 
-\subsection{Air-sea patterns}
+\begin{figure}
+\includegraphics[width=1.0\textwidth]{figure_3.pdf}
+\caption{(RWS: I will clean this figure up before submission) Biiplot showing the distribution of normal daily climatological air-sea states (blue) versus the distribution of mean air-sea states during Marine Heatwaves (MHWs; green).}
+\label{figure7}
+\end{figure}
+
+\subsection{MHW patterns}
 
 % (RWS: Describe each node individually, using the subsections they have been split across as guidelines for what to focus on.)
 % (RWS: Consider finding out which pixels are significantly different from the means within the nodes.)
@@ -242,23 +254,22 @@ Ultimately we settled on 9 nodes as this allowed for a wider variety of differen
 The 9 predominant anomalous air-sea patterns around southern Africa during coastal MHWs may be seen in \Cref{figure3}, and the time of their occurrence may be seen \Cref{figure4}. As proposed in \citet{Johnson2013}, the nodes that are output by a SOM must be significantly different from one another to ensure that an excess of nodes has not been used. Using an analysis of similarity we found this to be true for the choice of 9 nodes (p = 0.001).
 
 \begin{figure}
-\includegraphics[width=1.0\textwidth]{figure_3.pdf}
-\caption{Predominant air and sea patterns during coastal marine heatwaves (MHWs) as determined by a SOM. The top nine panels show the sea patterns while the bottom nine panels show the air patterns. The wind vectors are the same scale as those found in the bottom panel of \Cref{figure1} and the surface current vectors are the same scale as those seen in the top panel of \Cref{figure1}. The number of events clustered into each node is shown within a white label in the middle of each panel. The location of each coastal MHW within each node is shown with a dot whose colour denotes the season during which that event occurred. Note that the temperature anomaly scales differ for the top and bottom nine panels.}
-\label{figure3}
-\end{figure}
-
-\begin{figure}
 \includegraphics[width=1.0\textwidth]{figure_4.pdf}
-\caption{Lolliplot showing the date during which each event began. The height of each lolli shows the cumulative intensity of the event as outlined in \Cref{table1}.}
+\caption{Predominant air and sea patterns during coastal marine heatwaves (MHWs) as determined by a SOM. The top nine panels show the sea patterns while the bottom nine panels show the air patterns. The wind vectors are the same scale as those found in the bottom panel of \Cref{figure1} and the surface current vectors are the same scale as those seen in the top panel of \Cref{figure1}. The number of events clustered into each node is shown within a white label in the middle of each panel. The location of each coastal MHW within each node is shown with a dot whose colour denotes the season during which that event occurred. Note that the temperature anomaly scales differ for the top and bottom nine panels.}
 \label{figure4}
 \end{figure}
 
+\begin{figure}
+\includegraphics[width=1.0\textwidth]{figure_5.pdf}
+\caption{Lolliplot showing the date during which each event began. The height of each lolli shows the cumulative intensity of the event as outlined in \Cref{table1}.}
+\label{figure5}
+\end{figure}
+
 \subsubsection{Node 1}
-In node 1 in \Cref{figure3} we see the most striking oceanic pattern out of all of the panels. The mean sea pattern from all of the synoptic sea states clustered into this panel show forcing of the Agulhas current onto the coastal region around the Cape Peninsuala and potentially along the rest of the south coast. The SST anomaly along the coast, as well as in the open ocean is also the warmest of all of the panels. We also see a large strong incursion of the southern ocean. The air temperature anomaly is only very mild whereas their are very strong north easterly wind anomalies on the western side of the study area and strong northerly wind anomalies on the eastern side. \Cref{figure4} shows that all of these events occurred at the same time as one another.
+In node 1 in \Cref{figure4} we see the most striking oceanic pattern out of all of the panels. The mean sea pattern from all of the synoptic sea states clustered into this panel show forcing of the Agulhas current onto the coastal region around the Cape Peninsuala and potentially along the rest of the south coast. The SST anomaly along the coast, as well as in the open ocean is also the warmest of all of the panels. We also see a large strong incursion of the southern ocean. The air temperature anomaly is only very mild whereas their are very strong north easterly wind anomalies on the western side of the study area and strong northerly wind anomalies on the eastern side. \Cref{figure5} shows that all of these events occurred at the same time as one another.
 
 \subsubsection{Node 2}
 Node shows similar warm SST anomalies in the nearshore along the west and south coasts as node 1. There appears to be some onshore forcing but it is not as strong as in node 1. The air temperature anomalies in this panel are nslightly warm, with the overalnd temperatures higher than over the sea. The wind anomalies over the sea are generally north-northeasterly.
-
 
 \subsubsection{Node 3}
 Node 3 shows little in the way of strong positive SST anomalies, with much of the water south of the African landmass having negative SST anomalies during the events clustered into this node. There are some atypical surface currents occurring to the south west of the Cape Penisnisula, similar to nodes 2 and 3. The overland air temperature anomalies are strong in this node with the air temperature anomalies over the sea less. The wind anomaly during the events clustered into this node were generally westerleies.
@@ -270,7 +281,7 @@ The events clustered into node 4 show mean sea states with the Agulhas pushing o
 Node 5 shows some signs of atypical currents to the south west of the Cape Peninsula but these are not moving towards the coast. The SST anomalies during the events in this node are a mix of warm and cold, with some warm anomalies close to the west and east coasts. The air temperature anomalies were strong during these events, whereas the wind anomalies were not.
 
 \subsubsection{Node 6}
-The surface current and SST anomalies in node 6 are similar to node 5, with fewer warm SST anomalies close to the coast. The air temperature anomalies overalnd during these events were in excess of 6\degree C with south easterly wind anomalies. Most of the events in this node occurred during winter months.
+The surface current and SST anomalies in node 6 are similar to node 5, with fewer warm SST anomalies close to the coast. The air temperature anomalies overalnd during these events were in excess of 7\degree C with south easterly wind anomalies. Most of the events in this node occurred during winter months.
 
 \subsubsection{Node 7}
 Node 7 shows some atypical currents to the south west but little in the way of onshore forcing of warm SST anomalies. The southern oceanappears to be pushing up into the study area during these events. The air temperatures show a very slight negative anomaly over much of the study area with very weak westerlies winds along the southern poriton of the study area.
@@ -281,21 +292,12 @@ Node 8 shows warm SST anomalies for all but a small portion of the west side of 
 \subsubsection{Node 9}
 The final node shows cold SST anomalies along much of the south coast, with some warm anomalies to the south and atypical vorticity to the south east that does not appear to be reaching the coast. The wind during these events was anomalously strong from the east-southeast with warm air temperature anomalies over the land and sea.
 
-% \subsection{Self-organizing Map}
-
-% Due to a lack of consensus in the literature around the best practices for clustering synoptic air-sea states, we decided to compare K-means, HCA and SOM clustering results against one another. \Cref{figure3} shows the results of each clustering technique when each synoptic air-sea state is laid out on a two dimensional plane as determined via a PCA. One may see that the SOM analysis is best able to determine distinct different clusters. Surprisingly HCA appears to produce slightly more distinct clusters than K-means, but both are inferior to the SOM results.
-
-% \begin{figure}
-% \includegraphics[width=1.0\textwidth]{figure_3.png}
-% \caption{Results for each of three different clustering techniques used to determine the groupings of synoptic air-sea states during coastal MHWs. (RWS: I think I will rather show the results for each technique as separate facets, rather than plotting them together like this.).}
-% \label{figure3}
-% \end{figure}
-
 \subsection{Temporal patterns}
-MHWs that occurred during summer are only present in three nodes (2,7, and 8) and are also the least common with events occurring during winter and spring more than twice as frequently (\Cref{table2}). Most nodes contain MHWs that occurred during at least three seasons and over several years, with the notable exception of nodes 1 and 6. All of the MHWs in node 1 occurred during the same meso-scale event that may be seen along the west and south coasts in \Cref{figure3}. With the exception of three of the 16 events in node 6(\Cref{table2}), all of these were winter events that occurred during very high overland air temperature anomalies.
+MHWs that occurred during summer are only present in three nodes (2,7, and 8) and are also the least common with events occurring during winter and spring more than twice as frequently (\Cref{table2}). Most nodes contain MHWs that occurred during at least three seasons and over several years, with the notable exception of nodes 1 and 6. All of the MHWs in node 1 occurred during the same meso-scale event that may be seen along the west and south coasts in \Cref{figure3}. With the exception of three of the 16 events in node 6 (\Cref{table2}), all of these were winter events that occurred during very high overland air temperature anomalies.
 
 \begin{table}[ht]
-\caption{\small The relevant metrics and statistics for the events found within each node. (RWS: I will add +- standard deviation to the mean columns)}
+\caption{\small The relevant metrics and statistics for the events found within each node. 
+(RWS: Would it be worth adding +- standard deviation to the mean columns?)}
 \label{table2}
 \centering
 \tiny
@@ -317,40 +319,34 @@ node & count & summer & autumn & winter & spring & west & south & east & duratio
   \end{tabular}
 \end{table}
 
-As we may see in \Cref{figure5}, most nodes do not show a mean pattern that is representative of any particular season or year. When we plot the air-sea states during MHWs against days during the 366 day climatology for the study area we see in \Cref{figure6} and \Cref{figure7} that the daily climatologies are different from almost all of the synoptic air-sea states during coastal MHWs. 
+As we may see in \Cref{figure5}, most nodes do not show a mean pattern that is representative of any particular season or year.
 
-\begin{figure}
-\includegraphics[width=1.0\textwidth]{figure_6.jpeg}
-\caption{(RWS: I will clean this figure up before submission) Dendrogram showing the distribution of normal daily climatological air-sea states (blue) versus the distribution of mean air-sea states during Marine Heatwaves (MHWs; green). Four clusters are shown as proxies for the four seasons of the year.}
-\label{figure6}
-\end{figure}
-
-\begin{figure}
-\includegraphics[width=1.0\textwidth]{figure_7.jpeg}
-\caption{(RWS: I will clean this figure up before submission) Ordiplot showing the distribution of normal daily climatological air-sea states (blue) versus the distribution of mean air-sea states during Marine Heatwaves (MHWs; green). The four clusters from \Cref{figure6} are shown here as ellipsis.}
-\label{figure7}
-\end{figure}
-
-% \subsection{Spatiality}
-As shown in \Cref{table2}, there are very few events with durations greater than 15 days that occurred in the east coast section of the study area. Therefore it is difficult to judge any potential relationships between synoptic patterns that may be responsible for events only on the east coast, or between the east coast and other sections of the coastline. \Cref{table2} does show that, with the exception of node 6, there are no nodes that contain only events from one coastal section. 8 of the 9 nodes created by the SOM consist of synoptic air-sea states that were occurring during MHWs separated over large distances and by oceanographically dissimilar features.
+\subsection{Spatial patterns}
+As shown in \Cref{table2}, there are very few events with durations greater than 15 days that occurred in the east coast section of the study area. 
+% Therefore it is difficult to judge any potential relationships between synoptic patterns that may be responsible for events only on the east coast, or between the east coast and other sections of the coastline. 
+\Cref{table2} does show that, with the exception of node 1, there are no nodes that contain only events from one coastal section. 8 of the 9 nodes created by the SOM consist of synoptic air-sea states that were occurring during MHWs separated over large distances and by oceanographically dissimilar features.
 
 \subsection{Marine heatwaves}
 When we look at the mean statistics for each node (\Cref{table2}) we see that there is a large difference in the mean duration (days) of MHWs clustered therein. Nodes 4 and 5 show the longest mean durations however, the mean duration in node 5 is skewed by having one very long event and only two total events in that node. Nodes 9 and 2 are characterized by having the shortest MHWs. As large cumulative mean intensities are generally a product of lengthy MHWs, it is not surprising to see that Nodes 4 and 5 also have the highest values for this metric as well. Again though node 5 is misrepresented in this regard due to the one large event clustered there. As for the maximum intensity of events within each node, there is less difference between the nodes than for the other two metrics shown. Nodes 2 and 8 however did have events with the lowest maximum intensities (\degree C) on average.
 
 \section{Discussion}
+\subsection{MHW states vs. Normal States}
 (RWS: Talk more about how the event days cluster out differently from normal days.)
+As one may see from the flat ellipse of multi-coloured circles in \Cref{figure3} (the daily climatology points), the variance represented in the x axis is seasonality. 
+% Indeed, if the dates are included in the figure above they are in a nearly contiguous state. With January 1st in the top left edge of the ellipse of blue squares with the dates then moving clockwise. May is roughly in the middle of the top of the ellipse and October in the middle on the bottom. 
+The air-sea states during MHWs appear to be controlled by the variance represented by the y axis. This then must be some sort of variance that is aseasonal. Likely the anomalous characteristics of air and or sea that occur during the events. This shows that whatever those states may be, they are independent from the common air-sea states that occur at any time during the year. Also worth noting is that the daily climatologies for summer and winter do not cluster at all with any of the events (\Cref{figure3}). They are almost all clustered with autumn, and a few with spring days.
 
-Immediately apparent in the clustering of the data is that node 1 stands out in starkest contrast to the other nodes the most anomalously warm air and sea states as well as having the strongest winds and currents. As one moves from the right hand nodes to the left they become progressively less intense. With less and less of a pattern present. These left hand nodes serve to show that there are still many coastal MHWs that occur without any strong meso-scale pattern on average. Or at least not a pattern that has occurred often enough over the past 30+ years that would afford them their own node. Due to the vast dissimilarity between the 9 nodes, only 2 events were clustered into the central node. Otherwise the clustering of events into nodes was equitable. Also important to note is that a common pattern in many of the nodes, but particularly node 6, is the abnormal retroflection of the Agulhas current onto the Agulhas Bank (\Cref{figure3}).
+\subsection{MHW patterns}
+Immediately apparent in the clustering of the data is that node 1 stands out in starkest contrast to the other nodes the most anomalously warm air and sea states as well as having the strongest winds and currents. As one moves from the right hand nodes to the left they become progressively less intense. With less and less of a pattern present. These left hand nodes serve to show that there are still many coastal MHWs that occur without any strong meso-scale pattern on average. Or at least not a pattern that has occurred often enough over the past 30+ years that would afford them their own node. Due to the vast dissimilarity between the 9 nodes, only 2 events were clustered into the central node. Otherwise the clustering of events into nodes was equitable. Also important to note is that a common pattern in many of the nodes, but particularly node 6, is the abnormal retroflection of the Agulhas current onto the Agulhas Bank (\Cref{figure4}).
 
-If we look at the events within the nodes via lolliplots (\Cref{figure4}) we see that only one of the nodes shows an air-sea state during primarily one large event that was recorded at multiple locations (node 6). Besides node 6 (and 5), the other nodes consist of a medley of multiple independent events that occurred during different years and seasons, and of varying magnitudes, that cluster together due to their similarity. These nodes represent what a more common air-sea state during a coastal MHW may look like.
+If we look at the events within the nodes via lolliplots (\Cref{figure5}) we see that only one of the nodes shows an air-sea state during primarily one large event that was recorded at multiple locations (node 6). Besides node 6 (and 5), the other nodes consist of a medley of multiple independent events that occurred during different years and seasons, and of varying magnitudes, that cluster together due to their similarity. These nodes represent what a more common air-sea state during a coastal MHW may look like.
 
 \citet{Schaeffer2017} Sub surface MHWs
 
 \citet{Beal2011} Agulhas leakage likely to increase. This is associated with interglacial periods. Whereas the abatement of leakage is associated with severe glacial periods. This is all due to the north or southward shift of westerly winds over the Atlantic.
 
-(RWS: Change this subsection heading.)
-\subsection{Air-sea patterns}
-Most notable from the clustering of these events has been the Agulhas current retroflecting (RWS: Talk about Agulhas Leakage instead) north towards the Cape Peninsula, rather than its usual southward retroflection (cite), when many coastal MHWs were detected. When the Agulhas retroflects north it leads to Agulhas leakage, where warm Indian Ocean water bursts into the colder Atlantic Ocean (cite). These warm eddies then typically spin up along the west coast. This transport of a large body ofg atypically warm water along a large stretch of coastline is a similar finding to the cause of the Western Australia MHW in 2011 where an unusual surge of the Leeuwin Current forced a large body of anomalously warm water onto the coast \citep{Feng2013, Benthuysen2014}. This onshore forcing of water is most apparent in node 1 (\Cref{figure3}) however, nodes 2, 3 and 4 show a similar though less pronounced oceanic pattern, meaning that roughly one third of the events in this study have occurred during Agulhas leakage. Node 8 also shows onshore forcing of the Agulhas current, but with no large leakage into the Atlantic Ocean. Taken together with the events that occurred during Agulhas Leakage, over half of the longest events detected have occurred during some sort of anomolous Agulhas behaviour. This is strong support for the relationship between the Agulhas current and coastal MHWs. As the Agulhas current becomes more variable and oscilates over a wider distance (cite) this may mean that more MHWs will be occurring along the south and west coasts.
+% \subsection{MHW patterns}
+Most notable from the clustering of these events has been the Agulhas current retroflecting (RWS: Talk about Agulhas Leakage instead) north towards the Cape Peninsula, rather than its usual southward retroflection (cite), when many coastal MHWs were detected. When the Agulhas retroflects north it leads to Agulhas leakage, where warm Indian Ocean water bursts into the colder Atlantic Ocean (cite). These warm eddies then typically spin up along the west coast. This transport of a large body ofg atypically warm water along a large stretch of coastline is a similar finding to the cause of the Western Australia MHW in 2011 where an unusual surge of the Leeuwin Current forced a large body of anomalously warm water onto the coast \citep{Feng2013, Benthuysen2014}. This onshore forcing of water is most apparent in node 1 (\Cref{figure4}) however, nodes 2, 3 and 4 show a similar though less pronounced oceanic pattern, meaning that roughly one third of the events in this study have occurred during Agulhas leakage. Node 8 also shows onshore forcing of the Agulhas current, but with no large leakage into the Atlantic Ocean. Taken together with the events that occurred during Agulhas Leakage, over half of the longest events detected have occurred during some sort of anomolous Agulhas behaviour. This is strong support for the relationship between the Agulhas current and coastal MHWs. As the Agulhas current becomes more variable and oscilates over a wider distance (cite) this may mean that more MHWs will be occurring along the south and west coasts.
 
 With the exception of nodes 4, 7, and 8, all of the atmospheric states during coastal MHWs showed warm air temperature anomalies. The largest of these anomalies occurred in node 6, with overland temperature anomalies in excess of 7\degree\ C. It is also worth noting that the anomalies overland are genrally greater than over the sea when the vents were occurring for almost every node. There were also only two main wind patterns during coastal MHWs. Nodes 1, 2, 3, and 4 show strong northwesterly to westerly anomalies. Nodes 
 
@@ -358,24 +354,25 @@ From this one must infer that air temperatures will almost always be anomalously
 
 The lack of a strong air or sea pattern in node 7 implies that the 15 events that were clustered there do not share any common pattern. Meaning that there may still be many MHWs that occurr not because of any predominant air or sea pattern. This is an important finding as it shows that even though clear patterns in air and sea may exist during most MHWs, these events may still occur during entirely novel conditions.
 
-\subsection{Seasonality}
-With the exception of node 6, all of the nodes produced by the SOM contain events not only over large periods of time, but during most if not all four seasons of the year. This means that the meso-scale drivers of MHWs are truly aseasonal. Indeed, as we may see in \Cref{figure7}, not only do events occurring during a particular season not relate to the air-sea states during that season, they do not relate to air-sea states during any time of the year. The only small exception to this finding being that some small similarities may be noted during some days in spring and several more during autumn. This implies that whereas air-sea states during events depart from anything seen throughout a normal year, they most closely resemble air-sea states during the tumultuous transitional seasons of spring and Autumn (cite?). (RWS: Calculate the difference in variance between the seasons.)
+\subsection{Temporal paterns}
+With the exception of node 6, all of the nodes produced by the SOM contain events not only over large periods of time, but during most if not all four seasons of the year. This means that the meso-scale drivers of MHWs are truly aseasonal. Indeed, as we may see in \Cref{figure3}, not only do events occurring during a particular season not relate to the air-sea states during that season, they do not relate to air-sea states during any time of the year. The only small exception to this finding being that some small similarities may be noted during some days in spring and several more during autumn. This implies that whereas air-sea states during events depart from anything seen throughout a normal year, they most closely resemble air-sea states during the tumultuous transitional seasons of spring and Autumn (cite?). (RWS: Calculate the difference in variance between the seasons.)
 
 Also of interest in this study was during which season do MHWs in excess of 15 days tend to occur. We found, to some surprise, that only a small portion (\Cref{table2}) of MHWs occurred during summer months. This implies that the phenomena that may be driving these long MHWs occur more often during the cooler months of the year. This may mean that summer months around southern Africa are more stable than at other times of the year, or that the processes that drive long MHWs are linked to the transitioning of warmer temperatures to cooler temperatures. And vice versa. It is not possible to draw any conclusions on this relationship from the output of this research. Further investigation into this possible causal link is required. (RWS: Rather look for cases in the literature in which stable states occur during winter months that could argue for this observation.)
 
 % \subsection{Spatiality}
 That 8 of the 9 nodes created by the SOM consist of synoptic air-sea states that occurred during MHWs on different coastal sections of the study area leads to two possible implications. (RWS: Rewrite this sentence if you don't simply remove this subsection instead.) The first is that the onshore forcing of the Agulhas current during thee MHWs must be extending onto the shore through the Benguela upwelling system. The other implication is that it may be temperature exchange between air and sea at the coast that is leading to these events. (RWS: Must expound upon these two ideas more fully.)
 
-As one may see from the flat ellipse of blue squares (the daily climatology points), the variance represented in the x axis is seasonality. 
-% Indeed, if the dates are included in the figure above they are in a nearly contiguous state. With January 1st in the top left edge of the ellipse of blue squares with the dates then moving clockwise. May is roughly in the middle of the top of the ellipse and October in the middle on the bottom. 
-The air-sea states during MHWs appear to be controlled by the variance represented by the y axis. This then must be some sort of variance that is aseasonal. Likely the anomalous characteristics of air and or sea that occur during the events. This shows that whatever those states may be, they are independent from the common air-sea states that occur at any time during the year. Also worth noting is that the daily climatologies for summer and winter do not cluster at all with any of the events (\Cref{figure6}). They are almost all clustered with autumn, and a few with spring days.
-
 \subsection{Marine heatwaves}
 
 % \subsection{Normal days}
 % Move the above two sections here.
 
+\subsection{Spatial patterns}
+Therefore it is difficult to judge any potential relationships between synoptic patterns that may be responsible for events only on the east coast, or between the east coast and other sections of the coastline.
+
 \section{Conclusion}
+
+(RWS: Talk about potential for prediction, but issues with reanalysis data)
 
 (RWS: Link to EKE studies)
 
@@ -394,49 +391,49 @@ It is therefore advised that areas of particular susceptibility to MHWs be ident
 \section*{Acknowledgements}
 We would like to thank DAFF, DEA, EKZNW, KZNSB, SAWS and SAEON for contributing all of the raw data used in this study. Without it, this article and the South African Coastal Temperature Network (SACTN) would not be possible. We would also like to thank Dr. Andries Kruger for his contributions to this work. This research was supported by NRF Grant (CPRR14072378735). This paper makes a contribution to the objectives of the Australian Research Council Centre of Excellence for Climate System Science (ARCCSS). The authors report no financial conflicts of interests. The data and analyses used in this paper may be found at https://github.com/schrob040/MHW. The Bluelink ocean data products were provided by CSIRO. Bluelink is a collaboration involving the Commonwealth Bureau of Meteorology, the Commonwealth Scientific and Industrial Research Organisation and the Royal Australian Navy.
 
-\section*{Supplementary}
-\subsection*{Meta-data}
-Further meta-data for each time series and source listed in geographic order along the South African coast from the border of Namibia to the border of Mozambique may be found in \Cref{tableS1}.
-
-\begin{table}[]
-\caption{\small The metadata and coastal averages for all \emph{in situ} time series used in this study.}
-\label{tableS1}
-\centering
-\tiny
-\centering
-\begin{tabular}{rrlllrrrllrrrrrrrrr}
-  \hline
- & order & site & src & index & lon & lat & depth & type & coast & date.start & date.end & length & NA.perc & mean & sd & range & min & max \\ 
-  \hline
-84 &   2 & Port Nolloth & SAWS & Port Nolloth/ SAWS & 16.87 & -29.25 &   0 & thermo & wc & 1299.00 & 16800.00 & 15502 & 6.00 & 12.41 & 1.36 & 12.00 & 9.00 & 21.00 \\ 
-  100 &  16 & Sea Point & SAWS & Sea Point/ SAWS & 18.38 & -33.92 &   0 & thermo & wc & 1461.00 & 16527.00 & 15067 & 6.00 & 13.07 & 1.57 & 14.50 & 8.50 & 23.00 \\ 
-  71 &  17 & Oudekraal & DAFF & Oudekraal/ DAFF & 18.35 & -33.98 &   9 & UTR & wc & 12108.00 & 16835.00 & 4728 & 6.00 & 12.31 & 1.88 & 10.03 & 8.19 & 18.22 \\ 
-  41 &  18 & Hout Bay & DEA & Hout Bay/ DEA & 18.35 & -34.05 &  28 & UTR & wc & 7753.00 & 13992.00 & 6240 & 5.00 & 11.19 & 1.82 & 9.26 & 7.46 & 16.72 \\ 
-  52 &  20 & Kommetjie & SAWS & Kommetjie/ SAWS & 18.33 & -34.14 &   0 & thermo & wc & 8095.00 & 16527.00 & 8433 & 7.00 & 13.31 & 1.70 & 11.50 & 9.00 & 20.50 \\ 
-  12 &  22 & Bordjies & DAFF & Bordjies/ DAFF & 18.46 & -34.32 &   4 & UTR & sc & 12502.00 & 16748.00 & 4247 & 7.00 & 15.53 & 1.91 & 11.56 & 10.31 & 21.87 \\ 
-  13 &  23 & Bordjies Deep & DAFF & Bordjies Deep/ DAFF & 18.47 & -34.31 &   9 & UTR & sc & 12087.00 & 16748.00 & 4662 & 5.00 & 15.31 & 1.90 & 11.82 & 10.15 & 21.97 \\ 
-  33 &  27 & Fish Hoek & SAWS & Fish Hoek/ SAWS & 18.44 & -34.14 &   0 & thermo & sc & 8095.00 & 16527.00 & 8433 & 6.00 & 15.48 & 2.37 & 14.00 & 9.00 & 23.00 \\ 
-  65 &  29 & Muizenberg & SAWS & Muizenberg/ SAWS & 18.48 & -34.10 &   0 & thermo & sc & 1220.00 & 16527.00 & 15308 & 4.00 & 15.94 & 2.96 & 16.00 & 9.00 & 25.00 \\ 
-  36 &  30 & Gordons Bay & SAWS & Gordons Bay/ SAWS & 18.86 & -34.16 &   0 & thermo & sc & 986.00 & 16527.00 & 15542 & 5.00 & 16.57 & 2.40 & 15.50 & 10.00 & 25.50 \\ 
-  10 &  31 & Betty's Bay & DAFF & Betty's Bay/ DAFF & 18.92 & -34.36 &   5 & UTR & sc & 12765.00 & 16751.00 & 3987 & 0.00 & 14.96 & 1.69 & 10.57 & 10.94 & 21.51 \\ 
-  38 &  32 & Hermanus & SAWS & Hermanus/ SAWS & 19.25 & -34.41 &   0 & thermo & sc & 7274.00 & 16527.00 & 9254 & 5.00 & 15.65 & 1.50 & 14.50 & 9.00 & 23.50 \\ 
-  109 &  37 & Stilbaai & SAWS & Stilbaai/ SAWS & 21.44 & -34.37 &   0 & thermo & sc & 3652.00 & 16527.00 & 12876 & 9.00 & 17.88 & 2.96 & 17.00 & 10.00 & 27.00 \\ 
-  131 &  38 & Ystervarkpunt & DEA & Ystervarkpunt/ DEA & 21.74 & -34.40 &   3 & UTR & sc & 9426.00 & 13685.00 & 4260 & 0.00 & 17.57 & 2.58 & 13.52 & 10.11 & 23.63 \\ 
-  61 &  39 & Mossel Bay & DEA & Mossel Bay/ DEA & 22.16 & -34.18 &   8 & UTR & sc & 7846.00 & 13685.00 & 5840 & 8.00 & 17.98 & 2.69 & 14.52 & 10.12 & 24.65 \\ 
-  50 &  42 & Knysna & DEA & Knysna/ DEA & 23.07 & -34.08 &   7 & UTR & sc & 9210.00 & 14554.00 & 5345 & 6.00 & 17.32 & 2.60 & 13.52 & 10.72 & 24.24 \\ 
-  119 &  45 & Tsitsikamma West & SAWS & Tsitsikamma/ SAWS & 23.65 & -33.98 &   0 & thermo & sc & 7486.00 & 13559.00 & 6074 & 8.00 & 17.20 & 2.57 & 20.00 & 9.50 & 29.50 \\ 
-  111 &  46 & Storms River Mouth & SAWS & Storms River Mouth/ SAWS & 23.90 & -34.02 &   0 & thermo & sc & 8491.00 & 14244.00 & 5754 & 4.00 & 16.82 & 2.50 & 15.00 & 9.50 & 24.50 \\ 
-  118 &  47 & Tsitsikamma East & DEA & Tsitsikamma/ DEA & 23.91 & -34.03 &  10 & UTR & sc & 7849.00 & 14558.00 & 6710 & 4.00 & 16.82 & 2.55 & 14.67 & 8.76 & 23.43 \\ 
-  78 &  58 & Pollock Beach & SAWS & Pollock Beach/ SAWS & 25.68 & -33.99 &   0 & thermo & sc & 10724.00 & 16527.00 & 5804 & 3.00 & 18.15 & 2.13 & 15.50 & 11.00 & 26.50 \\ 
-  43 &  59 & Humewood & SAWS & Humewood/ SAWS & 25.65 & -33.97 &   0 & thermo & sc & 1332.00 & 10956.00 & 9625 & 3.00 & 17.98 & 2.32 & 14.00 & 11.00 & 25.00 \\ 
-  37 &  67 & Hamburg & DEA & Hamburg/ DEA & 27.49 & -33.29 &   4 & UTR & sc & 9433.00 & 14667.00 & 5235 & 6.00 & 17.48 & 1.81 & 11.94 & 12.14 & 24.08 \\ 
-  30 &  68 & Eastern Beach & SAWS & Eastern Beach/ SAWS & 27.92 & -33.02 &   0 & thermo & ec & 5113.00 & 10438.00 & 5326 & 10.00 & 17.91 & 1.77 & 12.50 & 12.50 & 25.00 \\ 
-  70 &  69 & Orient Beach & SAWS & Orient Beach/ SAWS & 27.92 & -33.02 &   0 & thermo & ec & 5113.00 & 16527.00 & 11415 & 4.00 & 17.96 & 1.58 & 14.00 & 12.00 & 26.00 \\ 
-  68 &  70 & Nahoon Beach & SAWS & Nahoon Beach/ SAWS & 27.95 & -32.99 &   0 & thermo & ec & 5113.00 & 10438.00 & 5326 & 7.00 & 18.13 & 1.65 & 15.00 & 10.00 & 25.00 \\ 
-  102 & 133 & Sodwana & DEA & Sodwana/ DEA & 32.73 & -27.42 &  18 & UTR & ec & 8835.00 & 14636.00 & 5802 & 7.00 & 24.42 & 1.96 & 10.44 & 18.62 & 29.05 \\ 
-   \hline
-\end{tabular}
-\end{table}
+% \section*{Supplementary}
+% \subsection*{Meta-data}
+% Further meta-data for each time series and source listed in geographic order along the South African coast from the border of Namibia to the border of Mozambique may be found in \Cref{tableS1}.
+% 
+% \begin{table}[]
+% \caption{\small The metadata and coastal averages for all \emph{in situ} time series used in this study.}
+% \label{tableS1}
+% \centering
+% \tiny
+% \centering
+% \begin{tabular}{rrlllrrrllrrrrrrrrr}
+%   \hline
+%  & order & site & src & index & lon & lat & depth & type & coast & date.start & date.end & length & NA.perc & mean & sd & range & min & max \\ 
+%   \hline
+% 84 &   2 & Port Nolloth & SAWS & Port Nolloth/ SAWS & 16.87 & -29.25 &   0 & thermo & wc & 1299.00 & 16800.00 & 15502 & 6.00 & 12.41 & 1.36 & 12.00 & 9.00 & 21.00 \\ 
+%   100 &  16 & Sea Point & SAWS & Sea Point/ SAWS & 18.38 & -33.92 &   0 & thermo & wc & 1461.00 & 16527.00 & 15067 & 6.00 & 13.07 & 1.57 & 14.50 & 8.50 & 23.00 \\ 
+%   71 &  17 & Oudekraal & DAFF & Oudekraal/ DAFF & 18.35 & -33.98 &   9 & UTR & wc & 12108.00 & 16835.00 & 4728 & 6.00 & 12.31 & 1.88 & 10.03 & 8.19 & 18.22 \\ 
+%   41 &  18 & Hout Bay & DEA & Hout Bay/ DEA & 18.35 & -34.05 &  28 & UTR & wc & 7753.00 & 13992.00 & 6240 & 5.00 & 11.19 & 1.82 & 9.26 & 7.46 & 16.72 \\ 
+%   52 &  20 & Kommetjie & SAWS & Kommetjie/ SAWS & 18.33 & -34.14 &   0 & thermo & wc & 8095.00 & 16527.00 & 8433 & 7.00 & 13.31 & 1.70 & 11.50 & 9.00 & 20.50 \\ 
+%   12 &  22 & Bordjies & DAFF & Bordjies/ DAFF & 18.46 & -34.32 &   4 & UTR & sc & 12502.00 & 16748.00 & 4247 & 7.00 & 15.53 & 1.91 & 11.56 & 10.31 & 21.87 \\ 
+%   13 &  23 & Bordjies Deep & DAFF & Bordjies Deep/ DAFF & 18.47 & -34.31 &   9 & UTR & sc & 12087.00 & 16748.00 & 4662 & 5.00 & 15.31 & 1.90 & 11.82 & 10.15 & 21.97 \\ 
+%   33 &  27 & Fish Hoek & SAWS & Fish Hoek/ SAWS & 18.44 & -34.14 &   0 & thermo & sc & 8095.00 & 16527.00 & 8433 & 6.00 & 15.48 & 2.37 & 14.00 & 9.00 & 23.00 \\ 
+%   65 &  29 & Muizenberg & SAWS & Muizenberg/ SAWS & 18.48 & -34.10 &   0 & thermo & sc & 1220.00 & 16527.00 & 15308 & 4.00 & 15.94 & 2.96 & 16.00 & 9.00 & 25.00 \\ 
+%   36 &  30 & Gordons Bay & SAWS & Gordons Bay/ SAWS & 18.86 & -34.16 &   0 & thermo & sc & 986.00 & 16527.00 & 15542 & 5.00 & 16.57 & 2.40 & 15.50 & 10.00 & 25.50 \\ 
+%   10 &  31 & Betty's Bay & DAFF & Betty's Bay/ DAFF & 18.92 & -34.36 &   5 & UTR & sc & 12765.00 & 16751.00 & 3987 & 0.00 & 14.96 & 1.69 & 10.57 & 10.94 & 21.51 \\ 
+%   38 &  32 & Hermanus & SAWS & Hermanus/ SAWS & 19.25 & -34.41 &   0 & thermo & sc & 7274.00 & 16527.00 & 9254 & 5.00 & 15.65 & 1.50 & 14.50 & 9.00 & 23.50 \\ 
+%   109 &  37 & Stilbaai & SAWS & Stilbaai/ SAWS & 21.44 & -34.37 &   0 & thermo & sc & 3652.00 & 16527.00 & 12876 & 9.00 & 17.88 & 2.96 & 17.00 & 10.00 & 27.00 \\ 
+%   131 &  38 & Ystervarkpunt & DEA & Ystervarkpunt/ DEA & 21.74 & -34.40 &   3 & UTR & sc & 9426.00 & 13685.00 & 4260 & 0.00 & 17.57 & 2.58 & 13.52 & 10.11 & 23.63 \\ 
+%   61 &  39 & Mossel Bay & DEA & Mossel Bay/ DEA & 22.16 & -34.18 &   8 & UTR & sc & 7846.00 & 13685.00 & 5840 & 8.00 & 17.98 & 2.69 & 14.52 & 10.12 & 24.65 \\ 
+%   50 &  42 & Knysna & DEA & Knysna/ DEA & 23.07 & -34.08 &   7 & UTR & sc & 9210.00 & 14554.00 & 5345 & 6.00 & 17.32 & 2.60 & 13.52 & 10.72 & 24.24 \\ 
+%   119 &  45 & Tsitsikamma West & SAWS & Tsitsikamma/ SAWS & 23.65 & -33.98 &   0 & thermo & sc & 7486.00 & 13559.00 & 6074 & 8.00 & 17.20 & 2.57 & 20.00 & 9.50 & 29.50 \\ 
+%   111 &  46 & Storms River Mouth & SAWS & Storms River Mouth/ SAWS & 23.90 & -34.02 &   0 & thermo & sc & 8491.00 & 14244.00 & 5754 & 4.00 & 16.82 & 2.50 & 15.00 & 9.50 & 24.50 \\ 
+%   118 &  47 & Tsitsikamma East & DEA & Tsitsikamma/ DEA & 23.91 & -34.03 &  10 & UTR & sc & 7849.00 & 14558.00 & 6710 & 4.00 & 16.82 & 2.55 & 14.67 & 8.76 & 23.43 \\ 
+%   78 &  58 & Pollock Beach & SAWS & Pollock Beach/ SAWS & 25.68 & -33.99 &   0 & thermo & sc & 10724.00 & 16527.00 & 5804 & 3.00 & 18.15 & 2.13 & 15.50 & 11.00 & 26.50 \\ 
+%   43 &  59 & Humewood & SAWS & Humewood/ SAWS & 25.65 & -33.97 &   0 & thermo & sc & 1332.00 & 10956.00 & 9625 & 3.00 & 17.98 & 2.32 & 14.00 & 11.00 & 25.00 \\ 
+%   37 &  67 & Hamburg & DEA & Hamburg/ DEA & 27.49 & -33.29 &   4 & UTR & sc & 9433.00 & 14667.00 & 5235 & 6.00 & 17.48 & 1.81 & 11.94 & 12.14 & 24.08 \\ 
+%   30 &  68 & Eastern Beach & SAWS & Eastern Beach/ SAWS & 27.92 & -33.02 &   0 & thermo & ec & 5113.00 & 10438.00 & 5326 & 10.00 & 17.91 & 1.77 & 12.50 & 12.50 & 25.00 \\ 
+%   70 &  69 & Orient Beach & SAWS & Orient Beach/ SAWS & 27.92 & -33.02 &   0 & thermo & ec & 5113.00 & 16527.00 & 11415 & 4.00 & 17.96 & 1.58 & 14.00 & 12.00 & 26.00 \\ 
+%   68 &  70 & Nahoon Beach & SAWS & Nahoon Beach/ SAWS & 27.95 & -32.99 &   0 & thermo & ec & 5113.00 & 10438.00 & 5326 & 7.00 & 18.13 & 1.65 & 15.00 & 10.00 & 25.00 \\ 
+%   102 & 133 & Sodwana & DEA & Sodwana/ DEA & 32.73 & -27.42 &  18 & UTR & ec & 8835.00 & 14636.00 & 5802 & 7.00 & 24.42 & 1.96 & 10.44 & 18.62 & 29.05 \\ 
+%    \hline
+% \end{tabular}
+% \end{table}
 
 
 \section*{References}
