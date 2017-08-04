@@ -1,4 +1,4 @@
-\begin{thebibliography}{59}
+\begin{thebibliography}{60}
 \expandafter\ifx\csname natexlab\endcsname\relax\def\natexlab#1{#1}\fi
 \expandafter\ifx\csname url\endcsname\relax
   \def\url#1{\texttt{#1}}\fi
@@ -92,6 +92,10 @@ Chen, K., Gawarkiewicz, G., Kwon, Y.-O., Zhang, W.~G., jun 2015. {The role of
   Northeast U.S. continental shelf in 2012}. Journal of Geophysical Research:
   Oceans 120~(6), 4324--4339.
 \newline\urlprefix\url{http://doi.wiley.com/10.1002/2014JC010547}
+
+\bibitem[{Cooper(2014)}]{Cooper2014}
+Cooper, K.~F., 2014. {Evaluating global ocean reanalysis systems for the
+  greater Agulhas Current System}. Masters thesis, University of Cape Town.
 
 \bibitem[{Corte-Real et~al.(1998)Corte-Real, Qian, and Xu}]{Corte-Real1998}
 Corte-Real, J., Qian, B., Xu, H., 1998. {Regional climate change in Portugal:

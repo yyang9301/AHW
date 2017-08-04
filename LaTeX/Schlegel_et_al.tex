@@ -149,7 +149,7 @@ The \emph{ca}. 3,100 km long South African coastline provides a natural laborato
 
 \subsection{Data}
 \subsubsection{\emph{In situ} data}
-The \emph{in situ} coastal seawater temperature data used in this study were acquired from the South African Coastal Temperature Network (SACTN, https://github.com/ajsmit/SACTN, https://robert-schlegel.shinyapps.io/SACTN/). These SACTN data are contributed by seven different organizations and are collected \emph{in situ} with a mixture of hand-held alcohol \& mercury thermometers as well as digital underwater temperature recorders (UTRs). This data set currently consists of 135 daily time series, with a mean duration of 19.7 years. Therefore many of the time series in this dataset are shorter than the 30 year minimum proscribed for the characterisation of marine heatwaves (MHWs, see 'Marine heatwaves' section below) \citep{Hobday2016}. It is however deemed necessary to use these data when investigating extreme events in the nearshore (<400 m from the low tide mark) as satellite derived sea surface temperature (SST) values along the coast have been shown to display large biases \citep{Smit2013} or capture minimum and maximum temperatures poorly \citep{Smale2009, Castillo2010}. Whereas a 30+ year period is ideal for determining a climatology, ten years may serve as an acceptable bottom limit \citep{Schlegel2017}. Following on from the methodology laid out in \citet{Schlegel2017} time series with more than 10\% missing data were also excluded from this research. Accounting for these 10 year length and 10\% missing data constraints, the total number of \emph{in situ} time series used in this study was reduced to 26, with a mean length of 22.3 years. The metadata for each SACTN time series used in this study may be downloaded at https://github.com/schrob040/AHW/blob/master/setupParams/SACTN_site_list.csv.
+The \emph{in situ} coastal seawater temperature data used in this study were acquired from the South African Coastal Temperature Network (SACTN, https://github.com/ajsmit/SACTN, https://robert-schlegel.shinyapps.io/SACTN/). These SACTN data are contributed by seven different organizations and are collected \emph{in situ} with a mixture of hand-held alcohol \& mercury thermometers as well as digital underwater temperature recorders (UTRs). This data set currently consists of 135 daily time series, with a mean duration of 19.7 years. Therefore many of the time series in this dataset are shorter than the 30 year minimum proscribed for the characterisation of marine heatwaves (MHWs, see 'Marine heatwaves' section below) \citep{Hobday2016}. It is however deemed necessary to use these data when investigating extreme events in the nearshore (<400 m from the low tide mark) as satellite derived sea surface temperature (SST) values along the coast have been shown to display large biases \citep{Smit2013} or capture minimum and maximum temperatures poorly \citep{Smale2009, Castillo2010}. Whereas a 30+ year period is ideal for determining a climatology, ten years may serve as an acceptable bottom limit \citep{Schlegel2017}. Following on from the methodology laid out in \citet{Schlegel2017} time series with more than 10\% missing data were also excluded from this research. Accounting for these 10 year length and 10\% missing data constraints, the total number of \emph{in situ} time series used in this study was reduced to 26, with a mean length of 22.3 years. The metadata for each SACTN time series used in this study may be downloaded at https://github.com/schrob040/AHW/blob/master/setupParams/SACTN\_site\_list.csv.
 % \Cref{tableS1} shows the metadata for the SACTN time series used in this study 
 (RWS: I don't think a supplemental section should be given here, rather host everything on GitHub. In fact, should comments like the preceeding sentence be made in the body of the text, or saved for the acknowledgment section? It's a bit jarring to have these long strips of html in the text.)
 
@@ -242,7 +242,7 @@ When we plot the air-sea states during MHWs against days during the 366 day clim
 \begin{figure}
 \includegraphics[width=1.0\textwidth]{figure_3.pdf}
 \caption{(RWS: I will clean this figure up before submission) Biiplot showing the distribution of normal daily climatological air-sea states (blue) versus the distribution of mean air-sea states during Marine Heatwaves (MHWs; green).}
-\label{figure7}
+\label{figure3}
 \end{figure}
 
 \subsection{MHW patterns}
@@ -293,7 +293,7 @@ Node 8 shows warm SST anomalies for all but a small portion of the west side of 
 The final node shows cold SST anomalies along much of the south coast, with some warm anomalies to the south and atypical vorticity to the south east that does not appear to be reaching the coast. The wind during these events was anomalously strong from the east-southeast with warm air temperature anomalies over the land and sea.
 
 \subsection{Temporal patterns}
-MHWs that occurred during summer are only present in three nodes (2,7, and 8) and are also the least common with events occurring during winter and spring more than twice as frequently (\Cref{table2}). Most nodes contain MHWs that occurred during at least three seasons and over several years, with the notable exception of nodes 1 and 6. All of the MHWs in node 1 occurred during the same meso-scale event that may be seen along the west and south coasts in \Cref{figure3}. With the exception of three of the 16 events in node 6 (\Cref{table2}), all of these were winter events that occurred during very high overland air temperature anomalies.
+MHWs that occurred during summer are only present in three nodes (2,7, and 8) and are also the least common with events occurring during winter and spring more than twice as frequently (\Cref{table2}). Most nodes contain MHWs that occurred during at least three seasons and over several years, with the notable exception of nodes 1 and 6. All of the MHWs in node 1 occurred during the same meso-scale event that may be seen along the west and south coasts in \Cref{figure4}. With the exception of three of the 16 events in node 6 (\Cref{table2}), all of these were winter events that occurred during very high overland air temperature anomalies.
 
 \begin{table}[ht]
 \caption{\small The relevant metrics and statistics for the events found within each node. 
@@ -330,6 +330,19 @@ As shown in \Cref{table2}, there are very few events with durations greater than
 When we look at the mean statistics for each node (\Cref{table2}) we see that there is a large difference in the mean duration (days) of MHWs clustered therein. Nodes 4 and 5 show the longest mean durations however, the mean duration in node 5 is skewed by having one very long event and only two total events in that node. Nodes 9 and 2 are characterized by having the shortest MHWs. As large cumulative mean intensities are generally a product of lengthy MHWs, it is not surprising to see that Nodes 4 and 5 also have the highest values for this metric as well. Again though node 5 is misrepresented in this regard due to the one large event clustered there. As for the maximum intensity of events within each node, there is less difference between the nodes than for the other two metrics shown. Nodes 2 and 8 however did have events with the lowest maximum intensities (\degree C) on average.
 
 \section{Discussion}
+
+
+(RWS: Atmosphere notes:
+Summer months more pressure from the anticyclones, winter months more pressure from the south.
+Constant pressure cells near the surface: South Atlantic Anticyclone, South Indian Anticyclone, East Pacific Anticyclone.
+The movement of these cells over the continent largely control weather and climate.
+Also low pressure cell to the North. This deminishes in winter, lessening chances for rainfall inland. THis then shifts rainfall south onto the coast. Tyson and Preston-Whyte (2000)
+During July the ITCZ is located over northern Africa, so that southern Africa does not benefit from the convective activity and the resulting atmospheric moisture generated by it at that time of the year. During January however, which is quite representative of summer, the situation is quite different.
+Hurry and van Heerden (1986) for the general patterns during summer.
+Many factors can play a role in the wind speed and direction on the local scale along the coast e. g. topography, ones actual distance from the coastline, as well as the land-sea boundary (Hsu, 1988)
+)
+
+
 \subsection{MHW states vs. Normal States}
 (RWS: Talk more about how the event days cluster out differently from normal days.)
 As one may see from the flat ellipse of multi-coloured circles in \Cref{figure3} (the daily climatology points), the variance represented in the x axis is seasonality. 
@@ -390,51 +403,6 @@ It is therefore advised that areas of particular susceptibility to MHWs be ident
 
 \section*{Acknowledgements}
 We would like to thank DAFF, DEA, EKZNW, KZNSB, SAWS and SAEON for contributing all of the raw data used in this study. Without it, this article and the South African Coastal Temperature Network (SACTN) would not be possible. We would also like to thank Dr. Andries Kruger for his contributions to this work. This research was supported by NRF Grant (CPRR14072378735). This paper makes a contribution to the objectives of the Australian Research Council Centre of Excellence for Climate System Science (ARCCSS). The authors report no financial conflicts of interests. The data and analyses used in this paper may be found at https://github.com/schrob040/MHW. The Bluelink ocean data products were provided by CSIRO. Bluelink is a collaboration involving the Commonwealth Bureau of Meteorology, the Commonwealth Scientific and Industrial Research Organisation and the Royal Australian Navy.
-
-% \section*{Supplementary}
-% \subsection*{Meta-data}
-% Further meta-data for each time series and source listed in geographic order along the South African coast from the border of Namibia to the border of Mozambique may be found in \Cref{tableS1}.
-% 
-% \begin{table}[]
-% \caption{\small The metadata and coastal averages for all \emph{in situ} time series used in this study.}
-% \label{tableS1}
-% \centering
-% \tiny
-% \centering
-% \begin{tabular}{rrlllrrrllrrrrrrrrr}
-%   \hline
-%  & order & site & src & index & lon & lat & depth & type & coast & date.start & date.end & length & NA.perc & mean & sd & range & min & max \\ 
-%   \hline
-% 84 &   2 & Port Nolloth & SAWS & Port Nolloth/ SAWS & 16.87 & -29.25 &   0 & thermo & wc & 1299.00 & 16800.00 & 15502 & 6.00 & 12.41 & 1.36 & 12.00 & 9.00 & 21.00 \\ 
-%   100 &  16 & Sea Point & SAWS & Sea Point/ SAWS & 18.38 & -33.92 &   0 & thermo & wc & 1461.00 & 16527.00 & 15067 & 6.00 & 13.07 & 1.57 & 14.50 & 8.50 & 23.00 \\ 
-%   71 &  17 & Oudekraal & DAFF & Oudekraal/ DAFF & 18.35 & -33.98 &   9 & UTR & wc & 12108.00 & 16835.00 & 4728 & 6.00 & 12.31 & 1.88 & 10.03 & 8.19 & 18.22 \\ 
-%   41 &  18 & Hout Bay & DEA & Hout Bay/ DEA & 18.35 & -34.05 &  28 & UTR & wc & 7753.00 & 13992.00 & 6240 & 5.00 & 11.19 & 1.82 & 9.26 & 7.46 & 16.72 \\ 
-%   52 &  20 & Kommetjie & SAWS & Kommetjie/ SAWS & 18.33 & -34.14 &   0 & thermo & wc & 8095.00 & 16527.00 & 8433 & 7.00 & 13.31 & 1.70 & 11.50 & 9.00 & 20.50 \\ 
-%   12 &  22 & Bordjies & DAFF & Bordjies/ DAFF & 18.46 & -34.32 &   4 & UTR & sc & 12502.00 & 16748.00 & 4247 & 7.00 & 15.53 & 1.91 & 11.56 & 10.31 & 21.87 \\ 
-%   13 &  23 & Bordjies Deep & DAFF & Bordjies Deep/ DAFF & 18.47 & -34.31 &   9 & UTR & sc & 12087.00 & 16748.00 & 4662 & 5.00 & 15.31 & 1.90 & 11.82 & 10.15 & 21.97 \\ 
-%   33 &  27 & Fish Hoek & SAWS & Fish Hoek/ SAWS & 18.44 & -34.14 &   0 & thermo & sc & 8095.00 & 16527.00 & 8433 & 6.00 & 15.48 & 2.37 & 14.00 & 9.00 & 23.00 \\ 
-%   65 &  29 & Muizenberg & SAWS & Muizenberg/ SAWS & 18.48 & -34.10 &   0 & thermo & sc & 1220.00 & 16527.00 & 15308 & 4.00 & 15.94 & 2.96 & 16.00 & 9.00 & 25.00 \\ 
-%   36 &  30 & Gordons Bay & SAWS & Gordons Bay/ SAWS & 18.86 & -34.16 &   0 & thermo & sc & 986.00 & 16527.00 & 15542 & 5.00 & 16.57 & 2.40 & 15.50 & 10.00 & 25.50 \\ 
-%   10 &  31 & Betty's Bay & DAFF & Betty's Bay/ DAFF & 18.92 & -34.36 &   5 & UTR & sc & 12765.00 & 16751.00 & 3987 & 0.00 & 14.96 & 1.69 & 10.57 & 10.94 & 21.51 \\ 
-%   38 &  32 & Hermanus & SAWS & Hermanus/ SAWS & 19.25 & -34.41 &   0 & thermo & sc & 7274.00 & 16527.00 & 9254 & 5.00 & 15.65 & 1.50 & 14.50 & 9.00 & 23.50 \\ 
-%   109 &  37 & Stilbaai & SAWS & Stilbaai/ SAWS & 21.44 & -34.37 &   0 & thermo & sc & 3652.00 & 16527.00 & 12876 & 9.00 & 17.88 & 2.96 & 17.00 & 10.00 & 27.00 \\ 
-%   131 &  38 & Ystervarkpunt & DEA & Ystervarkpunt/ DEA & 21.74 & -34.40 &   3 & UTR & sc & 9426.00 & 13685.00 & 4260 & 0.00 & 17.57 & 2.58 & 13.52 & 10.11 & 23.63 \\ 
-%   61 &  39 & Mossel Bay & DEA & Mossel Bay/ DEA & 22.16 & -34.18 &   8 & UTR & sc & 7846.00 & 13685.00 & 5840 & 8.00 & 17.98 & 2.69 & 14.52 & 10.12 & 24.65 \\ 
-%   50 &  42 & Knysna & DEA & Knysna/ DEA & 23.07 & -34.08 &   7 & UTR & sc & 9210.00 & 14554.00 & 5345 & 6.00 & 17.32 & 2.60 & 13.52 & 10.72 & 24.24 \\ 
-%   119 &  45 & Tsitsikamma West & SAWS & Tsitsikamma/ SAWS & 23.65 & -33.98 &   0 & thermo & sc & 7486.00 & 13559.00 & 6074 & 8.00 & 17.20 & 2.57 & 20.00 & 9.50 & 29.50 \\ 
-%   111 &  46 & Storms River Mouth & SAWS & Storms River Mouth/ SAWS & 23.90 & -34.02 &   0 & thermo & sc & 8491.00 & 14244.00 & 5754 & 4.00 & 16.82 & 2.50 & 15.00 & 9.50 & 24.50 \\ 
-%   118 &  47 & Tsitsikamma East & DEA & Tsitsikamma/ DEA & 23.91 & -34.03 &  10 & UTR & sc & 7849.00 & 14558.00 & 6710 & 4.00 & 16.82 & 2.55 & 14.67 & 8.76 & 23.43 \\ 
-%   78 &  58 & Pollock Beach & SAWS & Pollock Beach/ SAWS & 25.68 & -33.99 &   0 & thermo & sc & 10724.00 & 16527.00 & 5804 & 3.00 & 18.15 & 2.13 & 15.50 & 11.00 & 26.50 \\ 
-%   43 &  59 & Humewood & SAWS & Humewood/ SAWS & 25.65 & -33.97 &   0 & thermo & sc & 1332.00 & 10956.00 & 9625 & 3.00 & 17.98 & 2.32 & 14.00 & 11.00 & 25.00 \\ 
-%   37 &  67 & Hamburg & DEA & Hamburg/ DEA & 27.49 & -33.29 &   4 & UTR & sc & 9433.00 & 14667.00 & 5235 & 6.00 & 17.48 & 1.81 & 11.94 & 12.14 & 24.08 \\ 
-%   30 &  68 & Eastern Beach & SAWS & Eastern Beach/ SAWS & 27.92 & -33.02 &   0 & thermo & ec & 5113.00 & 10438.00 & 5326 & 10.00 & 17.91 & 1.77 & 12.50 & 12.50 & 25.00 \\ 
-%   70 &  69 & Orient Beach & SAWS & Orient Beach/ SAWS & 27.92 & -33.02 &   0 & thermo & ec & 5113.00 & 16527.00 & 11415 & 4.00 & 17.96 & 1.58 & 14.00 & 12.00 & 26.00 \\ 
-%   68 &  70 & Nahoon Beach & SAWS & Nahoon Beach/ SAWS & 27.95 & -32.99 &   0 & thermo & ec & 5113.00 & 10438.00 & 5326 & 7.00 & 18.13 & 1.65 & 15.00 & 10.00 & 25.00 \\ 
-%   102 & 133 & Sodwana & DEA & Sodwana/ DEA & 32.73 & -27.42 &  18 & UTR & ec & 8835.00 & 14636.00 & 5802 & 7.00 & 24.42 & 1.96 & 10.44 & 18.62 & 29.05 \\ 
-%    \hline
-% \end{tabular}
-% \end{table}
-
 
 \section*{References}
 
