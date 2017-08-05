@@ -1,8 +1,16 @@
-\begin{thebibliography}{60}
+\begin{thebibliography}{61}
 \expandafter\ifx\csname natexlab\endcsname\relax\def\natexlab#1{#1}\fi
 \expandafter\ifx\csname url\endcsname\relax
   \def\url#1{\texttt{#1}}\fi
 \expandafter\ifx\csname urlprefix\endcsname\relax\def\urlprefix{URL }\fi
+
+\bibitem[{Banzon et~al.(2016)Banzon, Smith, Chin, Liu, and
+  Hankins}]{Banzon2016}
+Banzon, V., Smith, T.~M., Chin, T.~M., Liu, C., Hankins, W., 2016. {A long-term
+  record of blended satellite and in situ sea-surface temperature for climate
+  monitoring, modeling and environmental studies}. Earth System Science Data
+  8~(1), 165--176.
+\newline\urlprefix\url{https://www.earth-syst-sci-data.net/8/165/2016/}
 
 \bibitem[{Barrett et~al.(2008)Barrett, Virginia, Wall, Doran, Fountain, Welch,
   and Lyons}]{Barrett2008}

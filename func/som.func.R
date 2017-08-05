@@ -291,8 +291,8 @@ all.panels <- function(data_res, data_node){
   legend_title = "Anom.\n(°C)"
   data_type = "anom"
 
-  ## The  panel figures
-  # BRAN
+  ## The panel figures
+  # Remotely sensed
   panels_remote <- node.panels(data_temp = res_OISST_temp, data_uv = res_AVISO_uv, data_node = data_node, OISST = TRUE,
                              plot_title = plot_title_remote, legend_title = legend_title, vector_label = "1.0 m/s\n", viridis_col = "D")
   # panels_remote

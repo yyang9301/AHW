@@ -86,7 +86,7 @@ load("data/all_anom_env.Rdata")
 ord_fit <- envfit(all_anom_MDS ~ season + type, data = all_anom_env)
 # ord_fit
 ord_fit_df <- as.data.frame(ord_fit$factors$centroids)
-ord_fit_df$factors <- c("autumn", "spring", "summer", "winter", "clim", "event")
+ord_fit_df$factors <- c("autumn", "spring", "summer", "winter", "clim", "MHW")
 
 # Create MDS dataframe
 mds_df <- data.frame(all_anom_MDS$points, type = all_anom_env$type, 
@@ -94,11 +94,13 @@ mds_df <- data.frame(all_anom_MDS$points, type = all_anom_env$type,
 
 # Plot the fits
 ggplot(data = mds_df, aes(x = MDS1, y = MDS2)) +
-  geom_point(aes(colour = season, shape = type)) +
+  geom_point(aes(colour = season, shape = type), size = 4) +
   geom_segment(data = ord_fit_df, aes(x = 0, y = 0, xend = NMDS1, yend = NMDS2),
                arrow = arrow(angle = 15, length = unit(0.1, "inches"), type = "open"), 
                alpha = 0.6, colour = "black")  +
-  geom_text(data = ord_fit_df, aes(label = factors, x = NMDS1, y = NMDS2))
+  geom_text(data = ord_fit_df, aes(label = factors, x = NMDS1, y = NMDS2), size = 8) +
+  scale_shape_manual(name = "State", values = c(19, 15), labels = c("clim", "MHW")) +
+  scale_colour_discrete(name = "Season")
 ggsave("graph/MDS.pdf", height = 9, width = 12)
 
 
@@ -142,20 +144,22 @@ load("setupParams/SACTN_site_list.Rdata")
 SACTN_site_list$order <- 1:nrow(SACTN_site_list)
 
 # Select only January 1st
-sea_temp <- filter(OISST_temp_clim, date == "01-01") %>% 
+sea_temp <- filter(OISST_temp_clim, date == "01-15") %>% 
   rename(lon = x, lat = y)
 currents <- rbind(AVISO_u_clim, AVISO_v_clim) %>% 
   filter(date == "01-01") %>% 
   mutate(variable = c(rep("u", 1358), rep("v", 1358))) %>% 
   spread(key = variable, value = val) %>% 
-  rename(lon = x, lat = y)
-air_temp <- filter(ERA_temp_clim, date == "01-01") %>% 
+  rename(lon = x, lat = y) %>% 
+  mutate(arrow_size = ((abs(u*v)/ max(abs(u*v)))+0.2)/4)
+air_temp <- filter(ERA_temp_clim, date == "01-15") %>% 
   rename(lon = x, lat = y)
 winds <- rbind(ERA_u_clim, ERA_v_clim) %>% 
   filter(date == "01-01") %>% 
   mutate(variable = c(rep("u", 1891), rep("v", 1891))) %>% 
   spread(key = variable, value = val) %>% 
-  rename(lon = x, lat = y)
+  rename(lon = x, lat = y) %>% 
+  mutate(arrow_size = ((abs(u*v)/ max(abs(u*v)))+0.2)/4)
 
 # Reduce wind/ current vectors
 lon_sub <- seq(10, 40, by = 1)
@@ -176,13 +180,14 @@ fig_1_top <- ggplot(data = southern_africa_coast, aes(x = lon, y = lat)) +
                colour = "ivory", size = 0.5, binwidth = 200, na.rm = TRUE, show.legend = FALSE) +
   # The current vectors
   geom_segment(data = currents, aes(xend = lon + u * current_uv_scalar, yend = lat + v * current_uv_scalar),
-               arrow = arrow(angle = 15, length = unit(0.02, "inches"), type = "closed"), alpha = 0.4) +
+               arrow = arrow(angle = 20, length = unit(currents$arrow_size, "cm"), type = "open"), alpha = 0.5) +
   # The land mass
   geom_polygon(aes(group = group), fill = "grey70", colour = "black", size = 0.5, show.legend = FALSE) +
   geom_path(data = africa_borders, aes(group = group)) +
   # The legend for the vector length
   geom_label(aes(x = 36, y = -37, label = "1.0 m/s\n"), size = 3, label.padding = unit(0.5, "lines")) +
-  geom_segment(aes(x = 35, y = -37.3, xend = 37, yend = -37.3)) +
+  geom_segment(aes(x = 35, y = -37.3, xend = 37, yend = -37.3),
+               arrow = arrow(angle = 20, length = unit(0.2, "cm"), type = "open")) +
   # The in situ sites
   geom_point(data = SACTN_site_list, shape = 19,  size = 2.8, colour = "ivory") +
   geom_text(data = SACTN_site_list[-c(3,4,7:9,18,21,23:24),], aes(label = order), size = 1.9, colour = "red") +
@@ -256,10 +261,11 @@ fig_1_bottom <- ggplot(data = southern_africa_coast, aes(x = lon, y = lat)) +
   geom_path(data = africa_borders, aes(group = group)) +
   # The current vectors
   geom_segment(data = winds, aes(xend = lon + u * wind_uv_scalar, yend = lat + v * wind_uv_scalar),
-               arrow = arrow(angle = 15, length = unit(0.02, "inches"), type = "closed"), alpha = 0.4) +
+               arrow = arrow(angle = 15, length = unit(winds$arrow_size, "cm"), type = "open"), alpha = 0.4) +
   # The legend for the vector length
   geom_label(aes(x = 36, y = -37, label = "4.0 m/s\n"), size = 3, label.padding = unit(0.5, "lines")) +
-  geom_segment(aes(x = 35, y = -37.3, xend = 37, yend = -37.3)) +
+  geom_segment(aes(x = 35, y = -37.3, xend = 37, yend = -37.3),
+               arrow = arrow(angle = 20, length = unit(0.2, "cm"), type = "open")) +
   # The coastal sections
   geom_spoke(aes(x = 18.46520, y = -34.31050, angle = 180, radius = -2), linetype = "dotted", colour = "ivory") +
   geom_spoke(aes(x = 18.46520, y = -34.31050, angle = 180, radius = 2), linetype = "dotted", colour = "ivory") +

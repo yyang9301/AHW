@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.16 (TeX Live 2015/Debian) (preloaded format=pdflatex 2016.9.13)  5 AUG 2017 00:19
+This is pdfTeX, Version 3.14159265-2.6-1.40.16 (TeX Live 2015/Debian) (preloaded format=pdflatex 2016.9.13)  5 AUG 2017 11:29
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -2045,24 +2045,24 @@ Overfull \hbox (12.12917pt too wide) in paragraph at lines 202--203
 b/packages/RmarineHeatWaves/index.html),
  []
 
-[7] <figure_2.pdf, id=418, 1228.59pt x 722.7pt>
+[7] <figure_2.pdf, id=421, 1228.59pt x 722.7pt>
 File: figure_2.pdf Graphic file (type pdf)
  <use figure_2.pdf>
 Package pdftex.def Info: figure_2.pdf used on input line 214.
 (pdftex.def)             Requested size: 441.01773pt x 259.42192pt.
- [8 <./figure_2.pdf>] [9] <figure_3.pdf, id=491, 650.43pt x 650.43pt>
+ [8 <./figure_2.pdf>] [9] <figure_3.pdf, id=494, 650.43pt x 650.43pt>
 File: figure_3.pdf Graphic file (type pdf)
  <use figure_3.pdf>
 Package pdftex.def Info: figure_3.pdf used on input line 243.
 (pdftex.def)             Requested size: 441.01773pt x 441.02611pt.
 
-<figure_4.pdf, id=496, 722.7pt x 867.24pt>
+<figure_4.pdf, id=499, 722.7pt x 867.24pt>
 File: figure_4.pdf Graphic file (type pdf)
  <use figure_4.pdf>
 Package pdftex.def Info: figure_4.pdf used on input line 257.
 (pdftex.def)             Requested size: 441.01773pt x 529.22737pt.
 
-<figure_5.pdf, id=501, 650.43pt x 650.43pt>
+<figure_5.pdf, id=504, 650.43pt x 650.43pt>
 File: figure_5.pdf Graphic file (type pdf)
  <use figure_5.pdf>
 Package pdftex.def Info: figure_5.pdf used on input line 263.
@@ -2070,45 +2070,45 @@ Package pdftex.def Info: figure_5.pdf used on input line 263.
  [10] [11 <./figure_3.pdf>] [12 <./figure_4.pdf>] [13 <./figure_5.pdf>] [14] [1
 5] [16] [17]
 [18] [19] (./Schlegel_et_al.bbl [20]
-Underfull \hbox (badness 10000) in paragraph at lines 61--69
+Underfull \hbox (badness 10000) in paragraph at lines 69--77
 \T1/lmr/m/n/10 (+20) URL []$\T1/lmtt/m/n/10 http : / / www . sciencemag . org /
  cgi / doi / 10 . 1126 / science . 1210288http : / / www .
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 61--69
+Underfull \hbox (badness 10000) in paragraph at lines 69--77
 \T1/lmtt/m/n/10 sciencemag . org / content / 334 / 6056 / 652 . abstract{%}5Cnh
 ttp : / / www . sciencemag . org /
  []
 
 
-Overfull \hbox (185.39047pt too wide) in paragraph at lines 83--88
+Overfull \hbox (185.39047pt too wide) in paragraph at lines 91--96
 \T1/lmr/m/n/10 (-20) URL []$\T1/lmtt/m/n/10 https : / / tos . org / oceanograph
 y / article / biological-[]impacts-[]of-[]the-[]20132015-[]warm-[]water-[]anoma
 ly-[]in-[]the-[]northeast-[]paci$[] 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 101--106
+Underfull \hbox (badness 10000) in paragraph at lines 109--114
 \T1/lmr/m/n/10 (+20) URL []$\T1/lmtt/m/n/10 http : / / onlinelibrary . wiley . 
 com / doi / 10 . 1002 / (SICI ) 1097-[]0088(199805 ) 18 :
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 101--106
+Underfull \hbox (badness 10000) in paragraph at lines 109--114
 \T1/lmtt/m/n/10 6{%}3C619 :: AID-[]JOC271{%}3E3 . 0 . CO ; 2-[]T / abstracthttp
  : / / www . scopus . com / scopus / inward /
  []
 
-[21] [22]
-Overfull \hbox (97.9657pt too wide) in paragraph at lines 254--258
+[21] [22] [23]
+Overfull \hbox (97.9657pt too wide) in paragraph at lines 262--266
 \T1/lmr/m/n/10 (-20) URL []$\T1/lmtt/m/n/10 http : / / journals . ametsoc . org
  / doi / abs / 10 . 1175 / 1520-[]0469{%}281967{%}29024{%}3C0241{%}3ATEOTAW{%}3
 E2 .
  []
 
-[23]
-Overfull \hbox (182.76547pt too wide) in paragraph at lines 261--266
+
+Overfull \hbox (182.76547pt too wide) in paragraph at lines 269--274
 \T1/lmr/m/n/10 (-20) URL []$\T1/lmtt/m/n/10 https : / / tos . org / oceanograph
 y / article / fisheries-[]management-[]in-[]a-[]changing-[]climate-[]lessonsfro
 m-[]the-[]2012-[]ocean-[]heat-[]$[] 
@@ -2125,13 +2125,13 @@ Package rerunfilecheck Info: File `Schlegel_et_al.out' has not changed.
 Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 424.
  ) 
 Here is how much of TeX's memory you used:
- 31830 strings out of 493029
- 597994 string characters out of 6136234
- 670754 words of memory out of 5000000
- 34563 multiletter control sequences out of 15000+600000
+ 31834 strings out of 493029
+ 598063 string characters out of 6136234
+ 670756 words of memory out of 5000000
+ 34566 multiletter control sequences out of 15000+600000
  85453 words of font info for 136 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 62i,12n,92p,10423b,553s stack positions out of 5000i,500n,10000p,200000b,80000s
+ 62i,12n,92p,10423b,551s stack positions out of 5000i,500n,10000p,200000b,80000s
 {/usr/share/texmf/fonts/enc/dvips/lm/lm-ec.enc}{/usr/share/texmf/fonts/enc/dv
 ips/lm/lm-mathit.enc}{/usr/share/texmf/fonts/enc/dvips/lm/lm-mathsy.enc}{/usr/s
 hare/texmf/fonts/enc/dvips/lm/lm-ts1.enc}</usr/share/texmf/fonts/type1/public/l
@@ -2148,10 +2148,10 @@ s/type1/public/lm/lmss8.pfb></usr/share/texmf/fonts/type1/public/lm/lmsy10.pfb>
 /public/lm/lmsy6.pfb></usr/share/texmf/fonts/type1/public/lm/lmsy7.pfb></usr/sh
 are/texmf/fonts/type1/public/lm/lmtt10.pfb></usr/share/texmf/fonts/type1/public
 /lm/lmtt8.pfb>
-Output written on Schlegel_et_al.pdf (26 pages, 1186393 bytes).
+Output written on Schlegel_et_al.pdf (26 pages, 1186994 bytes).
 PDF statistics:
- 811 PDF objects out of 1000 (max. 8388607)
- 690 compressed objects within 7 object streams
- 136 named destinations out of 1000 (max. 500000)
+ 815 PDF objects out of 1000 (max. 8388607)
+ 694 compressed objects within 7 object streams
+ 137 named destinations out of 1000 (max. 500000)
  26406 words of extra memory for PDF output out of 29859 (max. 10000000)
 
