@@ -132,37 +132,46 @@ load("graph/bathy.Rdata")
 load("data/ERA/ERA_temp_clim.Rdata")
 load("data/ERA/ERA_u_clim.Rdata")
 colnames(ERA_u_clim)[4] <- "val"
+ERA_u_clim$variable <- "u"
 load("data/ERA/ERA_v_clim.Rdata")
 colnames(ERA_v_clim)[4] <- "val"
+ERA_v_clim$variable <- "v"
 
 # Remote data
 load("data/OISST/OISST_temp_clim.Rdata")
 load("data/AVISO/AVISO_u_clim.Rdata")
 colnames(AVISO_u_clim)[4] <- "val"
+AVISO_u_clim$variable <- "u"
 load("data/AVISO/AVISO_v_clim.Rdata")
 colnames(AVISO_v_clim)[4] <- "val"
+AVISO_v_clim$variable <- "v"
 
 # In situ time series locations
 load("setupParams/SACTN_site_list.Rdata")
 SACTN_site_list$order <- 1:nrow(SACTN_site_list)
 
 # Select only January 1st
-sea_temp <- filter(OISST_temp_clim, date == "01-15") %>% 
+# sea_temp <- filter(OISST_temp_clim, date == "01-15") %>% 
+sea_temp <- data.table::data.table(OISST_temp_clim)
+sea_temp <- sea_temp[, .(temp = mean(temp, na.rm = TRUE)),
+           by = .(x, y)] %>% 
   rename(lon = x, lat = y)
-currents <- rbind(AVISO_u_clim, AVISO_v_clim) %>% 
-  filter(date == "01-01") %>% 
-  mutate(variable = c(rep("u", 1358), rep("v", 1358))) %>% 
+currents <- data.table::data.table(rbind(AVISO_u_clim, AVISO_v_clim))
+currents <- currents[, .(val = mean(val, na.rm = TRUE)),
+                     by = .(x, y, variable)] %>% 
   spread(key = variable, value = val) %>% 
   rename(lon = x, lat = y) %>% 
-  mutate(arrow_size = ((abs(u*v)/ max(abs(u*v)))+0.2)/4)
-air_temp <- filter(ERA_temp_clim, date == "01-15") %>% 
+  mutate(arrow_size = ((abs(u*v)/ max(abs(u*v)))+0.2)/5)
+air_temp <- data.table::data.table(ERA_temp_clim)
+air_temp <- air_temp[, .(temp = mean(temp, na.rm = TRUE)),
+                     by = .(x, y)] %>% 
   rename(lon = x, lat = y)
-winds <- rbind(ERA_u_clim, ERA_v_clim) %>% 
-  filter(date == "01-01") %>% 
-  mutate(variable = c(rep("u", 1891), rep("v", 1891))) %>% 
+winds <- data.table::data.table(rbind(ERA_u_clim, ERA_v_clim))
+winds <- winds[, .(val = mean(val, na.rm = TRUE)),
+                     by = .(x, y, variable)] %>% 
   spread(key = variable, value = val) %>% 
   rename(lon = x, lat = y) %>% 
-  mutate(arrow_size = ((abs(u*v)/ max(abs(u*v)))+0.2)/4)
+  mutate(arrow_size = ((abs(u*v)/ max(abs(u*v)))+0.2)/5)
 
 # Reduce wind/ current vectors
 lon_sub <- seq(10, 40, by = 1)
@@ -183,13 +192,14 @@ fig_1_top <- ggplot(data = southern_africa_coast, aes(x = lon, y = lat)) +
                colour = "ivory", size = 0.5, binwidth = 200, na.rm = TRUE, show.legend = FALSE) +
   # The current vectors
   geom_segment(data = currents, aes(xend = lon + u * current_uv_scalar, yend = lat + v * current_uv_scalar),
-               arrow = arrow(angle = 20, length = unit(currents$arrow_size, "cm"), type = "open"), alpha = 0.5) +
+               arrow = arrow(angle = 20, length = unit(currents$arrow_size, "cm"), type = "open"),
+                             linejoin = "mitre", size = 0.7) +
   # The land mass
   geom_polygon(aes(group = group), fill = "grey70", colour = "black", size = 0.5, show.legend = FALSE) +
   geom_path(data = africa_borders, aes(group = group)) +
   # The legend for the vector length
   geom_label(aes(x = 36, y = -37, label = "1.0 m/s\n"), size = 3, label.padding = unit(0.5, "lines")) +
-  geom_segment(aes(x = 35, y = -37.3, xend = 37, yend = -37.3),
+  geom_segment(aes(x = 35, y = -37.3, xend = 37, yend = -37.3), linejoin = "mitre",
                arrow = arrow(angle = 20, length = unit(0.2, "cm"), type = "open")) +
   # The in situ sites
   geom_point(data = SACTN_site_list, shape = 19,  size = 2.8, colour = "ivory") +
@@ -234,7 +244,7 @@ fb_inset <- ggplot(data = sa_shore, aes(x = lon, y = lat)) +
                fill = "grey70", colour = NA, size = 0.5, show.legend = FALSE) +
   # The in situ sites
   geom_point(data = SACTN_site_list, shape = 1,  size = 3, colour = "black") +
-  geom_text(data = SACTN_site_list[-6,], aes(label = order), size = 2.3, colour = "red") +
+  geom_text(data = SACTN_site_list[-6,], aes(label = order), size = 2.0, colour = "red") +
   # Text label
   geom_text(aes(x = 18.65, y = -34.25, label = "False\nBay"), size = 2.7) +
   # Control the x and y axes
@@ -264,10 +274,11 @@ fig_1_bottom <- ggplot(data = southern_africa_coast, aes(x = lon, y = lat)) +
   geom_path(data = africa_borders, aes(group = group)) +
   # The current vectors
   geom_segment(data = winds, aes(xend = lon + u * wind_uv_scalar, yend = lat + v * wind_uv_scalar),
-               arrow = arrow(angle = 15, length = unit(winds$arrow_size, "cm"), type = "open"), alpha = 0.4) +
+               arrow = arrow(angle = 15, length = unit(winds$arrow_size, "cm"), type = "open"), 
+               linejoin = "mitre", size = 0.7) +
   # The legend for the vector length
   geom_label(aes(x = 36, y = -37, label = "4.0 m/s\n"), size = 3, label.padding = unit(0.5, "lines")) +
-  geom_segment(aes(x = 35, y = -37.3, xend = 37, yend = -37.3),
+  geom_segment(aes(x = 35, y = -37.3, xend = 37, yend = -37.3), linejoin = "mitre",
                arrow = arrow(angle = 20, length = unit(0.2, "cm"), type = "open")) +
   # The coastal sections
   geom_spoke(aes(x = 18.46520, y = -34.31050, angle = 180, radius = -2), linetype = "dotted", colour = "ivory") +

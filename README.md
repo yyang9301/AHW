@@ -274,3 +274,7 @@ The scripts and data used to determine common air-sea states during MHWs along t
 
 ## 2017/08/06
 * Second draft ready for co-author revisions
+
+## 2017/08/07
+* Figure tweaks
+* Some few revisions from co-authors

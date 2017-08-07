@@ -202,25 +202,15 @@ node.panels <- function(data_temp, data_uv, data_node, plot_title, legend_title,
   np <- ggplot(data = data_temp, aes(x = x, y = y)) +
     geom_raster(aes(fill = value)) +
     geom_segment(data = data_uv, aes(x = x, y = y, xend = x + u, yend = y + v),
-                 arrow = arrow(angle = 20, length = unit(0.07, "cm"), 
-                               type = "open"), alpha = 0.7, colour = "black") +
+                 arrow = arrow(angle = 20, length = unit(0.05, "cm"), type = "open"), 
+                 size = 0.5, colour = "black", linejoin = "mitre") +
     geom_polygon(data = southern_africa_coast, aes(x = lon, y = lat, group = group),
                  fill = NA, colour = "black", size = 0.5, show.legend = FALSE) +
-
-    ### Need to fix the UV vector label...
-    # geom_label(data = label_dat, aes(x = x, y = y, label = txt), size = 5, label.padding = unit(0.5, "lines")) +
-    # geom_segment(data = segment_dat, aes(x = x, y = y, xend = xend, yend = yend)) +
-    geom_label(data = data_node, aes(x = 25, y = -28, label = paste0("n = ", count,"/",length(node))), size = 3, label.padding = unit(0.5, "lines")) +
-    ###
-
-    ### Different point options
-    ## White points
-    # geom_point(data = data_node, aes(x = lon, y = lat), shape = 21,  size = 3, alpha = 0.7, colour = "red", fill = "white") +
-    ## Seasonal coloured points
-    geom_point(data = data_node, aes(x = lon, y = lat, colour = season), shape = 19,  size = 3, alpha = 0.6) +
+    geom_label(data = data_node, aes(x = 25, y = -28, label = paste0("n = ", count,"/",length(node))), 
+               size = 3, label.padding = unit(0.5, "lines")) +
+    geom_point(data = data_node, aes(x = lon, y = lat, colour = season), shape = 19,  
+               size = 3, alpha = 0.6) +
     scale_color_discrete("Season") +
-    ###
-
     scale_x_continuous(limits = sa_lons, expand = c(0, 0), breaks = seq(15, 35, 5),
                        labels = scales::unit_format("°E", sep = "")) +
     scale_y_continuous(limits = sa_lats, expand = c(0, 0), breaks = seq(-35, -30, 5),
@@ -300,7 +290,7 @@ all.panels <- function(data_res, data_node){
   # panels_remote
   # ERA
   panels_ERA <- node.panels(data_temp = res_ERA_temp, data_uv = res_ERA_uv, data_node = data_node, OISST = FALSE,
-                            plot_title = plot_title_ERA, legend_title = legend_title, vector_label = "4.0 m/s\n", viridis_col = "A")
+                            plot_title = plot_title_ERA, legend_title = legend_title, vector_label = "10.0 m/s\n", viridis_col = "A")
   # panels_ERA
 
   ## Combine figures and save
