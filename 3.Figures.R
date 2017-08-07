@@ -46,13 +46,16 @@ load("data/SACTN/SACTN_events.Rdata")
 load("data/node_all_anom.Rdata")
 
 node_all <- merge(node_all_anom, SACTN_events, by = c("event", "site", "season", "event_no"))
+
 ggplot(data = node_all, aes(x = date_start, y = int_cum)) +
   geom_lolli() +
   geom_point(aes(colour = season)) +
+  geom_label(aes(x = as.Date("2005-01-01"), y = 580, label = paste0("n = ", count,"/",length(node))), 
+             size = 3, label.padding = unit(0.5, "lines")) +
   facet_wrap(~node) +
-  labs(x = "", y = "cummulative intensity (°Cxdays)") +
+  labs(x = "", y = "Cummulative intensity (°C·days)", colour = "Season") +
   theme(strip.background = element_rect(fill = NA))
-ggsave("graph/SOM_lolli.pdf", height = 9, width = 9)
+ggsave("graph/SOM_lolli.pdf", height = 9, width = 10)
 
 
 # 5. Create dendrogram for HCA results ------------------------------------

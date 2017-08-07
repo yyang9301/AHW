@@ -91,7 +91,28 @@ som_anosim$signif # p = 0.001
 
 # 5. Discussion -----------------------------------------------------------
 
+lon_sub <- seq(10, 40, by = 1)
+lat_sub <- seq(-40, -15, by = 1)
 
+# Isolate the square of recurrent anomlous currents
+  # They stand out most in node 3 so we use that
+load("data/node_means.Rdata")
+strange_square <- node_means %>% 
+  filter(node == 3, var %in% c("AVISO/u-anom", "AVISO/v-anom"),
+         # x %in% lon_sub, y %in% lat_sub,
+         x <= 15, y <= -35) %>% 
+  select(-node) %>% 
+  dcast(x+y~var) %>% 
+  rename(u = 'AVISO/u-anom', v = 'AVISO/v-anom')
+
+ggplot(data = strange_square) +
+  geom_segment(aes(x = x, y = y, xend = x + u, yend = y + v),
+               arrow = arrow(angle = 20, length = unit(0.1, "cm"), 
+                             type = "open"), alpha = 0.7, colour = "black")
+
+# From the above figure it is clear that the strange square is from:
+# 12.5 E to 14.5 E
+# 35.5 S to 37.5 S
 
 # 6. Conclussion ----------------------------------------------------------
 

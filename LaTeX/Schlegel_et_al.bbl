@@ -1,8 +1,14 @@
-\begin{thebibliography}{61}
+\begin{thebibliography}{66}
 \expandafter\ifx\csname natexlab\endcsname\relax\def\natexlab#1{#1}\fi
 \expandafter\ifx\csname url\endcsname\relax
   \def\url#1{\texttt{#1}}\fi
 \expandafter\ifx\csname urlprefix\endcsname\relax\def\urlprefix{URL }\fi
+
+\bibitem[{Akinduko et~al.(2016)Akinduko, Mirkes, and Gorban}]{Akinduko2016}
+Akinduko, A.~A., Mirkes, E.~M., Gorban, A.~N., oct 2016. {SOM: Stochastic
+  initialization versus principal components}. Information Sciences 364-365,
+  213--221.
+\newline\urlprefix\url{http://linkinghub.elsevier.com/retrieve/pii/S0020025515007318}
 
 \bibitem[{Banzon et~al.(2016)Banzon, Smith, Chin, Liu, and
   Hankins}]{Banzon2016}
@@ -163,6 +169,13 @@ Garrabou, J., Coma, R., Bensoussan, N., Bally, M., Chevaldonn{\'{e}}, P.,
   rocky benthic communities: effects of the 2003 heat wave}. Global Change
   Biology 15~(5), 1090--1103.
 
+\bibitem[{Gibson et~al.(2016)Gibson, Perkins-Kirkpatrick, and
+  Renwick}]{Gibson2016a}
+Gibson, P.~B., Perkins-Kirkpatrick, S.~E., Renwick, J.~A., 2016. {Projected
+  changes in synoptic weather patterns over New Zealand examined through
+  self-organizing maps}. International Journal of Climatology 36~(12),
+  3934--3948.
+
 \bibitem[{GORDON et~al.(1988)GORDON, BROWN, and PULSFORD}]{Gordon1988}
 GORDON, G., BROWN, A.~S., PULSFORD, T., dec 1988. {A koala (Phascolarctos
   cinereus Goldfuss) population crash during drought and heatwave conditions in
@@ -250,7 +263,7 @@ Lirman, D., Schopmeyer, S., Manzello, D., Gramer, L.~J., Precht, W.~F.,
 
 \bibitem[{L{\"{u}}nning(1990)}]{Luning1990}
 L{\"{u}}nning, K., 1990. {Seaweds: their environment, biogeography and
-  ecophysiology. John Wiley and Sons}. Wiley, New York (USA).
+  ecophysiology.} Wiley, New York (USA).
 
 \bibitem[{Lutjeharms et~al.(2000)Lutjeharms, Cooper, and
   Roberts}]{Lutjeharms2000a}
@@ -262,7 +275,6 @@ Lutjeharms, J., Cooper, J., Roberts, M., apr 2000. {Upwelling at the inshore
 Manabe, S., Wetherald, R.~T., 1967. {Thermal Equilibrium of the Atmosphere with
   a Given Distribution of Relative Humidity}. Journal of the Atmospheric
   Sciences 24~(3), 241--259.
-\newline\urlprefix\url{http://journals.ametsoc.org/doi/abs/10.1175/1520-0469{\%}281967{\%}29024{\%}3C0241{\%}3ATEOTAW{\%}3E2.0.CO{\%}3B2}
 
 \bibitem[{Mills et~al.(2013)Mills, Pershing, Brown, Chen, Chiang, Holland,
   Lehuta, Nye, Sun, Thomas, and Wahle}]{Mills2013}
@@ -272,17 +284,29 @@ Mills, K., Pershing, A., Brown, C., Chen, Y., Chiang, F.-S., Holland, D.,
   the Northwest Atlantic}. Oceanography 26~(2).
 \newline\urlprefix\url{https://tos.org/oceanography/article/fisheries-management-in-a-changing-climate-lessonsfrom-the-2012-ocean-heat-}
 
+\bibitem[{Minchin(1987)}]{Minchin1987}
+Minchin, P.~R., apr 1987. {An evaluation of the relative robustness of
+  techniques for ecological ordination}. Vegetatio 69~(1-3), 89--107.
+\newline\urlprefix\url{http://link.springer.com/10.1007/BF00038690}
+
 \bibitem[{Morioka et~al.(2010)Morioka, Tozuka, and Yamagata}]{Morioka2010}
 Morioka, Y., Tozuka, T., Yamagata, T., 2010. {Climate variability in the
   southern Indian Ocean as revealed by self-organizing maps}. Climate Dynamics
   35~(6), 1075--1088.
 
-\bibitem[{Oliver et~al.(2017)Oliver, Benthuysen, Bindoff, Hobday, Holbrook,
-  Mundy, and Perkins-Kirkpatrick}]{Oliver2017}
+\bibitem[{Oliver et~al.(2017{\natexlab{a}})Oliver, Benthuysen, Bindoff, Hobday,
+  Holbrook, Mundy, and Perkins-Kirkpatrick}]{Oliver2017}
 Oliver, E. C.~J., Benthuysen, J.~A., Bindoff, N.~L., Hobday, A.~J., Holbrook,
-  N.~J., Mundy, C.~N., Perkins-Kirkpatrick, S.~E., jul 2017. {The unprecedented
-  2015/16 Tasman Sea marine heatwave}. Nature Communications 8, 16101.
+  N.~J., Mundy, C.~N., Perkins-Kirkpatrick, S.~E., jul 2017{\natexlab{a}}. {The
+  unprecedented 2015/16 Tasman Sea marine heatwave}. Nature Communications 8,
+  16101.
 \newline\urlprefix\url{http://www.nature.com/doifinder/10.1038/ncomms16101}
+
+\bibitem[{Oliver et~al.(2017{\natexlab{b}})Oliver, Lago, Holbrook, Ling, Mundy,
+  and Hobday}]{Oliver2017atlas}
+Oliver, E. C.~J., Lago, V., Holbrook, N.~J., Ling, S.~D., Mundy, C.~N., Hobday,
+  A.~J., 2017{\natexlab{b}}. {Eastern Tasmania Marine Heatwave Atlas}.
+\newline\urlprefix\url{http://metadata.imas.utas.edu.au/geonetwork/srv/eng/metadata.show?uuid=20188863-0af6-4032-98f8-def671cdaa58}
 
 \bibitem[{Pearce and Feng(2013)}]{Pearce2013}
 Pearce, A.~F., Feng, M., 2013. {The rise and fall of the "marine heat wave" off
@@ -323,12 +347,6 @@ Scavia, D., Field, J.~C., Boesch, D.~F., Buddemeier, R.~W., Burkett, V., Cayan,
   Royer, T.~C., Sallenger, A.~H., Titus, J.~G., apr 2002. {Climate change
   impacts on U.S. Coastal and Marine Ecosystems}. Estuaries 25~(2), 149--164.
 \newline\urlprefix\url{http://link.springer.com/10.1007/BF02691304}
-
-\bibitem[{Schaeffer and Roughan(2017)}]{Schaeffer2017}
-Schaeffer, A., Roughan, M., 2017. {Sub-surface intensification of marine
-  heatwaves off southeastern Australia: the role of stratification and local
-  winds.} Geophysical Research Letters.
-\newline\urlprefix\url{http://doi.wiley.com/10.1002/2017GL073714}
 
 \bibitem[{Schlegel et~al.(2017)Schlegel, Oliver, Wernberg, and
   Smit}]{Schlegel2017}
@@ -395,10 +413,18 @@ Travis, J. M.~J., 2003. {Climate change and habitat destruction: a deadly
   Sciences 270~(1514), 467--473.
 \newline\urlprefix\url{http://rspb.royalsocietypublishing.org/cgi/doi/10.1098/rspb.2002.2246}
 
+\bibitem[{Tyson and Preston-Whyte(2000)}]{Tyson2000}
+Tyson, P.~D., Preston-Whyte, R.~A., 2000. {weather and climate of southern
+  Africa}. Oxford University Press.
+
 \bibitem[{Unal et~al.(2003)Unal, Kindap, and Karaca}]{Unal2003}
 Unal, Y., Kindap, T., Karaca, M., 2003. {Redefining the climate zones of Turkey
   using cluster analysis}. International Journal of Climatology 23~(9),
   1045--1055.
+
+\bibitem[{{Van Heerden} and Hurry(1998)}]{vanHeerden1998}
+{Van Heerden}, J., Hurry, L., 1998. {Southern Africa's weather patterns: An
+  introductory guide}. Collegium.
 
 \bibitem[{Walther et~al.(2002)Walther, Post, Convey, Menzel, Parmesan, Beebee,
   Fromentin, Hoegh-Guldberg, and Bairlein}]{Walther2002}

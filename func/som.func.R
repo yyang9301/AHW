@@ -202,8 +202,8 @@ node.panels <- function(data_temp, data_uv, data_node, plot_title, legend_title,
   np <- ggplot(data = data_temp, aes(x = x, y = y)) +
     geom_raster(aes(fill = value)) +
     geom_segment(data = data_uv, aes(x = x, y = y, xend = x + u, yend = y + v),
-                 arrow = arrow(angle = 15, length = unit(0.02, "inches"), type = "closed"), 
-                 alpha = 0.8, colour = "black") +
+                 arrow = arrow(angle = 20, length = unit(0.07, "cm"), 
+                               type = "open"), alpha = 0.7, colour = "black") +
     geom_polygon(data = southern_africa_coast, aes(x = lon, y = lat, group = group),
                  fill = NA, colour = "black", size = 0.5, show.legend = FALSE) +
 
@@ -273,6 +273,7 @@ all.panels <- function(data_res, data_node){
   lon_sub <- seq(10, 40, by = 1)
   lat_sub <- seq(-40, -15, by = 1)
   res_AVISO_uv <- res_AVISO_uv[(res_AVISO_uv$x %in% lon_sub & res_AVISO_uv$y %in% lat_sub),]
+  res_AVISO_uv$arrow_size <- (((abs(res_AVISO_uv$u*res_AVISO_uv$v)/ max(abs(res_AVISO_uv$u*res_AVISO_uv$v)))+0.1)/4)
 
   # ERA
   res_ERA_temp <- data_res[data_res$var == "ERA/temp-anom",]
@@ -284,6 +285,7 @@ all.panels <- function(data_res, data_node){
   lon_sub <- seq(10, 40, by = 1)
   lat_sub <- seq(-40, -15, by = 1)
   res_ERA_uv <- res_ERA_uv[(res_ERA_uv$x %in% lon_sub & res_ERA_uv$y %in% lat_sub),]
+  res_ERA_uv$arrow_size <- (((abs(res_ERA_uv$u*res_ERA_uv$v)/ max(abs(res_ERA_uv$u*res_ERA_uv$v)))+0.1)/4)
 
   # node_data <- node_all_anom
   plot_title_remote = "SST Anomaly + Current Anomaly"
