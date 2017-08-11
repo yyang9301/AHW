@@ -192,7 +192,7 @@ fig_1_top <- ggplot(data = southern_africa_coast, aes(x = lon, y = lat)) +
                colour = "ivory", size = 0.5, binwidth = 200, na.rm = TRUE, show.legend = FALSE) +
   # The current vectors
   geom_segment(data = currents, aes(xend = lon + u * current_uv_scalar, yend = lat + v * current_uv_scalar),
-               arrow = arrow(angle = 20, length = unit(currents$arrow_size, "cm"), type = "open"),
+               arrow = arrow(angle = 40, length = unit(currents$arrow_size, "cm"), type = "open"),
                              linejoin = "mitre", size = 0.7) +
   # The land mass
   geom_polygon(aes(group = group), fill = "grey70", colour = "black", size = 0.5, show.legend = FALSE) +
