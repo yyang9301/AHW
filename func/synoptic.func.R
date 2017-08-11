@@ -11,6 +11,8 @@ library(tidyverse)
 library(gridExtra)
 library(scales)
 library(viridis)
+library(cowplot)
+library(ggpubr)
 library(RmarineHeatWaves)
 source("func/load.reanalyses.R")
 source("func/load.remote.R")
@@ -212,11 +214,13 @@ sa_bathy$type = "OISST"
 
 # The synoptic image creator
 synoptic.panel <- function(temperature_dat, vector_dat, label_dat, segment_dat, bathy_dat, site_dat,
-                           legend_title, uv_scalar, viridis_colour = "D", OISST = T){
+                           legend_title, uv_scalar, viridis_colour = "D", OISST = T, anom = F){
   sa1 <- ggplot() + #coord_equal() +
     geom_raster(data = temperature_dat, aes(x = x, y = y, fill = temp)) +
+    # geom_segment(data = vector_dat, aes(x = x, y = y, xend = x + u * uv_scalar, yend = y + v * uv_scalar),
+    #              arrow = arrow(angle = 15, length = unit(0.02, "inches"), type = "closed"), alpha = 0.3) +
     geom_segment(data = vector_dat, aes(x = x, y = y, xend = x + u * uv_scalar, yend = y + v * uv_scalar),
-                 arrow = arrow(angle = 15, length = unit(0.02, "inches"), type = "closed"), alpha = 0.3) +
+                 arrow = arrow(length = unit(0.05, "cm"), angle = 45), alpha = 1, size = 0.2, linejoin = "mitre") +
     geom_polygon(data = southern_africa_coast, aes(x = lon, y = lat, group = group),
                  fill = NA, colour = "black", size = 0.5, show.legend = FALSE) +
     geom_label(data = label_dat, aes(x = x, y = y, label = txt), size = 5, label.padding = unit(0.5, "lines")) +
@@ -228,8 +232,8 @@ synoptic.panel <- function(temperature_dat, vector_dat, label_dat, segment_dat, 
                        labels = c("35°S", "30°S")) +
     coord_fixed(xlim = c(10.5, 39.5), ylim = c(-39.5, -25.5), expand = F) +
     xlab("") + ylab("") +
-    scale_fill_viridis(legend_title, option = viridis_colour) +
     facet_wrap("type", scales = "free_y") +
+    theme_grey() +
     theme(plot.title = element_text(hjust = 0.5, size = 12),
           panel.background = element_rect(fill = "grey70"),
           panel.border = element_rect(fill = NA, colour = "black", size = 1),
@@ -239,10 +243,16 @@ synoptic.panel <- function(temperature_dat, vector_dat, label_dat, segment_dat, 
           legend.direction = "vertical",
           strip.text = element_text(size = 12),
           strip.background = element_rect(fill = NA),
-          legend.key.height = unit(1.1, "cm"),
-          axis.text = element_text(size = 12),
+          legend.key.height = unit(1.04, "cm"),
+          axis.text = element_text(size = 12, colour = "black"),
+          axis.ticks = element_line(colour = "black"),
           legend.text = element_text(size = 12),
           legend.title = element_text(size = 12))
+  if(anom == F){
+    sa1 <- sa1 + scale_fill_viridis(legend_title, option = viridis_colour)
+  } else {
+    sa1 <- sa1 + scale_fill_gradient2(legend_title, low = muted("blue"), high = muted("red"))
+  }
   if(OISST){
     sa1 <- sa1 + stat_contour(data = bathy_dat[bathy_dat$depth < -200,], aes(x = lon, y = lat, z = depth, alpha = ..level..),
                               colour = "white", size = 0.5, binwidth = 1000, na.rm = TRUE, show.legend = FALSE) +
@@ -317,7 +327,7 @@ synoptic.fig <- function(data_file){
   OISST_plot_anom_seg <- data.frame(x = 35, y = -37.5, xend = 37, yend = -37.5, type = "SST Anomaly + Current Anomaly")
   # The figure
   remote_state_anom <- synoptic.panel(temperature_dat = OISST_temp_anom2, vector_dat = AVISO_uv_anom, label_dat = OISST_plot_anom_data, segment_dat = OISST_plot_anom_seg,
-                                    bathy_dat = sa_bathy, site_dat = event2, legend_title = "Anom.\n(°C)", uv_scalar = 1, viridis_colour = "D", OISST = T)
+                                    bathy_dat = sa_bathy, site_dat = event2, legend_title = "Anom.\n(°C)", uv_scalar = 1, viridis_colour = "D", OISST = T, anom = T)
   # remote_state_anom
   
   
@@ -349,7 +359,7 @@ synoptic.fig <- function(data_file){
   ERA_plot_anom_seg <- data.frame(x = 35, y = -37.5, xend = 37, yend = -37.5)
   # The figure
   ERA_state_anom <- synoptic.panel(temperature_dat = ERA_temp_anom, vector_dat = ERA_uv_anom2, label_dat = ERA_plot_anom_data, segment_dat = ERA_plot_anom_seg,
-                                   bathy_dat = sa_bathy, site_dat = event2, legend_title = "Anom.\n(°C)", uv_scalar = 0.5, viridis_colour = "C", OISST = F)
+                                   bathy_dat = sa_bathy, site_dat = event2, legend_title = "Anom.\n(°C)", uv_scalar = 0.5, viridis_colour = "C", OISST = F, anom = T)
   # ERA_state_anom
   
 
@@ -372,8 +382,10 @@ synoptic.fig <- function(data_file){
     xlab("") + ylab("") +
     ggtitle(paste0("Average air-sea state during ", event2$site[1], " event #", event2$event_no[1], 
                    " (", format(event2$date_start, "%d %b %Y"), " - ", format(event2$date_stop, "%d %b %Y"), ")")) +
+    theme_grey() +
     theme(plot.title = element_text(hjust = 0.5, size = 14, face = "bold"),
-          axis.text = element_text(size = 12),
+          axis.text = element_text(size = 12, colour = "black"),
+          axis.ticks = element_line(colour = "black"),
           legend.text = element_text(size = 12),
           legend.title = element_text(size = 12),
           panel.border = element_rect(fill = NA, colour = "black", size = 1),
@@ -425,34 +437,16 @@ synoptic.fig <- function(data_file){
                                                "/", length(unique(all_round$rate_decline)))))
   # Combine data frames
   # all_text <- cbind(properties[1], site_ranks[1], all_ranks[1])
-  text_anchor <- data.frame(x = 1, y = 1)
-  tt1 <- ttheme_default(core = list(fg_params = list(hjust = 0, x = 0.05)),
-                        rowhead = list(fg_params = list(hjust = 0, x = 0)))
+  # tt1 <- ttheme_default(core = list(fg_params = list(hjust = 0, x = 0.05)),
+  #                       rowhead = list(fg_params = list(hjust = 0, x = 0)))
   # The table
-  text_table <- ggplot(text_anchor, aes(x = x, y = y)) + geom_blank() + theme_void() +
-    geom_point() +
-    annotation_custom(tableGrob(all_text, rows = NULL, theme = tt1)) +
-    scale_x_continuous(expand = F) + scale_y_continuous(expand = F)
+  text_table <- ggtexttable(all_text, rows = NULL, theme = ttheme("default", base_size = 12))
   # text_table
-  
-  
+
   ## Combine figures and save ##
   # Generate file name
   # file_name <- "~/Desktop/test.pdf"
   file_name <- paste0("graph/synoptic/",event2$site[1],"_",event2$event_no[1],".pdf")
-  # The figure
-  # pdf(file_name, width = 17, height = 10, pointsize = 10) # Set PDF dimensions
-  # grid.newpage()
-  # pushViewport(viewport(layout = grid.layout(3,3)))
-  # vplayout <- function(x, y) viewport(layout.pos.row = x, layout.pos.col = y)
-  # print(remote_state, vp = vplayout(1,1:2))
-  # print(ERA_state, vp = vplayout(1,3))
-  # print(remote_state_anom, vp = vplayout(2,1:2))
-  # print(ERA_state_anom, vp = vplayout(2,3))
-  # print(event_flame, vp = vplayout(3,1:2))
-  # print(text_table, vp = vplayout(3,3))
-  # dev.off()
-  # 
   atlas_fig <- grid.arrange(remote_state, ERA_state,
                             remote_state_anom, ERA_state_anom,
                             event_flame, text_table,

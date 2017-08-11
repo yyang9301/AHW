@@ -230,7 +230,8 @@ node.panels <- function(data_temp, data_uv, data_node, plot_title, legend_title,
           strip.text = element_text(size = 12),
           strip.background = element_rect(fill = NA),
           legend.key.height = unit(1.1, "cm"),
-          axis.text = element_text(size = 12),
+          axis.text = element_text(size = 12, colour = "black"),
+          axis.ticks = element_line(colour = "black"),
           legend.text = element_text(size = 12),
           legend.title = element_text(size = 12))
   if(OISST){

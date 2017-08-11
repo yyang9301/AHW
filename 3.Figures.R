@@ -16,7 +16,6 @@ source("func/synoptic.func.R")
 source("func/som.func.R")
 source("func/scale.bar.func.R")
 library(vegan)
-library(ggdendro)
 
 # 2. Create synoptic figure for each event  -------------------------------
 
@@ -54,7 +53,10 @@ ggplot(data = node_all, aes(x = date_start, y = int_cum)) +
              size = 3, label.padding = unit(0.5, "lines")) +
   facet_wrap(~node) +
   labs(x = "", y = "Cummulative intensity (°C·days)", colour = "Season") +
-  theme(strip.background = element_rect(fill = NA))
+  theme(strip.background = element_rect(fill = NA),
+        panel.border = element_rect(fill = NA, colour = "black", size = 1),
+        axis.text = element_text(size = 12, colour = "black"),
+        axis.ticks = element_line(colour = "black"))
 ggsave("graph/SOM_lolli.pdf", height = 9, width = 10)
 
 
@@ -233,7 +235,7 @@ fig_1_top <- ggplot(data = southern_africa_coast, aes(x = lon, y = lat)) +
   # Adjust the theme
   theme_bw() +
   theme(panel.border = element_rect(fill = NA, colour = "black", size = 1),
-        axis.text = element_text(colour = "black"),
+        axis.text = element_text(size = 12, colour = "black"),
         axis.ticks = element_line(colour = "black"))
 # fig_1_top
 
@@ -305,7 +307,7 @@ fig_1_bottom <- ggplot(data = southern_africa_coast, aes(x = lon, y = lat)) +
   # Adjust the theme
   theme_bw() +
   theme(panel.border = element_rect(fill = NA, colour = "black", size = 1),
-        axis.text = element_text(colour = "black"),
+        axis.text = element_text(size = 12, colour = "black"),
         axis.ticks = element_line(colour = "black"))
 # fig_1_bottom
 
