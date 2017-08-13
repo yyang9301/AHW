@@ -217,14 +217,13 @@ synoptic.panel <- function(temperature_dat, vector_dat, label_dat, segment_dat, 
                            legend_title, uv_scalar, viridis_colour = "D", OISST = T, anom = F){
   sa1 <- ggplot() + #coord_equal() +
     geom_raster(data = temperature_dat, aes(x = x, y = y, fill = temp)) +
-    # geom_segment(data = vector_dat, aes(x = x, y = y, xend = x + u * uv_scalar, yend = y + v * uv_scalar),
-    #              arrow = arrow(angle = 15, length = unit(0.02, "inches"), type = "closed"), alpha = 0.3) +
     geom_segment(data = vector_dat, aes(x = x, y = y, xend = x + u * uv_scalar, yend = y + v * uv_scalar),
                  arrow = arrow(length = unit(0.05, "cm"), angle = 45), alpha = 1, size = 0.2, linejoin = "mitre") +
     geom_polygon(data = southern_africa_coast, aes(x = lon, y = lat, group = group),
                  fill = NA, colour = "black", size = 0.5, show.legend = FALSE) +
-    geom_label(data = label_dat, aes(x = x, y = y, label = txt), size = 5, label.padding = unit(0.5, "lines")) +
-    geom_segment(data = segment_dat, aes(x = x, y = y, xend = xend, yend = yend)) +
+    geom_label(data = label_dat, aes(x = x, y = y, label = txt), size = 4, label.padding = unit(0.5, "lines")) +
+    geom_segment(data = segment_dat, aes(x = x, y = y, xend = xend, yend = yend),
+                 arrow = arrow(angle = 45, length = unit(0.17, "cm"), type = "open")) +
     geom_point(data = site_dat, aes(x = lon, y = lat), shape = 21,  size = 3, alpha = 0.7, colour = "red", fill = "white") +
     scale_x_continuous(limits = sa_lons, expand = c(0, 0), breaks = seq(15, 35, 5),
                        labels = scales::unit_format("°E", sep = "")) +
@@ -255,7 +254,7 @@ synoptic.panel <- function(temperature_dat, vector_dat, label_dat, segment_dat, 
   }
   if(OISST){
     sa1 <- sa1 + stat_contour(data = bathy_dat[bathy_dat$depth < -200,], aes(x = lon, y = lat, z = depth, alpha = ..level..),
-                              colour = "white", size = 0.5, binwidth = 1000, na.rm = TRUE, show.legend = FALSE) +
+                              colour = "black", size = 0.5, binwidth = 1000, na.rm = TRUE, show.legend = FALSE) +
       geom_polygon(data = southern_africa_coast, aes(x = lon, y = lat, group = group),
                    fill = "grey70", colour = "black", size = 0.5, show.legend = FALSE) +
       geom_point(data = site_dat, aes(x = lon, y = lat), shape = 21,  size = 3, alpha = 0.7, colour = "red", fill = "white")
