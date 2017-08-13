@@ -42,16 +42,27 @@ all.panels(node_means, node_all_anom)
 
 # 4. Create lolliplots for the SOM nodes ----------------------------------
 
+# Load data for figure
 load("data/SACTN/SACTN_events.Rdata")
 load("data/node_all_anom.Rdata")
 
+# Merge into one dataframe
 node_all <- merge(node_all_anom, SACTN_events, by = c("event", "site", "season", "event_no"))
 
+# Calculate mean and median per node for plotting
+node_h_lines <- node_all %>% 
+  group_by(node) %>% 
+  summarise(mean_int_cum = mean(int_cum, na.rm = T),
+            median_int_cum = median(int_cum, na.rm = T))
+
+# Create the figure
 ggplot(data = node_all, aes(x = date_start, y = int_cum)) +
   geom_lolli() +
   geom_point(aes(colour = season)) +
   geom_label(aes(x = as.Date("2005-01-01"), y = 580, label = paste0("n = ", count,"/",length(node))), 
              size = 3, label.padding = unit(0.5, "lines")) +
+  geom_hline(data = node_h_lines, aes(yintercept = mean_int_cum), linetype = "dashed") +
+  geom_hline(data = node_h_lines, aes(yintercept = median_int_cum), linetype = "dotted") +
   facet_wrap(~node) +
   labs(x = "", y = "Cummulative intensity (°C·days)", colour = "Season") +
   theme_grey() +
@@ -123,19 +134,7 @@ ggsave("graph/MDS.pdf", height = 9, width = 12)
 
 # 7. Create map of study area ---------------------------------------------
 
-### Locations to add ###
-
-# The three coastal section: WC, SC, EC must be shown
-  # This would work best on the bottom panel as it is currently less busy
-  # But it would make more sense on the top panel...
-
-# Should label: Namibia and Mozam
-
-# Potentially touch up the 200 m isobath
-
-###
-
-## Data
+## Load data
 # International borders
 load("graph/africa_borders.Rdata")
 
@@ -175,7 +174,7 @@ currents <- currents[, .(val = mean(val, na.rm = TRUE)),
                      by = .(x, y, variable)] %>% 
   spread(key = variable, value = val) %>% 
   rename(lon = x, lat = y) %>% 
-  mutate(arrow_size = ((abs(u*v)/ max(abs(u*v)))+0.6)/15)
+  mutate(arrow_size = ((abs(u*v)/ max(abs(u*v)))+0.2)/6)
 air_temp <- data.table::data.table(ERA_temp_clim)
 air_temp <- air_temp[, .(temp = mean(temp, na.rm = TRUE)),
                      by = .(x, y)] %>% 
@@ -185,7 +184,7 @@ winds <- winds[, .(val = mean(val, na.rm = TRUE)),
                      by = .(x, y, variable)] %>% 
   spread(key = variable, value = val) %>% 
   rename(lon = x, lat = y) %>% 
-  mutate(arrow_size = ((abs(u*v)/ max(abs(u*v)))+0.6)/15)
+  mutate(arrow_size = ((abs(u*v)/ max(abs(u*v)))+0.3)/6)
 
 # Reduce wind/ current vectors
 lon_sub <- seq(10, 40, by = 1)
@@ -195,6 +194,14 @@ winds <- winds[(winds$lon %in% lon_sub & winds$lat %in% lat_sub),]
 
 # Establish the vector scalar for the currents
 current_uv_scalar <- 2
+
+# Establish the vector scalar for the wind
+wind_uv_scalar <- 0.5
+
+# Wind feature vector coordinates
+cyc_atlantic <- data.frame(x = c(14.0, 16.1, 16.0), y = c(-36.0, -34.4, -32.1), xend = c(16.0, 16.1, 14.0), yend = c(-34.5, -32.2, -30.6))
+cyc_indian <- data.frame(x = c(36.0, 33.9, 34.0), y = c(-31.5, -33.1, -35.4), xend = c(34.0, 33.9, 36.0), yend = c(-33.0, -35.3, -36.9))
+westerlies <- data.frame(x = c(18.0, 21.1, 24.2), y = c(-38.0, -37.8, -37.8), xend = c(21.0, 24.1, 27.2), yend = c(-37.8, -37.8, -38.0))
 
 # The top figure (sea)
 fig_1_top <- ggplot(data = southern_africa_coast, aes(x = lon, y = lat)) +
@@ -212,14 +219,15 @@ fig_1_top <- ggplot(data = southern_africa_coast, aes(x = lon, y = lat)) +
   geom_polygon(aes(group = group), fill = "grey70", colour = "black", size = 0.5, show.legend = FALSE) +
   geom_path(data = africa_borders, aes(group = group)) +
   # The legend for the vector length
-  geom_label(aes(x = 36, y = -37, label = "1.0 m/s\n"), size = 3, label.padding = unit(0.5, "lines")) +
-  geom_segment(aes(x = 35, y = -37.3, xend = 37, yend = -37.3), linejoin = "mitre",
+  geom_label(aes(x = 37.0, y = -38.0, label = "1.0 m/s\n"), size = 3, label.padding = unit(0.5, "lines")) +
+  geom_segment(aes(x = 36.0, y = -38.3, xend = 38.0, yend = -38.3), linejoin = "mitre",
                arrow = arrow(angle = 40, length = unit(0.2, "cm"), type = "open")) +
   # The in situ sites
   geom_point(data = SACTN_site_list, shape = 19,  size = 2.8, colour = "ivory") +
   geom_text(data = SACTN_site_list[-c(3,4,7:9,18,21,23:24),], aes(label = order), size = 1.9, colour = "red") +
   # Oceans
   annotate("text", label = "INDIAN\nOCEAN", x = 37.00, y = -34.0, size = 4.0, angle = 0, colour = "ivory") +
+  
   annotate("text", label = "ATLANTIC\nOCEAN", x = 13.10, y = -34.0, size = 4.0, angle = 0, colour = "ivory") +
   # Benguela
   geom_segment(aes(x = 17.2, y = -32.6, xend = 15.2, yend = -29.5),
@@ -243,7 +251,7 @@ fig_1_top <- ggplot(data = southern_africa_coast, aes(x = lon, y = lat)) +
   # Slightly shrink the plotting area
   coord_cartesian(xlim = c(10.5, 39.5), ylim = c(-39.5, -25.5), expand = F) +
   # Use viridis colour scheme
-  scale_fill_viridis(name = "Temp.\n(°C)", option = "D", breaks = c(25, 21, 17)) +
+  scale_fill_viridis(name = "Temp.\n(°C)", option = "D", breaks = c(24, 20, 16)) +
   # Adjust the theme
   theme_bw() +
   theme(panel.border = element_rect(fill = NA, colour = "black", size = 1),
@@ -276,9 +284,6 @@ fb_inset <- ggplot(data = sa_shore, aes(x = lon, y = lat)) +
         panel.grid = element_blank())
 # fb_inset
 
-# Establish the vector scalar for the wind
-wind_uv_scalar <- 0.5
-
 # The bottom figure (air)
 fig_1_bottom <- ggplot(data = southern_africa_coast, aes(x = lon, y = lat)) +
   # The ocean temperature
@@ -291,17 +296,29 @@ fig_1_bottom <- ggplot(data = southern_africa_coast, aes(x = lon, y = lat)) +
                arrow = arrow(angle = 40, length = unit(winds$arrow_size, "cm"), type = "open"),
                linejoin = "mitre", size = 0.4) +
   # The legend for the vector length
-  geom_label(aes(x = 36, y = -37, label = "4.0 m/s\n"), size = 3, label.padding = unit(0.5, "lines")) +
-  geom_segment(aes(x = 35, y = -37.3, xend = 37, yend = -37.3), linejoin = "mitre",
+  geom_label(aes(x = 37.0, y = -38.0, label = "4.0 m/s\n"), size = 3, label.padding = unit(0.5, "lines")) +
+  geom_segment(aes(x = 36.0, y = -38.3, xend = 38.0, yend = -38.3), linejoin = "mitre",
                arrow = arrow(angle = 40, length = unit(0.2, "cm"), type = "open")) +
   # The coastal sections
   geom_spoke(aes(x = 18.46520, y = -34.31050, angle = 180, radius = -2), linetype = "dotted", colour = "ivory") +
   geom_spoke(aes(x = 18.46520, y = -34.31050, angle = 180, radius = 2), linetype = "dotted", colour = "ivory") +
   geom_spoke(aes(x = 27.48889, y = -33.28611, angle = 40, radius = -2), linetype = "dotted", colour = "ivory") +
   geom_spoke(aes(x = 27.48889, y = -33.28611, angle = 40, radius = 2), linetype = "dotted", colour = "ivory") +
-  annotate("text", label = "West\nCoast", x = 16.5, y = -32, size = 3.0, angle = 0, colour = "ivory") +
-  annotate("text", label = "South\nCoast", x = 23, y = -35.5, size = 3.0, angle = 0, colour = "ivory") +
-  annotate("text", label = "East\nCoast", x = 31, y = -32, size = 3.0, angle = 0, colour = "ivory") +
+  annotate("text", label = "West\nCoast", x = 19.5, y = -31.2, size = 3.0, angle = 0, colour = "ivory") +
+  annotate("text", label = "South\nCoast", x = 23, y = -33.0, size = 3.0, angle = 0, colour = "ivory") +
+  annotate("text", label = "East\nCoast", x = 28, y = -31, size = 3.0, angle = 0, colour = "ivory") +
+  # South Atlantic Anticyclone
+  annotate("text", label = "SOUTH\nATLANTIC\nANTICYCLONE", x = 13.5, y = -33.5, size = 3.0, angle = 0, colour = "ivory") +
+  geom_curve(data = cyc_atlantic, aes(x = x, y = y, xend = xend, yend = yend), curvature = 0.2, colour = "ivory",
+             arrow = arrow(angle = 40, type = "open", length = unit(0.25,"cm"))) +
+  # South Indian Anticyclone
+  annotate("text", label = "SOUTH\nINDIAN\nANTICYCLONE", x = 36.5, y = -34.0, size = 3.0, angle = 0, colour = "ivory") +
+  geom_curve(data = cyc_indian, aes(x = x, y = y, xend = xend, yend = yend), curvature = 0.2, colour = "ivory",
+             arrow = arrow(angle = 40, type = "open", length = unit(0.25,"cm"))) +
+  # Westerlies
+  annotate("text", label = "WESTERLIES", x = 22.5, y = -37.0, size = 3.0, angle = 0, colour = "ivory") +
+  geom_curve(data = westerlies, aes(x = x, y = y, xend = xend, yend = yend), colour = "ivory",
+             arrow = arrow(angle = 40, type = "open", length = unit(0.25,"cm")), curvature = -0.01) +
   # Improve on the x and y axis labels
   scale_x_continuous(breaks = seq(15, 35, 5),
                      labels = scales::unit_format("°E", sep = "")) +
@@ -309,13 +326,13 @@ fig_1_bottom <- ggplot(data = southern_africa_coast, aes(x = lon, y = lat)) +
                      labels = c("35°S", "30°S")) +
   labs(x = NULL, y = NULL) +
   # Scale bar
-  scaleBar(lon = 13, lat = -38.0, distanceLon = 200, distanceLat = 50, distanceLegend = 90, dist.unit = "km",
-           arrow.length = 200, arrow.distance = 130, arrow.North.size = 4, 
+  scaleBar(lon = 22.0, lat = -29.5, distanceLon = 200, distanceLat = 50, distanceLegend = 90, dist.unit = "km",
+           arrow.length = 100, arrow.distance = 130, arrow.North.size = 3, 
            legend.colour = "ivory", arrow.colour = "ivory", N.colour = "ivory") +
   # Slightly shrink the plotting area
   coord_cartesian(xlim = c(10.5, 39.5), ylim = c(-39.5, -25.5), expand = F) +
   # Use viridis colour scheme
-  scale_fill_viridis(name = "Temp.\n(°C)", option = "A", breaks = c(25, 21, 17)) +
+  scale_fill_viridis(name = "Temp.\n(°C)", option = "A", breaks = c(24, 20, 16)) +
   # Adjust the theme
   theme_bw() +
   theme(panel.border = element_rect(fill = NA, colour = "black", size = 1),
