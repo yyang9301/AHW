@@ -228,7 +228,7 @@ save(all_anom_hclust, file = "data/all_anom_hclust.Rdata")
 # load("data/all_anom_hclust.Rdata")
 
 
-## Calculate MDS
+## Calculate NMDS
 all_anom_MDS <- metaMDS(vegdist(decostand(all_anom, method = "standardize"),
                                     method = "euclidean"), try = 100)
 save(all_anom_MDS, file = "data/all_anom_MDS.Rdata")

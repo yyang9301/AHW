@@ -4,6 +4,7 @@
 # 1. Load all libraries and functions used in this script
 # 2. Create table of statistics for each SOM node
 # 3. Supplementary table
+# 4. Qualitative table
 #############################################################################
 
 
@@ -42,3 +43,28 @@ site_list <- droplevels(site_list[site_list$NA.perc <= 10, ]) # 50 sites
 site_list <- droplevels(site_list[site_list$length >= 3650, ]) # 26 sites
 xtable(site_list)
 
+
+# 4. Qualitative table ----------------------------------------------------
+
+qual_table <- data.frame(Node = c("(1,2,4)",
+                                  "(3,5,6,9)",
+                                  "(8)",
+                                  "(7)"),
+                         Coast = c("West, South",
+                                   "All",
+                                   "All",
+                                   "West, South"),
+                         Season = c("All",
+                                    "All",
+                                    "All",
+                                    "All"),
+                         # 'MHW properties' = c("Mid to short durations, small to large maximum intensities",
+                         #                      "Short durations except Node 9, small to large maximum intensities",
+                         #                      "Short durations with mid intensities",
+                         #                      "Largest events on average"),
+                         Patterns = c("Warm SSTs with onshore forcing, cool air with W/NW-erly wind anomalies",
+                                        "Cool or neutral offshore SSTs, warm air with mostly onshore wind anomalies",
+                                        "Warm SSTs with no onshore forcing, neutral air with E/SE-erly wind anomalies",
+                                        "Neutral")
+                         )
+print(xtable(qual_table), include.rownames=FALSE)

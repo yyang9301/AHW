@@ -1,4 +1,4 @@
-\begin{thebibliography}{67}
+\begin{thebibliography}{44}
 \providecommand{\natexlab}[1]{#1}
 \expandafter\ifx\csname urlstyle\endcsname\relax
   \providecommand{\doi}[1]{doi:\discretionary{}{}{}#1}\else
@@ -28,16 +28,6 @@ Banzon, V., Smith, T.~M., Chin, T.~M., Liu, C., and Hankins, W. (2016).
 \newblock \doi{10.5194/essd-8-165-2016}
 \bibAnnoteFile{Banzon2016}
 
-\bibitem[{Barrett et~al.(2008)Barrett, Virginia, Wall, Doran, Fountain, Welch
-  et~al.}]{Barrett2008}
-Barrett, J.~E., Virginia, R.~A., Wall, D.~H., Doran, P.~T., Fountain, A.~G.,
-  Welch, K.~A., et~al. (2008).
-\newblock {Persistent effects of a discrete warming event on a polar desert
-  ecosystem}.
-\newblock \emph{Global Change Biology} 14, 2249--2261.
-\newblock \doi{10.1111/j.1365-2486.2008.01641.x}
-\bibAnnoteFile{Barrett2008}
-
 \bibitem[{Beal et~al.(2011)Beal, {De Ruijter}, Biastoch, Zahn, Cronin, Hermes
   et~al.}]{Beal2011}
 Beal, L.~M., {De Ruijter}, W. P.~M., Biastoch, A., Zahn, R., Cronin, M.,
@@ -55,15 +45,15 @@ Benthuysen, J., Feng, M., and Zhong, L. (2014).
 \newblock \doi{10.1016/j.csr.2014.09.014}
 \bibAnnoteFile{Benthuysen2014}
 
-\bibitem[{Blamey et~al.(2015)Blamey, Shannon, Bolton, Crawford, Dufois,
-  Evers-King et~al.}]{Blamey2015}
-Blamey, L.~K., Shannon, L.~J., Bolton, J.~J., Crawford, R.~J., Dufois, F.,
-  Evers-King, H., et~al. (2015).
-\newblock {Ecosystem change in the southern Benguela and the underlying
-  processes}.
-\newblock \emph{Journal of Marine Systems} 144, 9--29.
-\newblock \doi{10.1016/j.jmarsys.2014.11.006}
-\bibAnnoteFile{Blamey2015}
+\bibitem[{Biastoch et~al.(2009)Biastoch, B{\"{o}}ning, Schwarzkopf, Lutjeharms,
+  Boning, Schwarzkopf et~al.}]{Biastoch2009}
+Biastoch, A., B{\"{o}}ning, C.~W., Schwarzkopf, F.~U., Lutjeharms, J. R.~E.,
+  Boning, C.~W., Schwarzkopf, F.~U., et~al. (2009).
+\newblock {Increase in Agulhas leakage due to poleward shift of Southern
+  Hemisphere westerlies.}
+\newblock \emph{Nature} 462, 495--8.
+\newblock \doi{10.1038/nature08519}
+\bibAnnoteFile{Biastoch2009}
 
 \bibitem[{Bond et~al.(2015)Bond, Cronin, Freeland, and Mantua}]{Bond2015a}
 Bond, N.~A., Cronin, M.~F., Freeland, H., and Mantua, N. (2015).
@@ -71,14 +61,6 @@ Bond, N.~A., Cronin, M.~F., Freeland, H., and Mantua, N. (2015).
 \newblock \emph{Geophysical Research Letters} 42, 3414--3420.
 \newblock \doi{10.1002/2015GL063306}
 \bibAnnoteFile{Bond2015a}
-
-\bibitem[{Boucek et~al.(2016)Boucek, Gaiser, Liu, and Rehage}]{Boucek2016}
-Boucek, R.~E., Gaiser, E.~E., Liu, H., and Rehage, J.~S. (2016).
-\newblock {A review of subtropical community resistance and resilience to
-  extreme cold spells}.
-\newblock \emph{Ecosphere} 7, e01455.
-\newblock \doi{10.1002/ecs2.1455}
-\bibAnnoteFile{Boucek2016}
 
 \bibitem[{Burrough et~al.(2001)Burrough, Wilson, {Van Gaans}, and
   Hansen}]{Burrough2001}
@@ -89,15 +71,6 @@ Burrough, P.~A., Wilson, J.~P., {Van Gaans}, P. F.~M., and Hansen, A.~J.
 \newblock \emph{Landscape Ecology} 16, 523--546.
 \newblock \doi{10.1023/A:1013167712622}
 \bibAnnoteFile{Burrough2001}
-
-\bibitem[{Burrows et~al.(2011)Burrows, Schoeman, Buckley, Moore, Poloczanska,
-  Brander et~al.}]{Burrows2011}
-Burrows, M.~T., Schoeman, D.~S., Buckley, L.~B., Moore, P., Poloczanska, E.~S.,
-  Brander, K.~M., et~al. (2011).
-\newblock {The pace of shifting climate in marine and terrestrial ecosystems}.
-\newblock \emph{Science} 334, 652--655.
-\newblock \doi{10.1126/science.1210288}
-\bibAnnoteFile{Burrows2011}
 
 \bibitem[{Castillo and Lima(2010)}]{Castillo2010}
 Castillo, K.~D. and Lima, F.~P. (2010).
@@ -147,15 +120,6 @@ Corte-Real, J., Qian, B., and Xu, H. (1998).
 \newblock \doi{10.1002/(SICI)1097-0088(199805)18:6<619::AID-JOC271>3.0.CO;2-T}
 \bibAnnoteFile{Corte-Real1998}
 
-\bibitem[{Cox et~al.(2000)Cox, Betts, Jones, Spall, and Totterdell}]{Cox2000}
-Cox, P.~M., Betts, R.~a., Jones, C.~D., Spall, S.~a., and Totterdell, I.~J.
-  (2000).
-\newblock {Acceleration of global warming due to carbon-cycle feedbacks in a
-  coupled climate model.}
-\newblock \emph{Nature} 408, 184--187.
-\newblock \doi{10.1038/35041539}
-\bibAnnoteFile{Cox2000}
-
 \bibitem[{Dee et~al.(2011)Dee, Uppala, Simmons, Berrisford, Poli, Kobayashi
   et~al.}]{Dee2011}
 Dee, D.~P., Uppala, S.~M., Simmons, A.~J., Berrisford, P., Poli, P., Kobayashi,
@@ -166,22 +130,6 @@ Dee, D.~P., Uppala, S.~M., Simmons, A.~J., Berrisford, P., Poli, P., Kobayashi,
   553--597.
 \newblock \doi{10.1002/qj.828}
 \bibAnnoteFile{Dee2011}
-
-\bibitem[{Denny et~al.(2009)Denny, Hunt, Miller, and Harley}]{Denny2009}
-Denny, M.~W., Hunt, L. J.~H., Miller, L.~P., and Harley, C. D.~G. (2009).
-\newblock {On the prediction of extreme ecological events}.
-\newblock \emph{Ecological Monographs} 79, 397--421.
-\newblock \doi{10.1890/08-0579.1}
-\bibAnnoteFile{Denny2009}
-
-\bibitem[{Easterling et~al.(2000)Easterling, Meehl, Parmesan, Changnon, Karl,
-  and Mearns}]{Easterling2000}
-Easterling, D.~R., Meehl, G.~A., Parmesan, C., Changnon, S.~A., Karl, T.~R.,
-  and Mearns, L.~O. (2000).
-\newblock {Climate extremes: observations, modeling, and impacts}.
-\newblock \emph{Science} 289, 2068--2074.
-\newblock \doi{10.1126/science.289.5487.2068}
-\bibAnnoteFile{Easterling2000}
 
 \bibitem[{Feng et~al.(2013)Feng, McPhaden, Xie, and Hafner}]{Feng2013}
 Feng, M., McPhaden, M.~J., Xie, S.-P., and Hafner, J. (2013).
@@ -209,37 +157,6 @@ Gibson, P.~B., Perkins-Kirkpatrick, S.~E., and Renwick, J.~A. (2016).
 \newblock \doi{10.1002/joc.4604}
 \bibAnnoteFile{Gibson2016a}
 
-\bibitem[{Gordon et~al.(1988)Gordon, Brown, and Pulsford}]{Gordon1988}
-Gordon, G., Brown, A.~S., and Pulsford, T. (1988).
-\newblock {A koala (Phascolarctos cinereus Goldfuss) population crash during
-  drought and heatwave conditions in south-western Queensland}.
-\newblock \emph{Austral Ecology} 13, 451--461.
-\newblock \doi{10.1111/j.1442-9993.1988.tb00993.x}
-\bibAnnoteFile{Gordon1988}
-
-\bibitem[{Grebmeier(2006)}]{Grebmeier2006}
-Grebmeier, J.~M. (2006).
-\newblock {A Major Ecosystem Shift in the Northern Bering Sea}.
-\newblock \emph{Science} 311, 1461--1464.
-\newblock \doi{10.1126/science.1121365}
-\bibAnnoteFile{Grebmeier2006}
-
-\bibitem[{Gunter(1941)}]{Gunter1941}
-Gunter, G. (1941).
-\newblock {Death of fishes due to cold on the Texas coast, January, 1940}.
-\newblock \emph{Ecology} 22, 203--208.
-\newblock \doi{10.2307/1932218}
-\bibAnnoteFile{Gunter1941}
-
-\bibitem[{Hansen et~al.(1981)Hansen, Johnson, Lacis, Lebedeff, Lee, Rind
-  et~al.}]{Hansen1981}
-Hansen, J., Johnson, D., Lacis, A., Lebedeff, S., Lee, P., Rind, D., et~al.
-  (1981).
-\newblock {Climate Impact of Increasing Atmospheric Carbon Dioxide}.
-\newblock \emph{Science} 213, 957--966.
-\newblock \doi{10.1126/science.213.4511.957}
-\bibAnnoteFile{Hansen1981}
-
 \bibitem[{Hewitson and Crane(2002)}]{Hewitson2002}
 Hewitson, B.~C. and Crane, R.~G. (2002).
 \newblock {Self-organizing maps: Applications to synoptic climatology}.
@@ -255,16 +172,6 @@ Hobday, A.~J., Alexander, L.~V., Perkins, S.~E., Smale, D.~A., Straub, S.~C.,
 \newblock \emph{Progress in Oceanography} 141, 227--238.
 \newblock \doi{10.1016/j.pocean.2015.12.014}
 \bibAnnoteFile{Hobday2016}
-
-\bibitem[{Hufkens et~al.(2012)Hufkens, Friedl, Keenan, Sonnentag, Bailey,
-  O'Keefe et~al.}]{Hufkens2012}
-Hufkens, K., Friedl, M.~A., Keenan, T.~F., Sonnentag, O., Bailey, A., O'Keefe,
-  J., et~al. (2012).
-\newblock {Ecological impacts of a widespread frost event following early
-  spring leaf-out}.
-\newblock \emph{Global Change Biology} 18, 2365--2377.
-\newblock \doi{10.1111/j.1365-2486.2012.02712.x}
-\bibAnnoteFile{Hufkens2012}
 
 \bibitem[{Hutchings et~al.(2009)Hutchings, van~der Lingen, Shannon, Crawford,
   Verheye, Bartholomae et~al.}]{Hutchings2009}
@@ -289,15 +196,6 @@ Johnson, N.~C. (2013).
 \newblock \doi{10.1175/JCLI-D-12-00649.1}
 \bibAnnoteFile{Johnson2013}
 
-\bibitem[{Jolly et~al.(2005)Jolly, Dobbertin, Zimmermann, and
-  Reichstein}]{Jolly2005}
-Jolly, W.~M., Dobbertin, M., Zimmermann, N.~E., and Reichstein, M. (2005).
-\newblock {Divergent vegetation growth responses to the 2003 heat wave in the
-  Swiss Alps}.
-\newblock \emph{Geophysical Research Letters} 32, n/a--n/a.
-\newblock \doi{10.1029/2005GL023252}
-\bibAnnoteFile{Jolly2005}
-
 \bibitem[{Kumar et~al.(2011)Kumar, Mills, Hoffman, and Hargrove}]{Kumar2011}
 Kumar, J., Mills, R.~T., Hoffman, F.~M., and Hargrove, W.~W. (2011).
 \newblock {Parallel k-means clustering for quantitative ecoregion delineation
@@ -305,17 +203,6 @@ Kumar, J., Mills, R.~T., Hoffman, F.~M., and Hargrove, W.~W. (2011).
 \newblock In \emph{Procedia Computer Science}. vol.~4, 1602--1611.
 \newblock \doi{10.1016/j.procs.2011.04.173}
 \bibAnnoteFile{Kumar2011}
-
-\bibitem[{Lirman et~al.(2011)Lirman, Schopmeyer, Manzello, Gramer, Precht,
-  Muller-Karger et~al.}]{Lirman2011}
-Lirman, D., Schopmeyer, S., Manzello, D., Gramer, L.~J., Precht, W.~F.,
-  Muller-Karger, F., et~al. (2011).
-\newblock {Severe 2010 cold-water event caused unprecedented mortality to
-  corals of the Florida reef tract and reversed previous survivorship
-  patterns}.
-\newblock \emph{PLOS ONE} 6.
-\newblock \doi{10.1371/journal.pone.0023047}
-\bibAnnoteFile{Lirman2011}
 
 \bibitem[{L{\"{u}}nning(1990)}]{Luning1990}
 L{\"{u}}nning, K. (1990).
@@ -330,14 +217,6 @@ Lutjeharms, J., Cooper, J., and Roberts, M. (2000).
 \newblock \emph{Continental Shelf Research} 20, 737--761.
 \newblock \doi{10.1016/S0278-4343(99)00092-8}
 \bibAnnoteFile{Lutjeharms2000a}
-
-\bibitem[{Manabe and Wetherald(1967)}]{Manabe1967}
-Manabe, S. and Wetherald, R.~T. (1967).
-\newblock {Thermal Equilibrium of the Atmosphere with a Given Distribution of
-  Relative Humidity}.
-\newblock \emph{Journal of the Atmospheric Sciences} 24, 241--259.
-\newblock \doi{10.1175/1520-0469(1967)024<0241:TEOTAW>2.0.CO;2}
-\bibAnnoteFile{Manabe1967}
 
 \bibitem[{Mills et~al.(2013)Mills, Pershing, Brown, Chen, Chiang, Holland
   et~al.}]{Mills2013}
@@ -382,6 +261,15 @@ Oliver, E. C.~J., Benthuysen, J.~A., Bindoff, N.~L., Hobday, A.~J., Holbrook,
 \newblock \doi{10.4226/77/587e97d9b2bf9}
 \bibAnnoteFile{Oliver2017atlas}
 
+\bibitem[{Pachauri et~al.(2014)Pachauri, Allen, Barros, Broome, Cramer, Christ
+  et~al.}]{Pachauri2014}
+Pachauri, R.~K., Allen, M.~R., Barros, V.~R., Broome, J., Cramer, W., Christ,
+  R., et~al. (2014).
+\newblock \emph{{Climate change 2014: synthesis report. Contribution of Working
+  Groups I, II and III to the fifth assessment report of the Intergovernmental
+  Panel on Climate Change}} (IPCC)
+\bibAnnoteFile{Pachauri2014}
+
 \bibitem[{Pearce and Feng(2013)}]{Pearce2013}
 Pearce, A.~F. and Feng, M. (2013).
 \newblock {The rise and fall of the "marine heat wave" off Western Australia
@@ -396,41 +284,6 @@ Perkins, S.~E. and Alexander, L.~V. (2013).
 \newblock \emph{Journal of Climate} 26, 4500--4517.
 \newblock \doi{10.1175/JCLI-D-12-00383.1}
 \bibAnnoteFile{Perkins2013}
-
-\bibitem[{Perkins-Kirkpatrick et~al.(2016)Perkins-Kirkpatrick, White,
-  Alexander, Arg{\"{u}}eso, Boschat, Cowan et~al.}]{Perkins-Kirkpatrick2016}
-Perkins-Kirkpatrick, S.~E., White, C.~J., Alexander, L.~V., Arg{\"{u}}eso, D.,
-  Boschat, G., Cowan, T., et~al. (2016).
-\newblock {Natural hazards in Australia: heatwaves}.
-\newblock \emph{Climatic Change} 139, 101--114.
-\newblock \doi{10.1007/s10584-016-1650-0}
-\bibAnnoteFile{Perkins-Kirkpatrick2016}
-
-\bibitem[{Rosenzweig et~al.(2008)Rosenzweig, Karoly, Vicarelli, Neofotis, Wu,
-  Casassa et~al.}]{Rosenzweig2008}
-Rosenzweig, C., Karoly, D., Vicarelli, M., Neofotis, P., Wu, Q., Casassa, G.,
-  et~al. (2008).
-\newblock {Attributing physical and biological impacts to anthropogenic climate
-  change}.
-\newblock \emph{Nature} 453, 353--357.
-\newblock \doi{10.1038/nature06937}
-\bibAnnoteFile{Rosenzweig2008}
-
-\bibitem[{Sawyer(1972)}]{Sawyer1972}
-Sawyer, J.~S. (1972).
-\newblock {Man-made Carbon Dioxide and the “Greenhouse” Effect}.
-\newblock \emph{Nature} 239, 23--26.
-\newblock \doi{10.1038/239023a0}
-\bibAnnoteFile{Sawyer1972}
-
-\bibitem[{Scavia et~al.(2002)Scavia, Field, Boesch, Buddemeier, Burkett, Cayan
-  et~al.}]{Scavia2002}
-Scavia, D., Field, J.~C., Boesch, D.~F., Buddemeier, R.~W., Burkett, V., Cayan,
-  D.~R., et~al. (2002).
-\newblock {Climate change impacts on U.S. Coastal and Marine Ecosystems}.
-\newblock \emph{Estuaries} 25, 149--164.
-\newblock \doi{10.1007/BF02691304}
-\bibAnnoteFile{Scavia2002}
 
 \bibitem[{Schlegel et~al.(2017)Schlegel, Oliver, Wernberg, and
   Smit}]{Schlegel2017}
@@ -484,42 +337,6 @@ Stachowicz, J.~J., Terwin, J.~R., Whitlatch, R.~B., and Osman, R.~W. (2002).
 \newblock \doi{10.1073/pnas.242437499}
 \bibAnnoteFile{Stachowicz2002}
 
-\bibitem[{Stocker et~al.(2013)Stocker, Qin, Plattner, Tignor, Allen, Boschung
-  et~al.}]{IPCC2014}
-Stocker, T., Qin, D., Plattner, G.~K., Tignor, M., Allen, S.~K., Boschung, J.,
-  et~al. (eds.) (2013).
-\newblock \emph{{Climate change 2013: the physical science basis: Working Group
-  I contribution to the Fifth Assessment Report of the Intergovernmental Panel
-  on Climate Change}} (Cambridge, United Kingdom and New York, NY, USA:
-  Cambridge University Press).
-\newblock \doi{10.1017/CBO9781107415324}
-\bibAnnoteFile{IPCC2014}
-
-\bibitem[{Stott et~al.(2004)Stott, Stone, and Allen}]{Stott2004}
-Stott, P.~A., Stone, D.~A., and Allen, M.~R. (2004).
-\newblock {Human contribution to the European heatwave of 2003}.
-\newblock \emph{Nature} 432, 610--614.
-\newblock \doi{10.1038/nature03089}
-\bibAnnoteFile{Stott2004}
-
-\bibitem[{Thomas et~al.(2004)Thomas, Cameron, Green, Bakkenes, Beaumont,
-  Collingham et~al.}]{Thomas2004}
-Thomas, C.~D., Cameron, A., Green, R.~E., Bakkenes, M., Beaumont, L.~J.,
-  Collingham, Y.~C., et~al. (2004).
-\newblock {Extinction risk from climate change}.
-\newblock \emph{Nature} 427, 145--148.
-\newblock \doi{10.1038/nature02121}
-\bibAnnoteFile{Thomas2004}
-
-\bibitem[{Travis(2003)}]{Travis2003}
-Travis, J. M.~J. (2003).
-\newblock {Climate change and habitat destruction: a deadly anthropogenic
-  cocktail}.
-\newblock \emph{Proceedings of the Royal Society B: Biological Sciences} 270,
-  467--473.
-\newblock \doi{10.1098/rspb.2002.2246}
-\bibAnnoteFile{Travis2003}
-
 \bibitem[{Tyson and Preston-Whyte(2000)}]{Tyson2000}
 Tyson, P.~D. and Preston-Whyte, R.~A. (2000).
 \newblock \emph{{weather and climate of southern Africa}} (Oxford University
@@ -539,15 +356,6 @@ Unal, Y., Kindap, T., and Karaca, M. (2003).
   (Collegium)
 \bibAnnoteFile{vanHeerden1998}
 
-\bibitem[{Walther et~al.(2002)Walther, Post, Convey, Menzel, Parmesan, Beebee
-  et~al.}]{Walther2002}
-Walther, G.-R., Post, E., Convey, P., Menzel, A., Parmesan, C., Beebee, T.
-  J.~C., et~al. (2002).
-\newblock {Ecological responses to recent climate change}.
-\newblock \emph{Nature} 416, 389--395.
-\newblock \doi{10.1038/416389a}
-\bibAnnoteFile{Walther2002}
-
 \bibitem[{Wernberg et~al.(2016)Wernberg, Bennett, Babcock, Bettignies, Cure,
   Depczynski et~al.}]{Wernberg2016}
 Wernberg, T., Bennett, S., Babcock, R.~C., Bettignies, T.~D., Cure, K.,
@@ -566,15 +374,5 @@ Wernberg, T., Russell, B.~D., Moore, P.~J., Ling, S.~D., Smale, D.~A.,
 \newblock \emph{Journal of Experimental Marine Biology and Ecology} 400, 7--16.
 \newblock \doi{10.1016/j.jembe.2011.02.021}
 \bibAnnoteFile{Wernberg2011}
-
-\bibitem[{Wernberg et~al.(2012)Wernberg, Smale, Tuya, Thomsen, Langlois,
-  de~Bettignies et~al.}]{Wernberg2012a}
-Wernberg, T., Smale, D.~a., Tuya, F., Thomsen, M.~S., Langlois, T.~J.,
-  de~Bettignies, T., et~al. (2012).
-\newblock {An extreme climatic event alters marine ecosystem structure in a
-  global biodiversity hotspot}.
-\newblock \emph{Nature Climate Change} 3, 78--82.
-\newblock \doi{10.1038/nclimate1627}
-\bibAnnoteFile{Wernberg2012a}
 
 \end{thebibliography}

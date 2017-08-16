@@ -17,6 +17,8 @@ source("func/som.func.R")
 source("func/scale.bar.func.R")
 library(vegan)
 library(ggdendro)
+library(broom)
+
 
 # 2. Create synoptic figure for each event  -------------------------------
 
@@ -104,6 +106,10 @@ ggsave("graph/HCA.pdf", height = 9, width = 9)
 # Load data
 load("data/all_anom_MDS.Rdata")
 load("data/all_anom_env.Rdata")
+load("data/SACTN/SACTN_events.Rdata")
+SACTN_events$type <- NULL
+# load("data/node_means.Rdata")
+# load("data/node_all_anom.Rdata")
 
 ## Fit environmental variables
 ord_fit <- envfit(all_anom_MDS ~ season + type, data = all_anom_env)
@@ -111,25 +117,56 @@ ord_fit <- envfit(all_anom_MDS ~ season + type, data = all_anom_env)
 ord_fit_df <- as.data.frame(ord_fit$factors$centroids)
 ord_fit_df$factors <- c("autumn", "spring", "summer", "winter", "clim", "MHW")
 
+# Merge event values
+# SACTN_events_sub <- SACTN_events[,c(1,2)]
+all_anom_env <- left_join(all_anom_env, SACTN_events, by = c("event", "season"))
+
 # Create MDS dataframe
-mds_df <- data.frame(all_anom_MDS$points, type = all_anom_env$type, 
-                     event = all_anom_env$event, season = all_anom_env$season)
+# mds_df <- data.frame(all_anom_MDS$points, type = all_anom_env$type, 
+#                      event = all_anom_env$event, season = all_anom_env$season)
+mds_df <- data.frame(all_anom_MDS$points, all_anom_env)
+mds_df$duration[is.na(mds_df$duration)] <- mean(mds_df$duration, na.rm = T)
 
 # Plot the fits
 ggplot(data = mds_df, aes(x = MDS1, y = MDS2)) +
-  geom_point(aes(colour = season, shape = type), size = 4) +
+  geom_point(aes(colour = season, shape = type, size = duration)) +
   geom_segment(data = ord_fit_df, aes(x = 0, y = 0, xend = NMDS1, yend = NMDS2),
                arrow = arrow(angle = 40, length = unit(0.2, "cm"), type = "open"), 
                alpha = 1, colour = "black", size = 0.5)  +
   geom_text(data = ord_fit_df, aes(label = factors, x = NMDS1, y = NMDS2), size = 8) +
   scale_shape_manual(name = "State", values = c(19, 15), labels = c("clim", "MHW")) +
   scale_colour_discrete(name = "Season") +
+  scale_size_continuous(name = "Duration\n(days)", breaks = c(20, 70, 120, 170, 220)) +
+  guides(colour = guide_legend(order = 1),
+         shape = guide_legend(order = 2),
+         size = guide_legend(override.aes = list(shape = 15), order = 3)) +
+  # labs(size = "Duration") +
   theme_grey() +
   theme(strip.background = element_rect(fill = NA),
         panel.border = element_rect(fill = NA, colour = "black", size = 1),
         axis.text = element_text(size = 12, colour = "black"),
         axis.ticks = element_line(colour = "black"))
 ggsave("graph/MDS.pdf", height = 9, width = 12)
+
+# Linear model: duration vs. ordination from centre point
+lm_all_results <- mds_df %>%
+  na.omit() %>%
+  mutate(MDS2 = abs(MDS2)) %>% 
+  select(-MDS1, -event, -season, -type, -coast, -site) %>%
+  gather(key = group, 
+         value = measurement,
+         -MDS2) %>%
+  group_by(group) %>% 
+  nest() %>%
+  mutate(model = purrr::map(data, ~lm(measurement ~ MDS2, data = .))) %>% 
+  unnest(model %>% purrr::map(glance)) %>% 
+  select(-data, -model)
+lm_all_results[lm_all_results$adj.r.squared == max(lm_all_results$adj.r.squared, na.rm = T),]
+
+# Visualization of the best linear model
+ggplot(data = mds_df) +
+  geom_smooth(aes(x = duration, y = abs(MDS2)), method = "lm", se = F) +
+  theme_grey()
 
 
 # 7. Create map of study area ---------------------------------------------
@@ -163,7 +200,7 @@ AVISO_v_clim$variable <- "v"
 load("setupParams/SACTN_site_list.Rdata")
 SACTN_site_list$order <- 1:nrow(SACTN_site_list)
 
-# Select only January 1st
+# Create annual mean air-sea state
 # sea_temp <- filter(OISST_temp_clim, date == "01-15") %>% 
 sea_temp <- data.table::data.table(OISST_temp_clim)
 sea_temp <- sea_temp[, .(temp = mean(temp, na.rm = TRUE)),
