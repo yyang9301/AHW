@@ -304,3 +304,10 @@ The scripts and data used to determine common air-sea states during MHWs along t
 * Created word document for abstract
 * Created word document for cover letter
 * Created the required 300dpi .tiff files for figures
+
+## 2017/09/015
+* Most of round one reviewer comments met
+
+## 2017/09/017
+* Several edits from AJ
+* More reviewer comments met
