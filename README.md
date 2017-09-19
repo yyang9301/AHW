@@ -306,8 +306,12 @@ The scripts and data used to determine common air-sea states during MHWs along t
 * Created the required 300dpi .tiff files for figures
 
 ## 2017/09/015
-* Most of round one reviewer comments met
+* Most of round one reviewer comments addressed
 
 ## 2017/09/017
 * Several edits from AJ
-* More reviewer comments met
+* More reviewer comments addressed
+
+## 2017/09/019
+* All reviewer comments addressed
+* Manuscript re-submitted

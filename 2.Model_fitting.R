@@ -237,7 +237,7 @@ save(all_anom_MDS, file = "data/all_anom_MDS.Rdata")
 
 # 7. ANOSIM on differences between SOM nodes ------------------------------
 
-# Load necessary data if above steps ot run
+# Load necessary data if above steps not run
 load("data/node_means.Rdata")
 
 # Melt

@@ -1,4 +1,4 @@
-\begin{thebibliography}{45}
+\begin{thebibliography}{48}
 \providecommand{\natexlab}[1]{#1}
 \expandafter\ifx\csname urlstyle\endcsname\relax
   \providecommand{\doi}[1]{doi:\discretionary{}{}{}#1}\else
@@ -250,6 +250,13 @@ Morioka, Y., Tozuka, T., and Yamagata, T. (2010).
 \newblock \doi{10.1007/s00382-010-0843-x}
 \bibAnnoteFile{Morioka2010}
 
+\bibitem[{Oksanen et~al.(2017)Oksanen, Blanchet, Friendly, Kindt, Legendre,
+  McGlinn et~al.}]{Oksanen2017}
+Oksanen, J., Blanchet, F.~G., Friendly, M., Kindt, R., Legendre, P., McGlinn,
+  D., et~al. (2017).
+\newblock \emph{{vegan: Community Ecology Package}}
+\bibAnnote{Oksanen2017}{R package version 2.4-4}
+
 \bibitem[{Oliver et~al.(2017{\natexlab{a}})Oliver, Benthuysen, Bindoff, Hobday,
   Holbrook, Mundy et~al.}]{Oliver2017}
 Oliver, E. C.~J., Benthuysen, J.~A., Bindoff, N.~L., Hobday, A.~J., Holbrook,
@@ -276,6 +283,14 @@ Pachauri, R.~K., Allen, M.~R., Barros, V.~R., Broome, J., Cramer, W., Christ,
   Panel on Climate Change}} (IPCC)
 \bibAnnoteFile{Pachauri2014}
 
+\bibitem[{Paliy and Shankar(2016)}]{Paliy2016}
+Paliy, O. and Shankar, V. (2016).
+\newblock {Application of multivariate statistical techniques in microbial
+  ecology}.
+\newblock \emph{Molecular Ecology} 25, 1032--1057.
+\newblock \doi{10.1111/mec.13536}
+\bibAnnoteFile{Paliy2016}
+
 \bibitem[{Pearce and Feng(2013)}]{Pearce2013}
 Pearce, A.~F. and Feng, M. (2013).
 \newblock {The rise and fall of the "marine heat wave" off Western Australia
@@ -290,6 +305,11 @@ Perkins, S.~E. and Alexander, L.~V. (2013).
 \newblock \emph{Journal of Climate} 26, 4500--4517.
 \newblock \doi{10.1175/JCLI-D-12-00383.1}
 \bibAnnoteFile{Perkins2013}
+
+\bibitem[{Rossi(2012)}]{Rossi2012}
+Rossi, F. (2012).
+\newblock \emph{{yasomi: Yet Another Self Organising Map Implementation}}
+\bibAnnote{Rossi2012}{R package version 0.3/r39}
 
 \bibitem[{Schlegel et~al.(2017)Schlegel, Oliver, Wernberg, and
   Smit}]{Schlegel2017}
