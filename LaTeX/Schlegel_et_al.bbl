@@ -93,7 +93,7 @@ Cavole, L., Demko, A., Diner, R., Giddings, A., Koester, I., Pagniello, C.,
   et~al. (2016).
 \newblock {Biological Impacts of the 2013–2015 Warm-Water Anomaly in the
   Northeast Pacific: Winners, Losers, and the Future}.
-\newblock \emph{Oceanography} 29.
+\newblock \emph{Oceanography} 29, 273--285.
 \newblock \doi{10.5670/oceanog.2016.32}
 \bibAnnoteFile{Cavole2016}
 
@@ -204,9 +204,9 @@ Kruskal, J.~B. (1964).
 
 \bibitem[{Kumar et~al.(2011)Kumar, Mills, Hoffman, and Hargrove}]{Kumar2011}
 Kumar, J., Mills, R.~T., Hoffman, F.~M., and Hargrove, W.~W. (2011).
-\newblock {Parallel k-means clustering for quantitative ecoregion delineation
-  using large data sets}.
-\newblock In \emph{Procedia Computer Science}. vol.~4, 1602--1611.
+\newblock {Parallel k-Means Clustering for Quantitative Ecoregion Delineation
+  Using Large Data Sets}.
+\newblock \emph{Procedia Computer Science} 4, 1602--1611.
 \newblock \doi{10.1016/j.procs.2011.04.173}
 \bibAnnoteFile{Kumar2011}
 
@@ -230,7 +230,7 @@ Mills, K., Pershing, A., Brown, C., Chen, Y., Chiang, F.-S., Holland, D.,
   et~al. (2013).
 \newblock {Fisheries Management in a Changing Climate: Lessons From the 2012
   Ocean Heat Wave in the Northwest Atlantic}.
-\newblock \emph{Oceanography} 26.
+\newblock \emph{Oceanography} 26, 191--195.
 \newblock \doi{10.5670/oceanog.2013.27}
 \bibAnnoteFile{Mills2013}
 
@@ -280,7 +280,7 @@ Pachauri, R.~K., Allen, M.~R., Barros, V.~R., Broome, J., Cramer, W., Christ,
   R., et~al. (2014).
 \newblock \emph{{Climate change 2014: synthesis report. Contribution of Working
   Groups I, II and III to the fifth assessment report of the Intergovernmental
-  Panel on Climate Change}} (IPCC)
+  Panel on Climate Change}} (Geneva, Switzerland: IPCC)
 \bibAnnoteFile{Pachauri2014}
 
 \bibitem[{Paliy and Shankar(2016)}]{Paliy2016}
@@ -365,8 +365,8 @@ Stachowicz, J.~J., Terwin, J.~R., Whitlatch, R.~B., and Osman, R.~W. (2002).
 
 \bibitem[{Tyson and Preston-Whyte(2000)}]{Tyson2000}
 Tyson, P.~D. and Preston-Whyte, R.~A. (2000).
-\newblock \emph{{weather and climate of southern Africa}} (Oxford University
-  Press)
+\newblock \emph{{weather and climate of southern Africa}} (Cape Town, South
+  Africa: Oxford University Press)
 \bibAnnoteFile{Tyson2000}
 
 \bibitem[{Unal et~al.(2003)Unal, Kindap, and Karaca}]{Unal2003}
@@ -379,7 +379,7 @@ Unal, Y., Kindap, T., and Karaca, M. (2003).
 \bibitem[{{Van Heerden} and Hurry(1998)}]{vanHeerden1998}
 {Van Heerden}, J. and Hurry, L. (1998).
 \newblock \emph{{Southern Africa's weather patterns: An introductory guide}}
-  (Collegium)
+  (Pretoria, South Africa: Collegium)
 \bibAnnoteFile{vanHeerden1998}
 
 \bibitem[{Wernberg et~al.(2016)Wernberg, Bennett, Babcock, Bettignies, Cure,
