@@ -229,7 +229,7 @@ synoptic.panel <- function(temperature_dat, vector_dat, label_dat, segment_dat, 
                        labels = scales::unit_format("°E", sep = "")) +
     scale_y_continuous(limits = sa_lats, expand = c(0, 0), breaks = seq(-35, -30, 5),
                        labels = c("35°S", "30°S")) +
-    coord_fixed(xlim = c(10.5, 39.5), ylim = c(-39.5, -25.5), expand = F) +
+    coord_cartesian(xlim = c(10.5, 39.5), ylim = c(-39.5, -25.5), expand = F) +
     xlab("") + ylab("") +
     facet_wrap("type", scales = "free_y") +
     theme_grey() +
